@@ -1,0 +1,22 @@
+# AdProof AI / Meta Global AI Developer Hackathon 2026
+# Safe initial deploy: secrets must be entered in Render during Blueprint setup.
+services:
+  - type: web
+    name: adproof-ai
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm run check
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MODEL_API_KEY
+        sync: false
+      - key: DEMO_ACCESS_CODE
+        sync: false
