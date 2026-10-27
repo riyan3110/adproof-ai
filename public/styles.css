@@ -89,3 +89,25 @@
 }
 @media(min-width:1600px){.workspace{max-width:1680px}}
 @media(prefers-reduced-motion:reduce){.skip-link{transition:none}}
+
+
+/* Claim evidence ledger: show only when backed by a real Meta audit result. */
+.claim-evidence{margin:4px 0 14px}
+.claim-evidence[hidden]{display:none}
+.claim-proof-note{color:#91a09b;font-size:10px;line-height:1.5;margin:0 0 12px}
+.claim-evidence-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:10px}
+.claim-evidence-item{border:1px solid #334039;background:linear-gradient(145deg,#172124,#111a20);padding:15px;border-radius:13px;min-width:0}
+.claim-evidence-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.claim-evidence-source{color:#9fa9a3;font-weight:800;letter-spacing:1px;font-size:9px}
+.claim-evidence-status{font-size:9px;font-weight:800;border-radius:99px;padding:6px 9px;letter-spacing:.4px;white-space:nowrap;background:#2b3540;color:#bbc7d1}
+.claim-evidence-status.supported{color:#c0f094;background:#26422a}
+.claim-evidence-status.unsupported{color:#ffcb9c;background:#4a3027}
+.claim-evidence-status.contradicted{color:#ffacac;background:#4c2833}
+.claim-evidence-status.uncertain{color:#cfc2f8;background:#34304b}
+.claim-evidence-claim{font-size:14px;line-height:1.45;color:#edf4e9;margin:13px 0;font-weight:740;overflow-wrap:anywhere}
+.claim-evidence-fact{border-left:2px solid var(--lime);padding:8px 0 8px 10px;background:#b8e9920a;display:grid;gap:6px}
+.claim-evidence-kicker{font-size:9px;color:#9aca79;font-weight:800;letter-spacing:1px}
+.claim-evidence-fact q{font-size:12px;color:#dce7d3;overflow-wrap:anywhere}
+.claim-evidence-detail,.claim-evidence-action{font-size:11px;line-height:1.55;overflow-wrap:anywhere;margin:11px 0 0;color:#9eaca8}
+.claim-evidence-action{color:#c2dea8}
+@media(max-width:700px){.claim-evidence-list{grid-template-columns:1fr}}
