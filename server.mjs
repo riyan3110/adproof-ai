@@ -145,7 +145,7 @@ function normalizeAudit(a, suppliedFacts = '') {
   };
 }
 
-export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY} = {}) {
+export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY, requireDemoGate = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'} = {}) {
   const gate = String(demoCode || '').trim();
   const BODY_LIMIT = Number(maxBody) || MAX_BODY;
   const vercelMode = BODY_LIMIT <= VERCEL_MAX_BODY;
@@ -275,6 +275,9 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     try {
       if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),demoGate:!!gate,textModel:MODEL,imageModel:'muse-image-1.0'});
       if(req.method==='POST' && ['/api/audit','/api/improve'].includes(url.pathname)) {
+        // Never expose billable Meta API calls when a production demo gate is missing.
+        // The in-memory IP counter below is NOT a reliable global quota on Vercel.
+        if(requireDemoGate && !gate) return json(res,503,{error:'Demo AI sementara ditutup: kode akses server belum dikonfigurasi.'});
         if(gate) {
           const provided = String(req.headers['x-demo-code'] || '');
           if(!provided) return json(res,401,{error:'Demo ini memerlukan kode akses.'});

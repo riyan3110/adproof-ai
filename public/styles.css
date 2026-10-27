@@ -111,3 +111,21 @@
 .claim-evidence-detail,.claim-evidence-action{font-size:11px;line-height:1.55;overflow-wrap:anywhere;margin:11px 0 0;color:#9eaca8}
 .claim-evidence-action{color:#c2dea8}
 @media(max-width:700px){.claim-evidence-list{grid-template-columns:1fr}}
+
+/* Judge-only live API access: a real dialog, not a browser prompt. */
+.judge-access-button{border:1px solid #6e826c;background:#263126;color:var(--lime);border-radius:9px;min-height:38px;padding:8px 13px;white-space:nowrap;font-size:11px;font-weight:800;cursor:pointer}
+.judge-access-button[hidden],.judge-access-dialog[hidden]{display:none!important}
+.judge-access-button:focus-visible,.judge-access-dialog :focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+.judge-access-dialog{border:1px solid #536857;border-radius:18px;background:#171e25;color:#eaf1e7;padding:0;width:min(92vw,430px);max-height:min(90vh,660px);box-shadow:0 30px 110px #000b}
+.judge-access-dialog::backdrop{background:#020604d9;backdrop-filter:blur(4px)}
+.judge-access-dialog form{padding:27px;display:flex;flex-direction:column;gap:12px}
+.access-eyebrow{font-size:10px;letter-spacing:1.7px;font-weight:800;color:var(--lime)}
+.judge-access-dialog h2{font-size:26px;margin:0}
+.judge-access-dialog p{line-height:1.5;font-size:13px;color:#adbab2;margin:0 0 8px}
+.judge-access-dialog label{font-size:12px;font-weight:800}
+.judge-access-dialog input{border:1px solid #53645a;background:#11171d;color:#f1faef;font-size:16px;padding:14px;border-radius:9px;width:100%}
+.judge-access-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+.judge-access-actions button{border:1px solid #627662;border-radius:9px;padding:12px 17px;font-weight:800;cursor:pointer}
+.judge-cancel{background:transparent;color:#d1ddd4}.judge-save{background:var(--lime);color:#172117}
+.judge-access-dialog small{font-size:11px;line-height:1.4;color:#99a69c}
+@media(max-width:700px){.studio-nav{padding:0 12px;height:70px}.studio-actions{gap:9px}.nav-mid{display:none}.connection{font-size:9px}.judge-access-button{font-size:10px;padding:7px 9px}.judge-access-dialog form{padding:20px}}

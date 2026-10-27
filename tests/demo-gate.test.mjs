@@ -84,3 +84,18 @@ test('endpoints stay open for local dev when gate is unset',async()=>{
   assert.equal((await res.json()).audit.score,71);
   assert.ok(openCalls.some(x=>x.url.endsWith('chat/completions')));
 });
+
+test('production mode fails closed with no demo code before Meta is called', async()=>{
+  const calls=[];
+  const locked=http.createServer(createHandler({fetcher:mockFetcher(calls),key:'mock-test-key',demoCode:'',requireDemoGate:true}));
+  await new Promise(resolve=>locked.listen(0,'127.0.0.1',resolve));
+  try {
+    const base='http://127.0.0.1:'+locked.address().port;
+    for(const endpoint of ['/api/audit','/api/improve']){
+      const res=await post(base,endpoint,validBody);
+      assert.equal(res.status,503);
+      assert.match((await res.json()).error,/kode akses server/i);
+    }
+    assert.equal(calls.length,0,'no billable calls allowed without production gate');
+  }finally{await new Promise(resolve=>locked.close(resolve));}
+});

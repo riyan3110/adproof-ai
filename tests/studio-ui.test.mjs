@@ -61,3 +61,15 @@ test('claim evidence has grounded labels without unsafe template HTML', () => {
   assert.ok(html.includes('Not independently verified'), 'avoid misleading independent fact-check claim');
   assert.ok(css.includes('.claim-evidence-list'));
 });
+
+test('judge-only code dialog is accessible and never exposed in public markup', () => {
+  for(const id of ['judgeAccessButton','judgeAccessDialog','judgeAccessForm','judgeAccessCode','judgeAccessHint','judgeAccessCancel']){
+    assert.ok(html.includes('id="'+id+'"'), 'missing judge access element: '+id);
+  }
+  assert.ok(html.includes('type="password"'), 'judge code input must be masked');
+  assert.ok(html.includes('aria-labelledby="judgeAccessTitle"'), 'judge dialog must have accessible title');
+  assert.ok(js.includes("ui.accessDialog.showModal()"));
+  assert.ok(js.includes("sessionStorage.setItem(demoKey,v)"), 'code should be session-only');
+  assert.ok(js.includes("headers['x-demo-code']=code"), 'private code must stay in request header');
+  assert.ok(!js.includes("prompt("), 'browser prompt must not be used for judge access');
+});
