@@ -1,41 +1,26 @@
-# AdProof AI — Work checkpoint
+# AdProof AI — Project status (27 October 2026)
 
-Date: 2026-10-27 (Hackathon day 2)
+## Verified and deployed
 
-## Done
+- Existing repository: https://github.com/riyan3110/adproof-ai; primary branch `main`.
+- Website: https://adproof-ai.vercel.app; public `/`, `/app`, `/docs` and `/api/health` checked from an anonymous Vercel Sandbox: **HTTP 200** on 27 October.
+- Private demo gate: unauthenticated POST `/api/audit` and `/api/improve` both returned **HTTP 401** from an external, anonymous client.
+- PRs #10, #11, #12 merged to main; #12 adds a judge code dialog and a production fail-closed rule.
+- Current `/api/health`: `configured:true` and `demoGate:true`. This means configured environment variables, **not** verified provider connectivity.
+- Creative Studio includes actual source integrations for Meta Muse Spark 1.3, Muse Image 1.0, visual claim ledger, before/after and re-audit flow.
+- Automated tests run against a **mocked Meta provider**; no synthetic model output is included in public Studio.
+- Public four-step walkthrough, honest configured label and compare-frame consistency are in the follow-up readiness PR.
 
-- New, independent project source code, with no changes to any existing repository.
-- Public GitHub repository published: https://github.com/riyan3110/adproof-ai (`main`, commit `ddd536ab8fe2ca2ea472d4be8c378e59642a6e16`). All 12 source files uploaded.
-- `/` custom editorial premium dark landing page with CSS illustrations (no generated graphic assets).
-- `/app` fully interactive responsive creative inspection studio.
-- `/docs` separate tutorial and architecture page; minimal text in app.
-- Upload PNG/JPEG/WebP up to 6 MB with client-side resizing.
-- Server-side integration: Meta Muse Spark 1.3 `POST /v1/chat/completions` with vision + strict JSON Schema.
-- Server-side integration: Muse Image 1.0 `POST /v1/images/edits` with actual supplied image.
-- Before/after compare with draggable slider and post-edit re-audit.
-- JSON report and revised image download.
-- `npm run check` passes; Playwright interactive browser test (mock HTTP Meta response) passed with no JS exceptions.
-- Server works without npm dependencies on Node 20+.
+## Remaining required before hackathon submission
 
-## NOT YET DONE (do not claim otherwise)
+1. Run one authorized end-to-end **real** Meta audit, image edit and re-audit using an actual advertising image and the privately shared `DEMO_ACCESS_CODE`; verify costs and errors in Meta console. Do not print or commit the code/key.
+2. Capture and publish a genuine demonstration video showing the real audit findings, evidence trace, image edit and verification — **not** a mocked result.
+3. Submit the project link, public source link and genuine video in the official event portal by **5 November 2026 at 09:00 WIB**.
+4. Share the judge code **privately** through official submission instructions; never in GitHub/X or a public video. Keep paid anonymous API calls disabled unless durable distributed quotas and spend controls exist.
+5. Test final layout in physical mobile browsers and desktop viewport; automated HTML/CSS tests do not substitute for visual review.
 
-- No real Meta API calls: secret MODEL_API_KEY not available. Only protocol mocked in integration tests.
-- No live hosting / shareable URL.
-- No public 3-minute demo video recorded.
-- No final hackathon submission made.
+## Constraints
 
-## Next steps, in order
-
-1. Deploy to **Node.js hosting**, set `MODEL_API_KEY` as a secret, run `npm start`. Do not deploy the backend as static HTML.
-2. Test real Muse Spark audit, Muse Image edit, and verification while monitoring Meta Billing. Adjust API integration for any live compatibility errors.
-3. Add stronger abuse protection (authentication, CDN rate limits, and per-user quotas) before enabling public paid API access.
-4. Test mobile, error/retry states, compare output, then record a genuine three-minute demo.
-5. Submit public repository and demo before November 5, 2026, 09:00 WIB.
-
-## Important constraints
-
-- Build must fall within Oct 26 - Nov 4 hackathon window.
-- GitHub must be public for submission.
-- Existing GitHub Free Actions monthly minutes and storage were shown as exhausted October 26; do not require GitHub Actions to build or deploy.
-- Private AI Ads Lab should remain unchanged.
-- User prefers visually distinctive, minimal-text interface and separate `/docs`.
+- The separate private AI Ads Lab repo is not part of this project and must remain untouched.
+- Avoid unapproved vendor subscriptions, unnecessary paid Meta usage, and public API secrets.
+- Public browser access is confirmed; a tested external (real-provider) audit is still outstanding.

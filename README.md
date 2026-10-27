@@ -47,7 +47,7 @@ Meta API base URL: `https://api.meta.ai/v1`.
 
 Use a Node.js web hosting service supporting a persistent HTTP process (Render, Railway, Fly.io, VPS, etc.). Set the start command to `npm start` and `MODEL_API_KEY` to a server-side secret. **Do not deploy as static-only HTML:** that would expose credentials or break the API.
 
-Set spend monitoring and a hard budget at your provider where supported. Any public deployment should add stronger abuse controls (user authentication, CDN-level rate limiting, per-user quotas) to protect paid API credit. The included IP rate limiter is only a minimal development safeguard. For hackathon demo, restrict access to trusted testers until proper controls exist.
+Set spend monitoring and a hard budget at your provider where supported. Any public deployment should add stronger abuse controls (user authentication, CDN-level rate limiting, per-user quotas) to protect paid API credit. The included IP rate limiter is only a minimal development safeguard. The current production implementation requires a secret demo access code for paid routes and fails closed when that code is absent. This is not a durable, multi-instance spending quota.
 
 ## API endpoints
 
@@ -64,8 +64,10 @@ Images are resized by the browser and sent as base64 only to the server and Meta
 - AI scores and suggestions are estimates, **not legal compliance certification**.
 - Meta Muse Image may introduce unwanted visual or text changes: always manually review the output.
 - Image edits consume API credit. Image transformations may not preserve exact aspect ratio.
-- API credentials and real Meta billing are not available in the coding environment here; backend endpoints are tested using a simulated *server response*, but live paid Meta calls require your key.
-- Preview and actual deployment are not yet published to a URL. See `/docs` for instructions.
+- Production reports both a configured Meta API key and a private access gate, but the connector does not verify credentials against the Meta provider. Automated tests use mocked external provider responses; live paid calls need authorized operator testing.
+- Production is deployed at https://adproof-ai.vercel.app/ . Browser-accessible homepage, Studio, docs and API health returned HTTP 200 in an anonymous external smoke test on 27 October 2026. Both paid API routes returned HTTP 401 without the private demo code.
+- Real end-to-end Meta API calls (Audit → Refine → Verify) have **not** been independently executed and validated; installed credentials and a successful health response are not proof of provider success. Test with the private demo code before producing an authentic submission video.
+- Public browsing does not run paid models. A public four-step guide is displayed without fictional audit results.
 
 ## Official integration references
 
