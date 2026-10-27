@@ -50,3 +50,11 @@ Coordinate highlights, Red Team Arena, What-If Lab and complex Proof Passport. P
 - Vercel Preview `dpl_FrCDzPq143AgdSyiEfyd9Hue112j` was READY for the integration commit. Authenticated HTTP checks returned 200 for `/app`, `/docs`, `/claim-engine.js`, `/proof-studio.js` and `/api/health`. Health reported both configured model IDs and enabled demo gate; this does not prove successful model execution.
 - Preview is protected by Vercel; its access token was not added to source, reports or public links. Production public access must be tested without that token.
 - No final submission, X post or genuine demo recording has been made.
+
+## Studio visibility correction (follow-up to PR #15; ChatGPT-authored)
+
+- User reported that the screenshot still looked like the old two-column Studio. Confirmed: `proofWorkspace` was hidden until the first authenticated audit; X-Ray inspector was also only shown when real evidence was available.
+- Introduced a visible, prominent three-module verification rail at the top of Studio with navigable X-Ray, Evidence Constellation and Claim DNA sections, plus honest phase labels backed by the actual audit lifecycle.
+- The real Proof Constellation and Claim DNA panels are now visible on first load, with explicit empty states. Results containers remain hidden until Meta AI returns observations; changing inputs clears stale nodes and restores the empty state.
+- Reused existing backend/engine and private Judge Access, without synthetic claim data, model calls, third-party JS packages, or a large refactor.
+- Browser smoke assertions updated for persistent modules, live result swaps, and context invalidation. PR validation and production merge must still be checked; do not present this note as an already-deployed release.
