@@ -71,7 +71,7 @@ jobs:
           META_API_KEY: ${{ secrets.META_API_KEY }}
         shell: bash
         run: |
-          muse exec --disable-approval --max-model-steps 12 --prompt-file /tmp/adproof-muse-task.txt
+          muse exec --trust-workspace --disable-approval --max-model-steps 12 --prompt-file /tmp/adproof-muse-task.txt
 
       - name: Validate result
         id: tests
