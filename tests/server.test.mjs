@@ -21,7 +21,7 @@ test.before(async()=>{server=http.createServer(createHandler({fetcher,key:'mock-
 test.after(async()=>{await new Promise(r=>server.close(r));});
 
 test('public routes and headers',async()=>{
- for(const p of ['/','/app','/docs','/styles.css','/app.js']){
+ for(const p of ['/','/app','/docs','/styles.css','/app.js','/claim-engine.js','/proof-studio.js']){
   const res=await fetch(base+p);assert.equal(res.status,200,p);assert.equal(res.headers.get('x-frame-options'),'DENY');
  }
  assert.equal((await (await fetch(base+'/api/health')).json()).configured,true);

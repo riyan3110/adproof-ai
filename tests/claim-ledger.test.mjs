@@ -94,7 +94,8 @@ test('ledger is bounded and strips bogus field types without propagating scores'
   const ten=Array.from({length:10},(_,i)=>entry({claim:'Claim '+i,origin:'bad',assessment:'admin_verified',reason:'x'}));
   const {data}=await runAudit({...baseAudit,claim_ledger:ten});
   assert.equal(data.audit.claim_ledger.length,8);
-  assert.equal(data.audit.claim_ledger[0].origin,'creative');
+  assert.equal(data.audit.claim_ledger[0].origin,'unknown');
+  assert.equal(data.audit.claim_ledger[0].assessment,'needs_human_review');
   assert.equal(data.audit.claim_ledger[0].assessment,'needs_human_review');
   assert.equal(data.audit.score,70);
 });

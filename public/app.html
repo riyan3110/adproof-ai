@@ -12,7 +12,7 @@
 <a class="skip-link" href="#studioMain">Skip to studio</a>
 <header class="studio-nav">
   <a class="brand" href="/" aria-label="AdProof AI home"><span class="brandmark" aria-hidden="true"><span></span><span></span><span></span></span><span>adproof<span class="brand-dot">.</span></span><small>AI</small></a>
-  <div class="nav-mid" aria-hidden="true"><span class="nav-spark">✦</span> CREATIVE INSPECTION STUDIO <span class="nav-divider">/</span> <strong>WORKSPACE 01</strong></div>
+  <div class="nav-mid" aria-hidden="true"><span class="nav-spark">✦</span> VISUAL PROOF INTELLIGENCE <span class="nav-divider">/</span> <strong>WORKSPACE 01</strong></div>
   <div class="studio-actions">
     <span class="connection" id="connection" role="status"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText">Checking API</span></span>
     <button type="button" id="judgeAccessButton" class="judge-access-button" hidden aria-haspopup="dialog">Judge access</button>
@@ -23,7 +23,7 @@
   <section class="workspace-head">
     <div class="workspace-title">
       <div class="eyebrow"><span class="eyebrow-symbol" aria-hidden="true">✳</span> YOUR CREATIVE DESERVES PROOF</div>
-      <h1>Creative <span>Lab</span><sup> / 01</sup></h1>
+      <h1>Proof <span>Studio</span><sup> / 01</sup></h1>
     </div>
     <ol class="workflow-steps" aria-label="Progress: upload, audit, refine, verify">
       <li class="stage active" data-stage="0"><b aria-hidden="true">01</b> UPLOAD</li>
@@ -75,6 +75,12 @@
         </div>
         <div class="scan-overlay" id="scanOverlay" hidden><span>INSPECTING PIXELS</span></div>
       </div>
+      <section id="xrayPanel" class="xray-panel" aria-label="Claim X-Ray inspector" hidden>
+        <div class="panel-title">CLAIM X-RAY <span id="xrayTitle"></span></div>
+        <strong id="xrayClaim"></strong><span id="xrayStatus" class="xray-status"></span>
+        <p id="xrayReason"></p><p id="xrayEvidence"></p><p id="xrayAction"></p>
+        <small>Source inspection · exact pixel location unavailable. No bounding box inferred.</small>
+      </section>
       <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
       <div class="canvas-footer">
         <span class="file-chip"><span class="mini-square" aria-hidden="true">↗</span><span id="fileName">NO CREATIVE SELECTED</span></span>
@@ -87,12 +93,12 @@
         <form id="projectForm">
           <label for="product">Product name <span class="required" aria-hidden="true">*</span></label>
           <input type="text" id="product" name="product" maxlength="130" placeholder="e.g. Aurora Wireless Lamp" required autocomplete="off">
-          <label for="facts">Verified product facts <span class="required" aria-hidden="true">*</span></label>
+          <label for="facts">Supplied product facts <span class="required" aria-hidden="true">*</span></label>
           <textarea id="facts" maxlength="2500" rows="3" placeholder="Material, size, price, features…" required></textarea>
           <label for="caption">Ad caption <span class="optional">OPTIONAL</span></label>
           <textarea id="caption" maxlength="1000" rows="2" placeholder="Existing ad copy (if any)"></textarea>
           <div class="form-bottom">
-            <span>Only add facts you can prove.</span>
+            <span>Compared with your input, not independently verified.</span>
             <button id="auditButton" type="submit" class="btn btn-analyze"><span id="auditButtonText">Run audit</span><span aria-hidden="true">↗</span></button>
           </div>
         </form>
@@ -129,6 +135,24 @@
       </section>
     </aside>
   </div>
+  <section id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution" hidden>
+    <div class="proof-heading"><div><span class="eyebrow">DETECT → VERIFY → REPAIR → PROVE</span><h2>Follow the claim. <span>Inspect the proof.</span></h2></div><span class="proof-basis">Seller-supplied facts · not independent verification</span></div>
+    <div class="proof-layout">
+      <section class="constellation-panel glass-panel" aria-labelledby="constellationTitle">
+        <div class="panel-heading"><h3 id="constellationTitle">Proof Constellation</h3><label class="proof-stage-label">Audit <select id="proofStage"><option value="initial">Initial</option><option value="revised" disabled>Re-audit</option></select></label></div>
+        <p id="proofCount" class="tiny-meta"></p>
+        <div id="proofNodeList" class="proof-node-list" aria-label="Select a claim or finding"></div>
+        <svg id="constellation" class="constellation" role="group" aria-label="Evidence relationships"></svg>
+        <div class="proof-node-detail" aria-live="polite"><strong id="proofNodeTitle"></strong><p id="proofNodeDetail"></p><small id="proofNodeSource"></small></div>
+        <p class="claim-proof-note">Lines trace recorded relationships. A matching quote is not independent proof of truth.</p>
+      </section>
+      <section class="evolution-panel glass-panel" aria-labelledby="evolutionTitle">
+        <div class="panel-heading"><h3 id="evolutionTitle">Claim DNA Evolution</h3><span class="dna-icon" aria-hidden="true">⌁</span></div>
+        <p id="evolutionCount" class="tiny-meta"></p><p id="evolutionNote" class="claim-proof-note"></p>
+        <div id="evolutionList" class="evolution-list"></div>
+      </section>
+    </div>
+  </section>
   <div class="sticky-cta" id="stickyCta">
     <div class="sticky-cta-inner">
       <span class="sticky-cta-label" id="stickyLabel">Ready when your creative + facts are set</span>
@@ -152,6 +176,6 @@
   </form>
 </dialog>
 <div role="status" aria-live="polite" id="toast" class="toast" hidden></div>
-<script src="/app.js" defer></script>
+<script type="module" src="/app.js"></script>
 </body>
 </html>
