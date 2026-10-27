@@ -5,10 +5,24 @@ const assessmentLabels={supported_by_supplied_facts:'Supported by input',unsuppo
 const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=String(text);return e;};
 function svg(tag,attrs,text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));if(text!==undefined)e.textContent=text;return e;}
 let context=null, selectedStage='initial', selectedNode=null;
-export function resetProofStudio(){context=null;selectedNode=null;selectedStage='initial';$('proofWorkspace').hidden=true;$('xrayPanel').hidden=true;}
+export function resetProofStudio(){
+ context=null;selectedNode=null;selectedStage='initial';
+ // Keep the actual verification modules visible, but never leave a stale audit
+ // graph or claim lineage on screen after inputs change.
+ $('proofWorkspace').hidden=false;$('xrayPanel').hidden=true;
+ $('constellationEmpty').hidden=false;$('evolutionEmpty').hidden=false;
+ $('constellationResults').hidden=true;$('evolutionResults').hidden=true;
+ $('proofStage').disabled=true;$('proofStage').value='initial';
+ $('proofStage').options[1].disabled=true;
+ $('proofNodeList').replaceChildren();$('constellation').replaceChildren();
+ $('evolutionList').replaceChildren();
+}
 export function renderProofStudio(next){
  context=next;selectedStage=next.after?'revised':'initial';selectedNode=null;
- $('proofWorkspace').hidden=false;$('proofStage').value=selectedStage;$('proofStage').options[1].disabled=!next.after;
+ $('proofWorkspace').hidden=false;
+ $('constellationEmpty').hidden=true;$('evolutionEmpty').hidden=true;
+ $('constellationResults').hidden=false;$('evolutionResults').hidden=false;
+ $('proofStage').disabled=false;$('proofStage').value=selectedStage;$('proofStage').options[1].disabled=!next.after;
  $('proofStage').onchange=()=>{selectedStage=$('proofStage').value;selectedNode=null;renderGraph();};
  renderGraph();renderEvolution();
 }
