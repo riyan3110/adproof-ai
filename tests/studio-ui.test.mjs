@@ -47,3 +47,17 @@ test('empty states carry no fabricated scores', () => {
 test('reduced-motion support preserved', () => {
   assert.ok(css.includes('prefers-reduced-motion'), 'reduced-motion block missing');
 });
+
+test('claim evidence has grounded labels without unsafe template HTML', () => {
+  for (const id of ['claimEvidencePanel','claimEvidenceList','claimEvidenceCount']) {
+    assert.ok(html.includes(`id="${id}"`), `missing ${id}`);
+    assert.ok(js.includes(`$('#${id}')`), `missing JS binding for ${id}`);
+  }
+  assert.ok(js.includes('renderClaimEvidence(a,verified)'));
+  assert.ok(js.includes('a.claim_ledger'));
+  assert.ok(js.includes('String(item.fact_quote)'));
+  assert.ok(js.includes('claimList.replaceChildren()'));
+  assert.ok(!js.includes('innerHTML'), 'never render model claims as HTML');
+  assert.ok(html.includes('Not independently verified'), 'avoid misleading independent fact-check claim');
+  assert.ok(css.includes('.claim-evidence-list'));
+});
