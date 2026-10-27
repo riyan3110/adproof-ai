@@ -97,12 +97,12 @@ function imageValid(s, limit = MAX_BODY) {
 function normalizeAudit(a, suppliedFacts = '') {
   if (!a || typeof a !== 'object' || !Number.isInteger(a.score)) throw new Error('Format audit AI tidak valid. Coba ulangi.');
   const score = x => Math.max(0, Math.min(100, Number(x) || 0));
-  const provided = String(suppliedFacts).replace(/\\s+/g,' ').trim().toLocaleLowerCase('en');
+  const provided = String(suppliedFacts).replace(/\s+/g,' ').trim().toLocaleLowerCase('en');
   const validAssessment = new Set(['supported_by_supplied_facts','unsupported_by_supplied_facts','contradicted_by_supplied_facts','unreadable','needs_human_review']);
   const ledger = (Array.isArray(a.claim_ledger) ? a.claim_ledger : []).slice(0,8).map((entry,index) => {
     const item = entry && typeof entry === 'object' ? entry : {};
     const factQuote = String(item.fact_quote || '').trim().slice(0,350);
-    const quoteInFacts = factQuote.length >= 4 && provided.includes(factQuote.replace(/\\s+/g,' ').toLocaleLowerCase('en'));
+    const quoteInFacts = factQuote.length >= 4 && provided.includes(factQuote.replace(/\s+/g,' ').toLocaleLowerCase('en'));
     let assessment = validAssessment.has(item.assessment) ? item.assessment : 'needs_human_review';
     const requiresQuote = assessment === 'supported_by_supplied_facts' || assessment === 'contradicted_by_supplied_facts';
     if (requiresQuote && !quoteInFacts) assessment = 'needs_human_review';
