@@ -73,3 +73,13 @@ test('judge-only code dialog is accessible and never exposed in public markup', 
   assert.ok(js.includes("headers['x-demo-code']=code"), 'private code must stay in request header');
   assert.ok(!js.includes("prompt("), 'browser prompt must not be used for judge access');
 });
+
+test('public walkthrough and health wording avoid simulated audit',()=>{
+  assert.ok(html.includes('id="publicTour"'));
+  assert.ok(html.includes('Live AI requests require the private Judge access code'));
+  assert.ok(!html.includes('EXAMPLE SCORE'), 'do not display fictitious quality scores');
+  assert.ok(js.includes("'META CONFIGURED'"));
+  assert.ok(!js.includes("'META CONNECTED'"), 'health alone cannot prove a live provider call');
+  const base = css.match(/\.compare-before-wrap\{position:absolute;inset:0;width:(\d+)%/);
+  assert.equal(base?.[1], '100', 'compare layer must fill the full frame at every slider value');
+});
