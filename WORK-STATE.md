@@ -4,7 +4,8 @@ Date: 2026-10-27 (Hackathon day 2)
 
 ## Done
 
-- New, independent project source code in this archive. Nothing changed in existing repositories.
+- New, independent project source code, with no changes to any existing repository.
+- Public GitHub repository published: https://github.com/riyan3110/adproof-ai (`main`, commit `ddd536ab8fe2ca2ea472d4be8c378e59642a6e16`). All 12 source files uploaded.
 - `/` custom editorial premium dark landing page with CSS illustrations (no generated graphic assets).
 - `/app` fully interactive responsive creative inspection studio.
 - `/docs` separate tutorial and architecture page; minimal text in app.
@@ -20,19 +21,16 @@ Date: 2026-10-27 (Hackathon day 2)
 
 - No real Meta API calls: secret MODEL_API_KEY not available. Only protocol mocked in integration tests.
 - No live hosting / shareable URL.
-- No remote GitHub repository created or pushed (connected GitHub actions do not offer repository creation).
 - No public 3-minute demo video recorded.
 - No final hackathon submission made.
 
 ## Next steps, in order
 
-1. Create **new public** GitHub repository `adproof-ai` under `riyan3110` (do not touch AI Ads Lab or Android repositories).
-2. Upload contents of this archive. Never upload `.env` or API key.
-3. Deploy to **Node.js hosting**, set `MODEL_API_KEY` in secret settings and run `npm start`.
-4. Test one actual image audit, one Muse Image edit, and one verification while watching Meta Billing. Adjust model/schema if the provider returns an incompatibility error.
-5. Add deployment abuse protection before distributing publicly (login/rate limiting/cloud controls); current development IP limiter is not adequate for general public access to the paid API.
-6. Test mobile, error/retry states, and compare output, then record real 3-minute demo.
-7. Submit link to public repository and demo before November 5, 2026, 09:00 WIB.
+1. Deploy to **Node.js hosting**, set `MODEL_API_KEY` as a secret, run `npm start`. Do not deploy the backend as static HTML.
+2. Test real Muse Spark audit, Muse Image edit, and verification while monitoring Meta Billing. Adjust API integration for any live compatibility errors.
+3. Add stronger abuse protection (authentication, CDN rate limits, and per-user quotas) before enabling public paid API access.
+4. Test mobile, error/retry states, compare output, then record a genuine three-minute demo.
+5. Submit public repository and demo before November 5, 2026, 09:00 WIB.
 
 ## Important constraints
 
