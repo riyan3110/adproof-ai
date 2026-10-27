@@ -27,7 +27,7 @@ Repository https://github.com/riyan3110/adproof-ai · Production https://adproof
 - Real headless browser rendering with **mocked API responses**: 1920×1000, 1440×1000, 390×1000 and 320×1000. Upload → private judge challenge → audit → graph/X-Ray → repair → compare → re-audit → DNA → export → context invalidation passed at all sizes. Empty/missing ledger and HTML-injection fixture checks passed. No JS/unexpected console errors or document overflow. Four expected mocked HTTP 401 gate responses were exercised.
 - Test runner: `scripts/browser-smoke.cjs` (optional development Playwright dependency; zero production dependencies). `ADPROOF_TEST_URL` can target a preview; `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` optionally selects Chromium. Fixtures exist only in tests, never runtime outputs.
 - Desktop/mobile screenshots inspected locally; screenshots contain explicit test fixtures and are not authentic demo materials.
-- `git diff --check`: clean. Production/preview verification is appended below after deployment checks.
+- `git diff --check`: clean. Deployment verification is recorded below and in PR #15; this document does not claim a paid Meta run.
 
 ## Remaining before final submission
 
@@ -41,3 +41,12 @@ Repository https://github.com/riyan3110/adproof-ai · Production https://adproof
 ## Deferred
 
 Coordinate highlights, Red Team Arena, What-If Lab and complex Proof Passport. Public app still requires private Judge Access for paid Meta execution.
+
+## Release verification (PR #15)
+
+- Integration source commit: `859715ec3a6583981fbf13255167728c8be9408b`; genuine Muse parent remains `91eb887f54ba9eda3ceef4ffa1e2f0751e987ec1`.
+- PR: https://github.com/riyan3110/adproof-ai/pull/15 — use a merge commit to preserve attribution. The final merge SHA and production deployment evidence are recorded in that PR conversation after verification.
+- GitHub Actions run [40554464506](https://github.com/riyan3110/adproof-ai/actions/runs/40554464506): Node.js mocked-upstream suite completed successfully. Vercel commit status succeeded.
+- Vercel Preview `dpl_FrCDzPq143AgdSyiEfyd9Hue112j` was READY for the integration commit. Authenticated HTTP checks returned 200 for `/app`, `/docs`, `/claim-engine.js`, `/proof-studio.js` and `/api/health`. Health reported both configured model IDs and enabled demo gate; this does not prove successful model execution.
+- Preview is protected by Vercel; its access token was not added to source, reports or public links. Production public access must be tested without that token.
+- No final submission, X post or genuine demo recording has been made.
