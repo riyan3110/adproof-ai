@@ -1,3 +1,4 @@
+import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector} from './proof-studio.js';
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   file:$('#fileInput'),drop:$('#dropzone'),browse:$('#browseButton'),replace:$('#newCreative'),empty:$('#emptyCanvas'),image:$('#creativeImage'),name:$('#fileName'),
@@ -11,7 +12,7 @@ const ui = {
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0};
+const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[]};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
 // A private judge code can be entered before testing or when the backend returns 401/403.
@@ -24,9 +25,10 @@ function openJudgeDialog(message='Enter the private demo code shared with you.')
     if(!ui.accessDialog || typeof ui.accessDialog.showModal!=='function' || ui.accessDialog.open){
       notify('Cannot open access dialog. Try again in a supported browser.',true);resolve(false);return;
     }
+    ui.accessDialog.returnValue='';
     ui.accessHint.textContent=message;
     ui.accessInput.value='';
-    ui.accessDialog.addEventListener('close',()=>resolve(ui.accessDialog.returnValue==='saved'),{once:true});
+    ui.accessDialog.addEventListener('close',()=>{ui.accessInput.value='';resolve(ui.accessDialog.returnValue==='saved');},{once:true});
     ui.accessDialog.showModal();
     ui.accessInput.focus();
   });
@@ -44,8 +46,8 @@ ui.accessForm.addEventListener('submit',event=>{
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
 function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});}
-function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));}
-function resetAudit(){state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=true;ui.downloadImage.hidden=true;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;phase(0);}
+function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;}
+function resetAudit(){resetProofStudio();state.context=null;state.runs=[];state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=true;ui.downloadImage.hidden=true;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;phase(0);}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -97,7 +99,7 @@ async function upload(file){if(state.busy)return;try{const data=await prepareIma
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;
- for(const [key,el] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]])el.classList.toggle('selected',key===view);
+ for(const [key,el] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]]){el.classList.toggle('selected',key===view);el.setAttribute('aria-selected',String(key===view));}
  ui.empty.hidden=!!state.original;
  ui.compare.hidden=view!=='compare';
  ui.image.hidden=!state.original||view==='compare';
@@ -106,7 +108,8 @@ function switchView(view){
  if(view==='compare'){ui.before.src=state.original;ui.after.src=state.revised;setCompare(Number(ui.range.value));}
 }
 function setCompare(value){ui.beforeWrap.style.clipPath=`inset(0 ${100-value}% 0 0)`;ui.bar.style.left=`${value}%`;}
-function payload(image){return {image,product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
+function inputContext(){return {product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
+function payload(image){return {image,...(state.context||inputContext())};}
 function el(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
 function renderClaimEvidence(a, verified=false){
  const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
@@ -121,11 +124,11 @@ function renderClaimEvidence(a, verified=false){
   needs_human_review:['REVIEW NEEDED','uncertain']
  };
  ui.claimCount.textContent=`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
- for(const item of ledger){
+ for(const [index,item] of ledger.entries()){
   const mapped=labels[item.assessment]||labels.needs_human_review;
   const card=el('article','claim-evidence-item');
   const top=el('div','claim-evidence-top');
-  const source=el('span','claim-evidence-source',item.origin==='caption'?'CAPTION':'CREATIVE');
+  const source=el('span','claim-evidence-source',item.origin==='caption'?'CAPTION':item.origin==='creative'?'CREATIVE':'SOURCE UNCERTAIN');
   const status=el('span',`claim-evidence-status ${mapped[1]}`,mapped[0]);
   top.append(source,status);
   const claim=el('p','claim-evidence-claim',String(item.claim||''));
@@ -137,6 +140,7 @@ function renderClaimEvidence(a, verified=false){
   }
   if(item.reason)card.append(el('p','claim-evidence-detail',String(item.reason)));
   if(item.recommended_action)card.append(el('p','claim-evidence-action',String(item.recommended_action)));
+  const inspect=el('button','text-button','Inspect claim ↗');inspect.type='button';inspect.addEventListener('click',()=>openClaimInspector(index,verified?'revised':'initial'));card.append(inspect);
   ui.claimList.append(card);
  }
 }
@@ -172,27 +176,29 @@ async function performAudit(image,verify=false){
  if(!state.configured)throw Error('Hubungkan MODEL_API_KEY di server terlebih dahulu.');
  setBusy(true,verify?'Verifying…':'Analyzing…');
  try{
-  const out=await api('/api/audit',payload(image));state.audit=out.audit;
+  if(!verify){resetAudit();switchView('original');state.context=inputContext();}
+  const out=await api('/api/audit',payload(image));state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){state.verified=out.audit;phase(3);}else{state.initialAudit=out.audit;state.verified=null;phase(1);}
-  render(out.audit,verify);notify(verify?'Revision verified with Meta AI.':'AI audit completed.');
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
  }finally{setBusy(false);}
 }
 async function performImprove(){
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
  setBusy(true,'Refining…');
  try{
-  const out=await api('/api/improve',{...payload(state.original),issues:state.audit.issues});
-  state.revised=out.image;ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Gambar baru sudah dibuat oleh Meta Muse Image. Periksa sebelum digunakan.');
+  const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
+  state.verified=null;state.runs=state.runs.filter(r=>r.stage==='initial');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Gambar baru sudah dibuat oleh Meta Muse Image. Periksa sebelum digunakan.');
  }finally{setBusy(false);}
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
+for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy){resetAudit();switchView('original');notify('Input changed. Run a fresh audit to keep evidence consistent.');}});
 ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
 ui.refine.addEventListener('click',async()=>{if(state.busy)return;try{await performImprove();}catch(e){notify(e.message,true);}});
 ui.verify.addEventListener('click',async()=>{if(state.busy||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
 ui.copyCaption.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ui.suggested.textContent);notify('Caption copied.');}catch{notify('Clipboard tidak tersedia.',true);}});
-ui.downloadReport.addEventListener('click',()=>{if(!state.audit)return;const report={app:'AdProof AI',date:new Date().toISOString(),product:ui.product.value,original:state.initialAudit,verified:state.verified,disclaimer:'AI-estimated guidance. Human review required.'};download(JSON.stringify(report,null,2),'adproof-audit.json','application/json');});
+ui.downloadReport.addEventListener('click',()=>{if(!state.audit)return;const report={app:'AdProof AI',date:new Date().toISOString(),product:state.context?.product,context:state.context,caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',runs:state.runs,...proofReport(),original:state.initialAudit,verified:state.verified,disclaimer:'AI-estimated guidance. Human review required.'};download(JSON.stringify(report,null,2),'adproof-audit.json','application/json');});
 ui.downloadImage.addEventListener('click',()=>{if(!state.revised)return;const [header,b64]=state.revised.split(',');const mime=header.match(/data:(.*?);/)?.[1]||'image/webp';const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));download(new Blob([bytes],{type:mime}),`adproof-revised.${mime.includes('png')?'png':mime.includes('jpeg')?'jpg':'webp'}`,mime);});
-ui.browse.addEventListener('click',e=>{e.stopPropagation();ui.file.click();});ui.replace.addEventListener('click',()=>ui.file.click());ui.drop.addEventListener('click',e=>{if(e.target.closest('button')||state.busy)return;ui.file.click();});ui.drop.addEventListener('keydown',e=>{if(e.target===ui.drop&&(e.key==='Enter'||e.key===' ')){e.preventDefault();ui.file.click();}});
+ui.browse.addEventListener('click',e=>{e.stopPropagation();ui.file.click();});ui.replace.addEventListener('click',()=>ui.file.click());ui.drop.addEventListener('click',e=>{if(e.target.closest('button,input')||state.busy||state.view==='compare')return;ui.file.click();});ui.drop.addEventListener('keydown',e=>{if(e.target===ui.drop&&(e.key==='Enter'||e.key===' ')){e.preventDefault();ui.file.click();}});
 ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)await upload(f);ui.file.value='';});
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));

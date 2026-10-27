@@ -378,7 +378,7 @@ describe('buildConstellation', () => {
     assert.equal(g.nodes.filter((n) => n.type === 'issue').length, 7);
     for (const n of g.nodes) {
       assert.ok(String(n.label).length <= 120, `label too long: ${n.id}`);
-      assert.ok(String(n.detail).length <= 2000, `detail too long: ${n.id}`);
+      assert.ok(String(n.detail).length <= 2500, `detail too long: ${n.id}`);
     }
   });
 
@@ -389,4 +389,17 @@ describe('buildConstellation', () => {
     assert.equal(g.nodes.length, 1);
     assert.equal(g.nodes[0].id, 'fact-source');
   });
+});
+
+// ChatGPT review regressions; original Muse Code commit is retained in history.
+it('missing/unknown origin must not create an exact identity match',()=>{
+ const r=buildEvolution(mkAudit([mkClaim({origin:undefined})]),mkAudit([mkClaim({origin:undefined})]));
+ assert.equal(r.complete,false);assert.ok(r.entries.every(e=>e.match!=='exact'));
+});
+it('legacy normalized missing ledger remains incomplete',()=>{
+ const r=buildEvolution({...mkAudit([]),claim_ledger_available:false},mkAudit([]));assert.equal(r.complete,false);
+});
+it('a short generic shared word is insufficient for a changed candidate',()=>{
+ const r=buildEvolution(mkAudit([mkClaim({claim:'Best coffee'})]),mkAudit([mkClaim({claim:'Best tea with free delivery'})]));
+ assert.ok(r.entries.every(e=>e.match!=='candidate'));
 });

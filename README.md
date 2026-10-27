@@ -1,10 +1,14 @@
 # AdProof AI
 
-**Audit → Refine → Verify.** A visual-first advertising creative inspection studio for Meta Global AI Developer Hackathon 2026.
+**Advertising Claim Verification & Repair Engine.** Detect → Verify → Repair → Prove. Visual Proof Intelligence Studio for Meta Global AI Developer Hackathon 2026; preserves the Audit → Refine → Verify workflow.
 
 This repository contains real application code. It is not a static mockup and does not simulate AI analysis. Calls only work when a valid Meta Model API key is configured on the server.
 
 ## Features
+
+- Claim DNA Evolution: conservative, auditable claim matching across original/revised audits.
+- Proof Constellation: interactive source-traceable claim, quotation, assessment and repair links.
+- Claim X-Ray panel: inspect the real source image without invented bounding boxes.
 
 - Premium, responsive, minimal-text landing page and studio.
 - Drag-and-drop image upload (PNG/JPEG/WebP, up to 6 MB).
@@ -78,3 +82,7 @@ Images are resized by the browser and sent as base64 only to the server and Meta
 ## Hackathon compliance
 
 Created October 27, 2026 during the hackathon window. This is a **new and separate project**; no AI Ads Lab repository has been changed. Public repository: https://github.com/riyan3110/adproof-ai . A real demonstration video and final hackathon submission are still required.
+
+## Evidence and readiness
+
+See [compliance audit](docs/HACKATHON-COMPLIANCE.md), [readiness and authentic demo](docs/HACKATHON-READINESS.md), and [claim engine](docs/CLAIM-PROOF-ENGINE.md). Muse Code core contribution and ChatGPT integration/fixes are separately attributable. Automated mocks are not a completed live Meta demo.

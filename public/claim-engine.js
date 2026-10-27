@@ -10,7 +10,7 @@ export const CLAIM_DNA_BASIS = 'seller_supplied_facts_not_independently_verified
 const MAX_CLAIMS = 8;
 const MAX_ISSUES = 7;
 const MIN_QUOTE = 4;
-const CANDIDATE_THRESHOLD = 0.5;
+const CANDIDATE_THRESHOLD = 0.6;
 
 const VALID_ASSESSMENTS = new Set([
   'supported_by_supplied_facts',
@@ -35,7 +35,7 @@ export function normalizeClaim(text) {
 
 function ledgerOf(audit) {
   if (!audit || typeof audit !== 'object') return null;
-  if (!Array.isArray(audit.claim_ledger)) return null;
+  if (audit.claim_ledger_available === false || !Array.isArray(audit.claim_ledger)) return null;
   return audit.claim_ledger.slice(0, MAX_CLAIMS);
 }
 
@@ -48,7 +48,7 @@ function originOf(entry) {
 
 function normOf(entry) {
   if (!entry || typeof entry !== 'object') return '';
-  return normalizeClaim(entry.claim);
+  return typeof entry.claim === 'string' ? normalizeClaim(entry.claim.slice(0,240)) : '';
 }
 
 function isReadable(entry) {
@@ -95,7 +95,7 @@ function overlapScore(aNorm, bNorm) {
   if (!aSet.size || !bSet.size) return 0;
   let hit = 0;
   for (const t of aSet) if (bSet.has(t)) hit++;
-  return hit / Math.min(aSet.size, bSet.size);
+  return hit / (aSet.size + bSet.size - hit);
 }
 
 function exactStatus(afterEntry) {
@@ -163,11 +163,11 @@ export function buildEvolution(beforeAudit, afterAudit) {
 
   const before = beforeList.map((entry, index) => {
     const norm = normOf(entry);
-    return { entry, index, norm, origin: originOf(entry), feat: featuresOf(norm), readable: norm.length > 0 };
+    return { entry, index, norm, origin: originOf(entry), feat: featuresOf(norm), readable: norm.length > 0 && !!originOf(entry) };
   });
   const after = afterList.map((entry, index) => {
     const norm = normOf(entry);
-    return { entry, index, norm, origin: originOf(entry), feat: featuresOf(norm), readable: norm.length > 0 };
+    return { entry, index, norm, origin: originOf(entry), feat: featuresOf(norm), readable: norm.length > 0 && !!originOf(entry) };
   });
   const afterByIndex = new Map(after.map((r) => [r.index, r]));
   const complete = before.every((r) => r.readable) && after.every((r) => r.readable);
@@ -327,7 +327,7 @@ export function buildConstellation(audit, suppliedFacts) {
     id: 'fact-source',
     type: 'fact_source',
     label: 'Seller-supplied facts',
-    detail: factsRaw.slice(0, 2000),
+    detail: factsRaw.slice(0, 2500),
     source: 'input.suppliedFacts',
   });
 
@@ -336,11 +336,11 @@ export function buildConstellation(audit, suppliedFacts) {
     : [];
   ledger.forEach((entry, i) => {
     if (!entry || typeof entry !== 'object') return;
-    const text = String(entry.claim ?? '').trim();
+    const text = typeof entry.claim === 'string' ? entry.claim.trim().slice(0,240) : '';
     if (!text) return;
     const n = i + 1;
     const claimId = `claim-${n}`;
-    const origin = entry.origin === 'caption' ? 'caption' : 'creative';
+    const origin = originOf(entry) || 'unknown';
     nodes.push({
       id: claimId, type: 'claim', label: text.slice(0, 120),
       detail: `[${origin}] ${text}`.slice(0, 240), source: `claim_ledger[${i}].claim`,
@@ -350,7 +350,7 @@ export function buildConstellation(audit, suppliedFacts) {
     const quoteRaw = String(entry.fact_quote ?? '').trim();
     const quoteNorm = quoteRaw.replace(/\s+/g, ' ').trim().toLocaleLowerCase('en');
     const quoteOk = quoteNorm.length >= MIN_QUOTE && factsNorm.includes(quoteNorm);
-    let effective = raw;
+    let effective = origin === 'unknown' ? 'needs_human_review' : raw;
     let note = '';
     if ((raw === 'supported_by_supplied_facts' || raw === 'contradicted_by_supplied_facts') && !quoteOk) {
       effective = 'needs_human_review';
