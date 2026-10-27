@@ -15,6 +15,7 @@
   <div class="nav-mid" aria-hidden="true"><span class="nav-spark">✦</span> CREATIVE INSPECTION STUDIO <span class="nav-divider">/</span> <strong>WORKSPACE 01</strong></div>
   <div class="studio-actions">
     <span class="connection" id="connection" role="status"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText">Checking API</span></span>
+    <button type="button" id="judgeAccessButton" class="judge-access-button" hidden aria-haspopup="dialog">Judge access</button>
     <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">?</a>
   </div>
 </header>
@@ -124,6 +125,20 @@
   </div>
   <div class="bottom-rail"><span>✦ POWERED BY META MUSE SPARK + MUSE IMAGE</span><span>CREATIVE QUALITY ESTIMATE · NOT LEGAL CERTIFICATION</span></div>
 </main>
+<dialog id="judgeAccessDialog" class="judge-access-dialog" aria-labelledby="judgeAccessTitle" aria-describedby="judgeAccessHint">
+  <form id="judgeAccessForm">
+    <span class="access-eyebrow">PRIVATE LIVE DEMO</span>
+    <h2 id="judgeAccessTitle">Unlock Meta AI</h2>
+    <p id="judgeAccessHint">Enter the private access code shared with judges. Public browsing remains free.</p>
+    <label for="judgeAccessCode">Demo access code</label>
+    <input id="judgeAccessCode" type="password" required autocomplete="off" maxlength="128" placeholder="Enter code" aria-required="true">
+    <div class="judge-access-actions">
+      <button type="button" class="judge-cancel" id="judgeAccessCancel">Cancel</button>
+      <button type="submit" class="judge-save">Continue ↗</button>
+    </div>
+    <small>Stored in this browser tab only. Never put the code in public posts.</small>
+  </form>
+</dialog>
 <div role="status" aria-live="polite" id="toast" class="toast" hidden></div>
 <script src="/app.js" defer></script>
 </body>
