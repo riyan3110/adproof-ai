@@ -257,3 +257,7 @@ if (process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta
   const server=http.createServer(createHandler());
   server.listen(PORT,'0.0.0.0',()=>console.log(`AdProof AI running at http://localhost:${PORT} | Meta key: ${hasKey()?'configured':'not set'}`));
 }
+
+// Vercel's Node preset treats server.mjs as the root Function entrypoint.
+// Export the same request handler used locally, without starting an HTTP listener.
+export default createHandler();
