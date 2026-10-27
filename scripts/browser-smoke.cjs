@@ -23,7 +23,13 @@ const after={...initial,headline:'TEST FIXTURE re-audit',claim_ledger:[claim('Wo
   });
   await page.route('**/api/improve',async r=>{assert.equal(r.request().headers()['x-demo-code'],'browser-test-only');assert.equal(r.request().postDataJSON().claims.length,3);edits++;await r.fulfill({json:{image:png,model:'TEST MOCK Image'}});});
   await page.goto(base+'/app');await page.locator('#connectionText').filter({hasText:'META CONFIGURED'}).waitFor();
-  assert.equal(await page.locator('#proofWorkspace').isVisible(),false);
+  assert.equal(await page.locator('#proofWorkspace').isVisible(),true);
+  assert.equal(await page.locator('#constellationEmpty').isVisible(),true);
+  assert.equal(await page.locator('#evolutionEmpty').isVisible(),true);
+  assert.equal(await page.locator('#constellationResults').isVisible(),false);
+  assert.equal(await page.locator('#evolutionResults').isVisible(),false);
+  assert.equal(await page.locator('.deck-module').count(),3);
+  assert.equal(await page.locator('#deckProofState').textContent(),'Awaiting observed claims');
   const overflow=()=>page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   assert.equal(await overflow(),false,`empty overflow ${width}`);
   png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=600;c.height=400;const x=c.getContext('2d');x.fillStyle='#1d2733';x.fillRect(0,0,600,400);x.fillStyle='#cbf68b';x.font='28px sans-serif';x.fillText('TEST FIXTURE · NOT META OUTPUT',25,80);x.fillStyle='white';x.fillText('Wood frame / Guaranteed better sleep',25,150);return c.toDataURL('image/png')});
@@ -44,7 +50,12 @@ const after={...initial,headline:'TEST FIXTURE re-audit',claim_ledger:[claim('Wo
   assert.equal(await overflow(),false,`result overflow ${width}`);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#downloadReport').click()]);const report=JSON.parse(await fs.readFile(await download.path(),'utf8'));assert.equal(report.claim_evolution.entries.length,4);assert.ok(report.proof_constellation.initial.edges.length);assert.equal(JSON.stringify(report).includes('browser-test-only'),false);
   if(process.env.ADPROOF_SCREENSHOT_DIR){await fs.mkdir(process.env.ADPROOF_SCREENSHOT_DIR,{recursive:true});await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:`${process.env.ADPROOF_SCREENSHOT_DIR}/studio-${width}.png`,fullPage:true});}
-  await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#proofWorkspace').isVisible(),false);assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#viewRevised').isDisabled(),true);
+  await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#proofWorkspace').isVisible(),true);
+  assert.equal(await page.locator('#constellationEmpty').isVisible(),true);
+  assert.equal(await page.locator('#evolutionEmpty').isVisible(),true);
+  assert.equal(await page.locator('#constellationResults').isVisible(),false);
+  assert.equal(await page.locator('#evolutionResults').isVisible(),false);
+  assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#viewRevised').isDisabled(),true);
   await page.evaluate(async()=>{const {renderProofStudio}=await import('/proof-studio.js');renderProofStudio({before:{claim_ledger:[]},after:null,facts:''})});assert.match(await page.locator('#proofNodeTitle').textContent(),/No claim/);assert.equal(await page.locator('.proof-node').count(),0);
   await page.evaluate(async()=>{const {renderProofStudio}=await import('/proof-studio.js');renderProofStudio({before:{claim_ledger:[{claim:'<img src=x onerror=alert(1)>',origin:'creative',assessment:'needs_human_review'}]},after:{},facts:''})});assert.equal(await page.locator('#proofWorkspace img').count(),0);assert.match(await page.locator('#evolutionNote').textContent(),/Incomplete/);
   summary.push({width,audits,edits,overflow:false,export:true,input_invalidation:true});await context.close();

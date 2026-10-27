@@ -83,3 +83,24 @@ test('public walkthrough and health wording avoid simulated audit',()=>{
   const base = css.match(/\.compare-before-wrap\{position:absolute;inset:0;width:(\d+)%/);
   assert.equal(base?.[1], '100', 'compare layer must fill the full frame at every slider value');
 });
+
+test('distinct proof modules remain visible before the first paid AI request', () => {
+  assert.ok(html.includes('class="intelligence-deck"'), 'new verification module rail missing');
+  for(const id of ['deckDetect','deckProof','deckDNA','deckPhase','constellationEmpty','evolutionEmpty','constellationResults','evolutionResults']){
+    assert.ok(html.includes('id="'+id+'"'), 'proof module or truthful idle-state missing: '+id);
+  }
+  assert.match(html, /id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution">/);
+  assert.ok(html.includes('Illustrations show the process, not audit results'), 'schematic must be clearly labeled non-results');
+  assert.ok(html.includes('id="constellationResults" class="proof-live" hidden'));
+  assert.ok(html.includes('id="evolutionResults" class="proof-live" hidden'));
+  assert.ok(css.includes('.proof-live[hidden],.proof-pending[hidden]{display:none!important}'));
+});
+
+test('navigation and feature states follow the real audit lifecycle', () => {
+  assert.ok(js.includes('function syncDeck()'));
+  assert.ok(js.includes('state.initialAudit?.claim_ledger'));
+  assert.ok(js.includes("inspectLink.href=current>0&&count?'#xrayPanel':'#dropzone'"));
+  assert.ok(!html.includes('FAKE SCORE'));
+  assert.ok(css.includes('.deck-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'));
+  assert.ok(css.includes('@media(max-width:700px)'));
+});

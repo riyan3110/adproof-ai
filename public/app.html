@@ -35,6 +35,30 @@
       <li class="stage" data-stage="3"><b aria-hidden="true">04</b> VERIFY</li>
     </ol>
   </section>
+  <section class="intelligence-deck" aria-labelledby="deckTitle">
+    <div class="deck-heading"><span id="deckTitle">ADPROOF / VERIFICATION ENGINE</span><span id="deckPhase" role="status">AWAITING CREATIVE</span></div>
+    <div class="deck-grid">
+      <a class="deck-module deck-xray" id="deckDetect" href="#dropzone">
+        <span class="deck-id">01 / DETECT</span>
+        <strong>Claim <em>X-Ray</em></strong>
+        <span class="deck-graphic" aria-hidden="true"><span class="deck-scan"><i></i><i></i><i></i><i></i><b>+</b></span><span class="deck-scan-sweep"></span></span>
+        <span class="deck-bottom"><span id="deckDetectState">Inspect source after audit</span><span>↗</span></span>
+      </a>
+      <a class="deck-module deck-map" id="deckProof" href="#constellationTitle">
+        <span class="deck-id">02 / VERIFY</span>
+        <strong>Proof <em>Constellation</em></strong>
+        <span class="deck-graphic deck-orbit" aria-hidden="true"><svg viewBox="0 0 240 98" preserveAspectRatio="xMidYMid meet"><path d="M32 51 L112 26 L202 58 M112 26 L151 82 M32 51 L151 82" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 7" opacity=".55"/><circle cx="32" cy="51" r="9"/><circle cx="112" cy="26" r="12"/><circle cx="202" cy="58" r="9"/><circle cx="151" cy="82" r="7"/></svg></span>
+        <span class="deck-bottom"><span id="deckProofState">Evidence links await audit</span><span>↗</span></span>
+      </a>
+      <a class="deck-module deck-dna" id="deckDNA" href="#evolutionTitle">
+        <span class="deck-id">03 / PROVE</span>
+        <strong>Claim DNA <em>Evolution</em></strong>
+        <span class="deck-graphic deck-track" aria-hidden="true"><span class="deck-track-line"></span><span class="deck-track-node">A</span><span class="deck-track-arrow">→</span><span class="deck-track-node">B</span><span class="deck-track-line"></span></span>
+        <span class="deck-bottom"><span id="deckDNAState">Compare after re-audit</span><span>↗</span></span>
+      </a>
+    </div>
+    <p class="deck-disclaimer">Illustrations show the process, not audit results. Live findings appear only after Meta AI returns an analysis.</p>
+  </section>
   <details class="public-tour" id="publicTour">
     <summary><span>✦ EXPLORE THE WORKFLOW</span><span class="public-tour-hint">4 STEPS · NO LOGIN TO BROWSE</span></summary>
     <div class="public-tour-content">
@@ -135,21 +159,37 @@
       </section>
     </aside>
   </div>
-  <section id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution" hidden>
+  <section id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution">
     <div class="proof-heading"><div><span class="eyebrow">DETECT → VERIFY → REPAIR → PROVE</span><h2>Follow the claim. <span>Inspect the proof.</span></h2></div><span class="proof-basis">Seller-supplied facts · not independent verification</span></div>
     <div class="proof-layout">
       <section class="constellation-panel glass-panel" aria-labelledby="constellationTitle">
-        <div class="panel-heading"><h3 id="constellationTitle">Proof Constellation</h3><label class="proof-stage-label">Audit <select id="proofStage"><option value="initial">Initial</option><option value="revised" disabled>Re-audit</option></select></label></div>
+        <div class="panel-heading"><h3 id="constellationTitle">Proof Constellation</h3><label class="proof-stage-label">Audit <select id="proofStage" disabled><option value="initial">Initial</option><option value="revised" disabled>Re-audit</option></select></label></div>
+        <div id="constellationEmpty" class="proof-pending" role="status">
+          <span class="pending-symbol pending-network" aria-hidden="true">◇──◇<span>│</span>◇</span>
+          <strong>Evidence network is ready</strong>
+          <p>Run an audit to connect observed claims with your supplied facts.</p>
+          <small>AWAITING VERIFIED INPUT RELATIONSHIPS</small>
+        </div>
+        <div id="constellationResults" class="proof-live" hidden>
         <p id="proofCount" class="tiny-meta"></p>
         <div id="proofNodeList" class="proof-node-list" aria-label="Select a claim or finding"></div>
         <svg id="constellation" class="constellation" role="group" aria-label="Evidence relationships"></svg>
         <div class="proof-node-detail" aria-live="polite"><strong id="proofNodeTitle"></strong><p id="proofNodeDetail"></p><small id="proofNodeSource"></small></div>
         <p class="claim-proof-note">Lines trace recorded relationships. A matching quote is not independent proof of truth.</p>
+        </div>
       </section>
       <section class="evolution-panel glass-panel" aria-labelledby="evolutionTitle">
         <div class="panel-heading"><h3 id="evolutionTitle">Claim DNA Evolution</h3><span class="dna-icon" aria-hidden="true">⌁</span></div>
+        <div id="evolutionEmpty" class="proof-pending" role="status">
+          <span class="pending-symbol pending-lineage" aria-hidden="true">○ <span>→</span> ○</span>
+          <strong>Claim lineage starts here</strong>
+          <p>Run Audit, Repair and Re-audit to examine changes and uncertainty.</p>
+          <small>NO BEFORE / AFTER CLAIMS YET</small>
+        </div>
+        <div id="evolutionResults" class="proof-live" hidden>
         <p id="evolutionCount" class="tiny-meta"></p><p id="evolutionNote" class="claim-proof-note"></p>
         <div id="evolutionList" class="evolution-list"></div>
+        </div>
       </section>
     </div>
   </section>
