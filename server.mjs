@@ -30,6 +30,60 @@ function codeMatches(provided, expected) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
+// ---- Optional limited public (anonymous) audit quota --------------------
+// Anonymous paid inference is OFF unless explicitly enabled AND backed by
+// an explicitly configured shared atomic KV backend (Upstash/Vercel KV
+// REST). In-memory Maps, browser storage, or embedded secrets are never
+// used as hard spending limits. When anonymous audits are enabled but no
+// durable limiter is configured, anonymous paid requests FAIL CLOSED
+// (503) before any Meta call. See /docs "Public quota setup".
+export function quotaConfigFromEnv(env = process.env) {
+  const num = (v, dflt, min, max) => {
+    const n = Number.parseInt(String(v ?? ''), 10);
+    return Number.isInteger(n) ? Math.max(min, Math.min(max, n)) : dflt;
+  };
+  return {
+    anonEnabled: String(env.PUBLIC_ANON_AUDITS_ENABLED || '').trim().toLowerCase() === 'true',
+    restUrl: String(env.QUOTA_KV_REST_URL || '').trim().replace(/\/+$/, ''),
+    restToken: String(env.QUOTA_KV_REST_TOKEN || '').trim(),
+    perUserDaily: num(env.PUBLIC_QUOTA_PER_USER_DAILY, 3, 1, 20),
+    globalDaily: num(env.PUBLIC_QUOTA_GLOBAL_DAILY, 50, 1, 5000),
+  };
+}
+
+// Single atomic Lua script: check BOTH global and per-user caps, then
+// increment both counters only when under cap. Returns {global, user,
+// allowed}. One EVAL keeps the two counters consistent across instances.
+export const QUOTA_EVAL_SCRIPT =
+  "local g=tonumber(redis.call('GET',KEYS[1]) or 0) or 0;" +
+  "local u=tonumber(redis.call('GET',KEYS[2]) or 0) or 0;" +
+  "if g>=tonumber(ARGV[1]) then return {g,u,0} end;" +
+  "if u>=tonumber(ARGV[2]) then return {g,u,0} end;" +
+  "g=redis.call('INCR',KEYS[1]);u=redis.call('INCR',KEYS[2]);" +
+  "if g==1 then redis.call('EXPIRE',KEYS[1],172800) end;" +
+  "if u==1 then redis.call('EXPIRE',KEYS[2],172800) end;" +
+  "return {g,u,1}";
+
+async function defaultQuotaCheckViaRest({ fetcher, cfg, userHash, day }) {
+  const keyG = `adproof:anon:global:${day}`;
+  const keyU = `adproof:anon:user:${userHash}:${day}`;
+  const url = `${cfg.restUrl}/eval/${encodeURIComponent(QUOTA_EVAL_SCRIPT)}/2/` +
+    `${encodeURIComponent(keyG)}/${encodeURIComponent(keyU)}/${cfg.globalDaily}/${cfg.perUserDaily}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const r = await fetcher(url, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cfg.restToken}` },
+      signal: controller.signal,
+    });
+    const data = await r.json().catch(() => ({}));
+    const res = data?.result;
+    if (!r.ok || !Array.isArray(res)) throw new Error('quota backend error');
+    return { allowed: Number(res[2]) === 1, global: Number(res[0]), user: Number(res[1]) };
+  } finally { clearTimeout(timer); }
+}
+
 export const schema = {
   type: 'object',
   additionalProperties: false,
@@ -95,8 +149,10 @@ function normalizeAudit(a) {
   };
 }
 
-export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY} = {}) {
+export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY, quotaCheck = null, quotaConfig = null} = {}) {
   const gate = String(demoCode || '').trim();
+  const quotaCfg = quotaConfig || quotaConfigFromEnv();
+  const quotaReady = !!(quotaCfg.restUrl && quotaCfg.restToken);
   const BODY_LIMIT = Number(maxBody) || MAX_BODY;
   const vercelMode = BODY_LIMIT <= VERCEL_MAX_BODY;
   const sizeLabel = vercelMode ? '4 MB (batas Vercel Hobby)' : '6 MB';
@@ -164,6 +220,28 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     if(body.caption && (typeof body.caption!=='string' || body.caption.length>1000)) { const e=new Error('Teks iklan terlalu panjang.'); e.status=400; throw e; }
   }
 
+  // Anonymous paid path. Runs only when anonymous audits are explicitly
+  // enabled AND a durable shared limiter grants quota — always BEFORE any
+  // Meta call. Fails closed (503) when no durable limiter is configured
+  // or the limiter errors. Never uses in-memory state as a hard limit.
+  async function runAnonQuota(req) {
+    if (!quotaReady && !quotaCheck) {
+      const e = new Error('Demo publik belum tersedia (pembatas kuota server belum dikonfigurasi).');
+      e.status = 503; throw e;
+    }
+    const day = new Date().toISOString().slice(0, 10);
+    const ident = `${req.socket?.remoteAddress || 'local'}|${String(req.headers['user-agent'] || '').slice(0, 120)}`;
+    const userHash = crypto.createHash('sha256').update(ident).digest('hex').slice(0, 32);
+    const check = quotaCheck || ((args) => defaultQuotaCheckViaRest({ fetcher, cfg: quotaCfg, ...args }));
+    let out;
+    try { out = await check({ userHash, day, cfg: quotaCfg }); }
+    catch { const e = new Error('Pemeriksaan kuota demo gagal. Coba lagi nanti.'); e.status = 503; throw e; }
+    if (!out?.allowed) {
+      const e = new Error('Kuota demo publik habis hari ini. Coba lagi besok atau gunakan kode akses.');
+      e.status = 429; throw e;
+    }
+  }
+
   async function audit(body) {
     validation(body);
     const prompt = `Audit this advertising creative rigorously. Product: ${body.product.trim()}. VERIFIED FACTS provided by the business:\n${body.facts.trim()}\nAdditional caption provided separately: ${String(body.caption||'').trim() || '(none)'}.\nDo not treat ad-copy claims as evidence. Compare every marketing claim against verified facts. Unsupported claims are unverified, not automatically false. Do not hallucinate regulatory violations, efficacy numbers or guarantees. Identify concrete flaws you can actually observe (if text is unreadable, say uncertainty). Give an estimated creative score, not a certified compliance score. Issues should be actionable. Be clear and short, user language Indonesian (Bahasa Indonesia) for all text output. Recommended caption must use only supplied verified facts. Return only the schema.`;
@@ -210,9 +288,25 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
 
   const files = new Map([
     ['/', 'public/index.html'], ['/app','public/app.html'], ['/docs','public/docs.html'],
+    ['/demo','public/demo.html'],
     ['/styles.css','public/styles.css'], ['/app.js','public/app.js']
   ]);
   const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8'};
+
+  // Public capability flags only — never secrets, keys, or codes.
+  function demoStatus() {
+    return {
+      ok: true, demoGate: !!gate,
+      anonAudit: {
+        enabled: quotaCfg.anonEnabled && quotaReady,
+        scope: 'audit-only',
+        quotaConfigured: quotaReady,
+        perUserDaily: quotaCfg.perUserDaily,
+        globalDaily: quotaCfg.globalDaily,
+      },
+      walkthrough: '/demo', studio: '/app',
+    };
+  }
 
   return async (req,res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -223,12 +317,18 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     };
     for(const [k,v] of Object.entries(headers)) res.setHeader(k,v);
     try {
-      if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),demoGate:!!gate,textModel:MODEL,imageModel:'muse-image-1.0'});
+      if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),demoGate:!!gate,publicAnonAudit:!!(quotaCfg.anonEnabled && quotaReady),textModel:MODEL,imageModel:'muse-image-1.0'});
+      if(req.method==='GET' && url.pathname==='/api/demo-status') return json(res,200,demoStatus());
       if(req.method==='POST' && ['/api/audit','/api/improve'].includes(url.pathname)) {
-        if(gate) {
-          const provided = String(req.headers['x-demo-code'] || '');
-          if(!provided) return json(res,401,{error:'Demo ini memerlukan kode akses.'});
-          if(!codeMatches(provided, gate)) return json(res,403,{error:'Kode akses salah.'});
+        const provided = String(req.headers['x-demo-code'] || '');
+        let privileged = !gate;
+        if (gate) {
+          if (provided) {
+            if (!codeMatches(provided, gate)) return json(res,403,{error:'Kode akses salah.'});
+            privileged = true;
+          } else if (!quotaCfg.anonEnabled) {
+            return json(res,401,{error:'Demo ini memerlukan kode akses.'});
+          }
         }
         const ip = req.socket.remoteAddress || 'local'; const now=Date.now();
         const state=limits.get(ip) || {start:now,count:0};
@@ -237,6 +337,14 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
         if(state.count>12) return json(res,429,{error:'Terlalu banyak permintaan. Coba lagi sebentar.'});
         if(limits.size>500) for(const [k,v] of limits) if(now-v.start>120000) limits.delete(k);
         const body=await parseBody(req);
+        if (gate && !privileged) {
+          // Anonymous path: audit only, validated first (invalid input
+          // never consumes quota), then durable quota BEFORE Meta.
+          if (url.pathname !== '/api/audit') return json(res,403,{error:'Demo publik mencakup audit saja. Fitur improve membutuhkan kode akses.'});
+          validation(body);
+          await runAnonQuota(req);
+          return json(res,200,await audit(body));
+        }
         return json(res,200,await (url.pathname==='/api/audit'?audit(body):improve(body)));
       }
       if(req.method==='GET' && files.has(url.pathname)) {
