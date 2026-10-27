@@ -45,8 +45,23 @@ ui.accessForm.addEventListener('submit',event=>{
 });
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
 function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
-function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});}
-function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;}
+function syncDeck(){
+ const current=state.phase, ready=!!state.original;
+ const ledger=state.initialAudit?.claim_ledger;
+ const count=Array.isArray(ledger)?ledger.length:0;
+ const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
+ put('deckPhase',state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
+ put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
+ put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
+ put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
+ const inspectLink=document.getElementById('deckDetect');
+ if(inspectLink)inspectLink.href=current>0&&count?'#xrayPanel':'#dropzone';
+ for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
+  const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
+ }
+}
+function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
+function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
 function resetAudit(){resetProofStudio();state.context=null;state.runs=[];state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=true;ui.downloadImage.hidden=true;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;phase(0);}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
@@ -179,7 +194,7 @@ async function performAudit(image,verify=false){
   if(!verify){resetAudit();switchView('original');state.context=inputContext();}
   const out=await api('/api/audit',payload(image));state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){state.verified=out.audit;phase(3);}else{state.initialAudit=out.audit;state.verified=null;phase(1);}
-  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
  }finally{setBusy(false);}
 }
 async function performImprove(){
@@ -211,3 +226,6 @@ if(stickyAudit){stickyAudit.addEventListener('click',()=>{ui.form.requestSubmit(
  ui.form.addEventListener('input',syncSticky);syncSticky();
 // Keep tab semantics in sync for assistive tech.
 for(const [key,tab] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]])tab.addEventListener('click',()=>{for(const t of [ui.originalTab,ui.revisedTab,ui.compareTab])t.setAttribute('aria-selected',String(t===tab));});}
+
+// Establish accurate idle states before any Meta response exists.
+syncDeck();
