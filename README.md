@@ -75,4 +75,4 @@ Images are resized by the browser and sent as base64 only to the server and Meta
 
 ## Hackathon compliance
 
-Created October 27, 2026 during the hackathon window. This is a **new and separate project**; no AI Ads Lab repository has been changed. Publish the new code to a **public GitHub repository** for final submission and include a real demonstration video.
+Created October 27, 2026 during the hackathon window. This is a **new and separate project**; no AI Ads Lab repository has been changed. Public repository: https://github.com/riyan3110/adproof-ai . A real demonstration video and final hackathon submission are still required.
