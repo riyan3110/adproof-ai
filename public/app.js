@@ -29,13 +29,20 @@ async function prepareImage(file){
  const objectUrl=URL.createObjectURL(file);
  try {
    const image=new Image();image.decoding='async';image.src=objectUrl;await image.decode();
-   const scale=Math.min(1,1600/Math.max(image.naturalWidth,image.naturalHeight));
-   const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-   const ctx=canvas.getContext('2d');if(!ctx)throw Error('Browser tidak mendukung Canvas.');
-   ctx.drawImage(image,0,0,canvas.width,canvas.height);
-   const data=canvas.toDataURL('image/jpeg',.88);
-   if(data.length>7.5*1024*1024)throw Error('Gambar masih terlalu besar setelah kompresi.');
-   return data;
+   // Keep the JSON request under Vercel Hobby's 4.5 MB limit: bound
+   // pixels, then step quality down until the payload fits (~3.6 MB cap
+   // leaves headroom for product facts and JSON overhead).
+   const CAP=3.6*1024*1024;
+   let scale=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight));
+   for(const quality of [.82,.72,.62,.5]){
+     const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+     const ctx=canvas.getContext('2d');if(!ctx)throw Error('Browser tidak mendukung Canvas.');
+     ctx.drawImage(image,0,0,canvas.width,canvas.height);
+     const data=canvas.toDataURL('image/jpeg',quality);
+     if(data.length<=CAP)return data;
+     scale*=.8;
+   }
+   throw Error('Gambar masih terlalu besar setelah kompresi. Gunakan gambar yang lebih kecil.');
  } finally {URL.revokeObjectURL(objectUrl);}
 }
 async function upload(file){if(state.busy)return;try{const data=await prepareImage(file);state.original=data;state.originalFilename=file.name;resetAudit();ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}

@@ -9,6 +9,11 @@ const PORT = Number(process.env.PORT || 3000);
 const META_ENDPOINT = 'https://api.meta.ai/v1';
 const MODEL = process.env.META_MODEL || 'muse-spark-1.3';
 const MAX_BODY = 9 * 1024 * 1024;
+// Vercel Hobby Functions enforce a 4.5 MB request AND response payload
+// limit. Serverless handlers pass VERCEL_MAX_BODY so the same code paths
+// stay just under the platform cap; the local Node server keeps MAX_BODY.
+export const VERCEL_MAX_BODY = 4_400_000;
+export const VERCEL_MAX_RESPONSE = 4_400_000;
 const ALLOWED_IMAGE = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/;
 const limits = new Map();
 const hasKey = () => !!process.env.MODEL_API_KEY?.trim();
@@ -63,8 +68,8 @@ export const schema = {
   required: ['score', 'headline', 'summary', 'recommended_caption', 'issues', 'strengths', 'checks']
 };
 
-function imageValid(s) {
-  if (typeof s !== 'string' || s.length > MAX_BODY - 4096) return false;
+function imageValid(s, limit = MAX_BODY) {
+  if (typeof s !== 'string' || s.length > limit - 4096) return false;
   const match = ALLOWED_IMAGE.exec(s);
   if (!match) return false;
   const b64len = match[2].length;
@@ -90,8 +95,20 @@ function normalizeAudit(a) {
   };
 }
 
-export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE} = {}) {
+export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY} = {}) {
   const gate = String(demoCode || '').trim();
+  const BODY_LIMIT = Number(maxBody) || MAX_BODY;
+  const vercelMode = BODY_LIMIT <= VERCEL_MAX_BODY;
+  const sizeLabel = vercelMode ? '4 MB (batas Vercel Hobby)' : '6 MB';
+  // Never silently truncate images: oversized Muse Image output in
+  // serverless mode becomes a clear, actionable error instead.
+  function boundImage(image) {
+    if (vercelMode && image.length > VERCEL_MAX_RESPONSE) {
+      const e = new Error('Gambar hasil Meta melebihi batas respons Vercel 4,5 MB. Coba gambar sumber yang lebih kecil lalu ulangi.');
+      e.status = 502; throw e;
+    }
+    return image;
+  }
   async function metaCall(endpoint, payload, timeout = 70000) {
     if (!key?.trim()) { const e = new Error('Meta API key belum dikonfigurasi di server.'); e.status = 503; throw e; }
     const controller = new AbortController();
@@ -116,10 +133,24 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
   }
 
   async function parseBody(req) {
+    // Vercel (and tests) may supply an already-parsed body. Plain Node
+    // requests have no `body` property, so local behavior is unchanged.
+    if (req.body !== undefined && req.body !== null) {
+      if (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+        if (JSON.stringify(req.body).length > BODY_LIMIT) { const e=new Error(`Ukuran permintaan terlalu besar (maksimum sekitar ${sizeLabel}).`); e.status=413; throw e; }
+        return req.body;
+      }
+      try {
+        const text = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : String(req.body);
+        if (text.length > BODY_LIMIT) { const e=new Error(`Ukuran permintaan terlalu besar (maksimum sekitar ${sizeLabel}).`); e.status=413; throw e; }
+        return JSON.parse(text);
+      }
+      catch(err) { if (err.status) throw err; const e=new Error('Format permintaan tidak valid.'); e.status=400; throw e; }
+    }
     const chunks=[]; let bytes=0;
     for await (const part of req) {
       bytes+=part.length;
-      if(bytes>MAX_BODY) { const e=new Error('Ukuran gambar terlalu besar (maksimum sekitar 6 MB).'); e.status=413; throw e; }
+      if(bytes>BODY_LIMIT) { const e=new Error(`Ukuran permintaan terlalu besar (maksimum sekitar ${sizeLabel}).`); e.status=413; throw e; }
       chunks.push(part);
     }
     try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
@@ -127,7 +158,7 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
   }
 
   function validation(body) {
-    if(!body || !imageValid(body.image)) { const e=new Error('Unggah PNG, JPG, atau WebP di bawah 6 MB.'); e.status=400; throw e; }
+    if(!body || !imageValid(body.image, BODY_LIMIT)) { const e=new Error(`Unggah PNG, JPG, atau WebP di bawah ${sizeLabel}.`); e.status=400; throw e; }
     if(typeof body.product !== 'string' || !body.product.trim() || body.product.length>130) { const e=new Error('Nama produk wajib diisi (maks. 130 karakter).'); e.status=400; throw e; }
     if(typeof body.facts !== 'string' || body.facts.trim().length<8 || body.facts.length>2500) { const e=new Error('Isi fakta produk minimal 8 karakter, maksimal 2.500.'); e.status=400; throw e; }
     if(body.caption && (typeof body.caption!=='string' || body.caption.length>1000)) { const e=new Error('Teks iklan terlalu panjang.'); e.status=400; throw e; }
@@ -165,14 +196,14 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
       const mime=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? 'image/png' :
         bytes.subarray(0,3).equals(Buffer.from([255,216,255])) ? 'image/jpeg' :
         bytes.toString('ascii',0,4)==='RIFF' ? 'image/webp' : 'image/png';
-      return {image:`data:${mime};base64,${item.b64_json}`, model:'muse-image-1.0'};
+      return {image:boundImage(`data:${mime};base64,${item.b64_json}`), model:'muse-image-1.0'};
     }
     if(item?.url) { // Fetch the signed URL server-side so the browser receives data, not a temporary external token URL.
       const remote = await fetcher(item.url);
       if(!remote.ok) throw new Error('Gambar hasil Meta tidak dapat diambil.');
       const raw = Buffer.from(await remote.arrayBuffer());
       if(raw.length>9*1024*1024) throw new Error('Gambar hasil Meta terlalu besar.');
-      return {image:`data:${remote.headers.get('content-type')?.split(';')[0] || 'image/png'};base64,${raw.toString('base64')}`,model:'muse-image-1.0'};
+      return {image:boundImage(`data:${remote.headers.get('content-type')?.split(';')[0] || 'image/png'};base64,${raw.toString('base64')}`),model:'muse-image-1.0'};
     }
     throw new Error('Meta tidak mengirimkan gambar hasil edit.');
   }
