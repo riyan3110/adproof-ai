@@ -115,3 +115,11 @@ ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)awa
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));
 fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;state.demoGate=!!info.demoGate;ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONNECTED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
+// Sticky mobile CTA: mirrors the main audit submit without duplicating logic.
+const stickyAudit=$('#stickyAudit');const stickyLabel=$('#stickyLabel');
+if(stickyAudit){stickyAudit.addEventListener('click',()=>{ui.form.requestSubmit();});
+ const syncSticky=()=>{stickyAudit.disabled=ui.auditButton.disabled;if(stickyLabel)stickyLabel.textContent=state.busy?'Working…':!state.original?'Add a creative to begin':state.audit?'Audit ready — refine or verify below':'Ready when your creative + facts are set';};
+ new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
+ ui.form.addEventListener('input',syncSticky);syncSticky();
+// Keep tab semantics in sync for assistive tech.
+for(const [key,tab] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]])tab.addEventListener('click',()=>{for(const t of [ui.originalTab,ui.revisedTab,ui.compareTab])t.setAttribute('aria-selected',String(t===tab));});}
