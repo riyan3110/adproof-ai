@@ -6,6 +6,7 @@ const ui = {
   form:$('#projectForm'),product:$('#product'),facts:$('#facts'),caption:$('#caption'),auditButton:$('#auditButton'),auditText:$('#auditButtonText'),
   auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
+  claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText')
 };
@@ -60,6 +61,39 @@ function switchView(view){
 function setCompare(value){ui.beforeWrap.style.clipPath=`inset(0 ${100-value}% 0 0)`;ui.bar.style.left=`${value}%`;}
 function payload(image){return {image,product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
 function el(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
+function renderClaimEvidence(a, verified=false){
+ const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
+ ui.claimPanel.hidden=ledger.length===0;
+ ui.claimList.replaceChildren();
+ if(!ledger.length)return;
+ const labels={
+  supported_by_supplied_facts:['SUPPORTED BY INPUT','supported'],
+  unsupported_by_supplied_facts:['NOT IN INPUT','unsupported'],
+  contradicted_by_supplied_facts:['CONFLICTS WITH INPUT','contradicted'],
+  unreadable:['UNREADABLE','uncertain'],
+  needs_human_review:['REVIEW NEEDED','uncertain']
+ };
+ ui.claimCount.textContent=`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
+ for(const item of ledger){
+  const mapped=labels[item.assessment]||labels.needs_human_review;
+  const card=el('article','claim-evidence-item');
+  const top=el('div','claim-evidence-top');
+  const source=el('span','claim-evidence-source',item.origin==='caption'?'CAPTION':'CREATIVE');
+  const status=el('span',`claim-evidence-status ${mapped[1]}`,mapped[0]);
+  top.append(source,status);
+  const claim=el('p','claim-evidence-claim',String(item.claim||''));
+  card.append(top,claim);
+  if(item.fact_quote){
+   const quote=el('div','claim-evidence-fact');
+   quote.append(el('span','claim-evidence-kicker','INPUT FACT'),el('q','',String(item.fact_quote)));
+   card.append(quote);
+  }
+  if(item.reason)card.append(el('p','claim-evidence-detail',String(item.reason)));
+  if(item.recommended_action)card.append(el('p','claim-evidence-action',String(item.recommended_action)));
+  ui.claimList.append(card);
+ }
+}
+
 function render(a,verified=false){
  ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
  ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
@@ -70,6 +104,7 @@ function render(a,verified=false){
  for(const [label,key] of [['Claims','claim'],['Clarity','clarity'],['Layout','hierarchy'],['Action','action']]){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
  }
+ renderClaimEvidence(a,verified);
  ui.count.textContent=`${String(a.issues.length).padStart(2,'0')} ISSUES`;
  ui.issues.replaceChildren();
  if(!a.issues.length)ui.issues.append(el('p','no-issues','No clear issues detected. Review manually before publishing.'));
@@ -115,3 +150,11 @@ ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)awa
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));
 fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;state.demoGate=!!info.demoGate;ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONNECTED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
+// Sticky mobile CTA: mirrors the main audit submit without duplicating logic.
+const stickyAudit=$('#stickyAudit');const stickyLabel=$('#stickyLabel');
+if(stickyAudit){stickyAudit.addEventListener('click',()=>{ui.form.requestSubmit();});
+ const syncSticky=()=>{stickyAudit.disabled=ui.auditButton.disabled;if(stickyLabel)stickyLabel.textContent=state.busy?'Working…':!state.original?'Add a creative to begin':state.audit?'Audit ready — refine or verify below':'Ready when your creative + facts are set';};
+ new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
+ ui.form.addEventListener('input',syncSticky);syncSticky();
+// Keep tab semantics in sync for assistive tech.
+for(const [key,tab] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]])tab.addEventListener('click',()=>{for(const t of [ui.originalTab,ui.revisedTab,ui.compareTab])t.setAttribute('aria-selected',String(t===tab));});}

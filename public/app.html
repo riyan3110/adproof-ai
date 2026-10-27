@@ -1,10 +1,130 @@
-<!doctype html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0e13"><title>Studio — AdProof AI</title><link rel="stylesheet" href="/styles.css"></head><body class="studio-body">
-<header class="studio-nav"><a class="brand" href="/"><span class="brandmark"><span></span><span></span><span></span></span><span>adproof<span class="brand-dot">.</span></span><small>AI</small></a><div class="nav-mid"><span class="nav-spark">✦</span> CREATIVE INSPECTION STUDIO <span class="nav-divider">/</span> <strong>WORKSPACE 01</strong></div><div class="studio-actions"><span class="connection" id="connection"><span class="connection-dot"></span><span id="connectionText">Checking API</span></span><a href="/docs" class="icon-link" aria-label="Dokumentasi" title="Dokumentasi">?</a></div></header>
-<main class="workspace">
-<section class="workspace-head"><div><div class="eyebrow"><span class="eyebrow-symbol">✳</span> YOUR CREATIVE DESERVES PROOF</div><h1>Creative <span>Lab</span><sup> / 01</sup></h1></div><div class="workflow-steps" aria-label="Tahap proses"><span class="stage active" data-stage="0"><b>01</b> UPLOAD</span><i></i><span class="stage" data-stage="1"><b>02</b> AUDIT</span><i></i><span class="stage" data-stage="2"><b>03</b> REFINE</span><i></i><span class="stage" data-stage="3"><b>04</b> VERIFY</span></div></section>
-<div class="workspace-grid"><section class="preview-pane glass-panel"><div class="panel-heading"><div class="panel-title"><span class="disc disc-orange"></span> CREATIVE CANVAS</div><div class="preview-actions"><button class="mini-tab selected" id="viewOriginal" type="button">Original</button><button class="mini-tab" id="viewRevised" type="button" disabled>Revised</button><button class="mini-tab" id="viewCompare" type="button" disabled>Compare</button></div></div>
-<div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload gambar iklan"><div id="emptyCanvas" class="empty-canvas"><div class="canvas-art"><div class="canvas-art-orbit"></div><span>+</span></div><span class="empty-title">Drop your creative here</span><span class="empty-desc">PNG · JPG · WEBP <i>MAX 6 MB</i></span><button type="button" id="browseButton" class="btn btn-upload">Choose creative <span>↗</span></button></div><img id="creativeImage" alt="Materi iklan yang diunggah" hidden><div id="compareView" class="compare-view" hidden><img id="compareAfter" alt="Creative hasil edit"><div class="compare-before-wrap" id="compareBeforeWrap"><img id="compareBefore" alt="Creative asli"></div><div class="compare-bar" id="compareBar"><span>↔</span></div><input id="compareRange" type="range" min="0" max="100" value="50" aria-label="Geser pembanding sebelum dan sesudah"></div><div class="scan-overlay" id="scanOverlay" hidden><span>INSPECTING PIXELS</span></div></div><input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-<div class="canvas-footer"><span class="file-chip"><span class="mini-square">↗</span><span id="fileName">NO CREATIVE SELECTED</span></span><button id="newCreative" class="text-button" type="button" disabled>Replace ↗</button></div></section>
-<aside class="right-pane"><section class="details-card glass-panel"><div class="panel-heading"><span class="panel-title"><span class="disc disc-lime"></span> PROJECT DETAILS</span><span class="tiny-meta">01 / 02</span></div><form id="projectForm"><label for="product">Product name <span class="required">*</span></label><input type="text" id="product" name="product" maxlength="130" placeholder="e.g. Aurora Wireless Lamp" required><label for="facts">Verified product facts <span class="required">*</span></label><textarea id="facts" maxlength="2500" rows="3" placeholder="Material, size, price, features..." required></textarea><label for="caption">Ad caption <span class="optional">OPTIONAL</span></label><textarea id="caption" maxlength="1000" rows="2" placeholder="Existing ad copy (if any)"></textarea><div class="form-bottom"><span>Only add facts you can prove.</span><button id="auditButton" type="submit" class="btn btn-analyze"><span id="auditButtonText">Run audit</span><span>↗</span></button></div></form></section>
-<section class="audit-card glass-panel" id="auditCard"><div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac"></span> AUDIT REPORT</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div><div id="reportEmpty" class="report-empty"><div class="report-empty-graphic">⌁<span>✺</span></div><strong>No audit yet</strong><p>Upload a creative to reveal the details.</p></div><div id="reportContent" hidden><div class="score-row"><div class="score-ring" id="scoreRing"><div class="score-ring-inner"><strong id="scoreValue">--</strong><small>/ 100</small></div></div><div class="score-info"><span class="score-caption">CREATIVE HEALTH</span><h3 id="scoreHeadline"></h3><p id="scoreSummary"></p></div></div><div class="breakdown" id="breakdown"></div><div class="issues-heading"><span>FINDINGS</span><span id="issueCount">00 ISSUES</span></div><div id="issuesList" class="issues-list"></div><div class="recommendation"><div><span>✧ SUGGESTED CAPTION</span><button id="copyCaption" title="Salin caption" class="copy-icon" type="button">⧉</button></div><p id="suggestedCaption"></p></div><div class="report-actions"><button type="button" id="refineButton" class="btn btn-primary full">✳ Improve creative <span>↗</span></button><button type="button" id="verifyButton" class="btn btn-outline full" hidden>◎ Verify revision <span>↗</span></button><button type="button" id="downloadReport" class="btn btn-subtle full">↓ Export audit (JSON)</button><button type="button" id="downloadImage" class="btn btn-subtle full" hidden>↓ Download revised image</button></div></div></section></aside></div>
-<div class="bottom-rail"><span>✦ POWERED BY META MUSE SPARK + MUSE IMAGE</span><span>CREATIVE QUALITY ESTIMATE · NOT LEGAL CERTIFICATION</span></div></main><div role="status" aria-live="polite" id="toast" class="toast" hidden></div><script src="/app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0e13">
+<meta name="description" content="AdProof AI Studio — audit, refine and verify ad creatives with Meta AI.">
+<title>Studio — AdProof AI</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="studio-body">
+<a class="skip-link" href="#studioMain">Skip to studio</a>
+<header class="studio-nav">
+  <a class="brand" href="/" aria-label="AdProof AI home"><span class="brandmark" aria-hidden="true"><span></span><span></span><span></span></span><span>adproof<span class="brand-dot">.</span></span><small>AI</small></a>
+  <div class="nav-mid" aria-hidden="true"><span class="nav-spark">✦</span> CREATIVE INSPECTION STUDIO <span class="nav-divider">/</span> <strong>WORKSPACE 01</strong></div>
+  <div class="studio-actions">
+    <span class="connection" id="connection" role="status"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText">Checking API</span></span>
+    <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">?</a>
+  </div>
+</header>
+<main class="workspace" id="studioMain">
+  <section class="workspace-head">
+    <div class="workspace-title">
+      <div class="eyebrow"><span class="eyebrow-symbol" aria-hidden="true">✳</span> YOUR CREATIVE DESERVES PROOF</div>
+      <h1>Creative <span>Lab</span><sup> / 01</sup></h1>
+    </div>
+    <ol class="workflow-steps" aria-label="Progress: upload, audit, refine, verify">
+      <li class="stage active" data-stage="0"><b aria-hidden="true">01</b> UPLOAD</li>
+      <li class="step-sep" aria-hidden="true"></li>
+      <li class="stage" data-stage="1"><b aria-hidden="true">02</b> AUDIT</li>
+      <li class="step-sep" aria-hidden="true"></li>
+      <li class="stage" data-stage="2"><b aria-hidden="true">03</b> REFINE</li>
+      <li class="step-sep" aria-hidden="true"></li>
+      <li class="stage" data-stage="3"><b aria-hidden="true">04</b> VERIFY</li>
+    </ol>
+  </section>
+  <div class="workspace-grid">
+    <section class="preview-pane glass-panel" aria-label="Creative canvas">
+      <div class="panel-heading">
+        <div class="panel-title"><span class="disc disc-orange" aria-hidden="true"></span> CREATIVE CANVAS</div>
+        <div class="preview-actions" role="tablist" aria-label="Canvas view">
+          <button class="mini-tab selected" id="viewOriginal" type="button" role="tab" aria-selected="true">Original</button>
+          <button class="mini-tab" id="viewRevised" type="button" role="tab" aria-selected="false" disabled>Revised</button>
+          <button class="mini-tab" id="viewCompare" type="button" role="tab" aria-selected="false" disabled>Compare</button>
+        </div>
+      </div>
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload ad image. PNG, JPG or WebP, max 6 MB.">
+        <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
+        <div id="emptyCanvas" class="empty-canvas">
+          <div class="canvas-art" aria-hidden="true"><span class="canvas-plus">+</span><span class="canvas-orbit-dot"></span><span class="canvas-orbit-dot two"></span></div>
+          <span class="empty-title">Drop your creative here</span>
+          <span class="empty-specs"><i>PNG · JPG · WEBP</i><i class="max">MAX 6 MB</i></span>
+          <button type="button" id="browseButton" class="btn btn-upload">Choose creative <span aria-hidden="true">↗</span></button>
+          <span class="empty-hint">or tap the frame to browse</span>
+        </div>
+        <img id="creativeImage" alt="Uploaded ad creative" hidden>
+        <div id="compareView" class="compare-view" hidden>
+          <img id="compareAfter" alt="Edited creative">
+          <div class="compare-before-wrap" id="compareBeforeWrap"><img id="compareBefore" alt="Original creative"></div>
+          <div class="compare-bar" id="compareBar" aria-hidden="true"><span>↔</span></div>
+          <input id="compareRange" type="range" min="0" max="100" value="50" aria-label="Slide to compare before and after">
+        </div>
+        <div class="scan-overlay" id="scanOverlay" hidden><span>INSPECTING PIXELS</span></div>
+      </div>
+      <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+      <div class="canvas-footer">
+        <span class="file-chip"><span class="mini-square" aria-hidden="true">↗</span><span id="fileName">NO CREATIVE SELECTED</span></span>
+        <button id="newCreative" class="text-button" type="button" disabled>Replace ↗</button>
+      </div>
+    </section>
+    <aside class="right-pane">
+      <section class="details-card glass-panel" aria-label="Project details">
+        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lime" aria-hidden="true"></span> PROJECT DETAILS</span><span class="tiny-meta">01 / 02</span></div>
+        <form id="projectForm">
+          <label for="product">Product name <span class="required" aria-hidden="true">*</span></label>
+          <input type="text" id="product" name="product" maxlength="130" placeholder="e.g. Aurora Wireless Lamp" required autocomplete="off">
+          <label for="facts">Verified product facts <span class="required" aria-hidden="true">*</span></label>
+          <textarea id="facts" maxlength="2500" rows="3" placeholder="Material, size, price, features…" required></textarea>
+          <label for="caption">Ad caption <span class="optional">OPTIONAL</span></label>
+          <textarea id="caption" maxlength="1000" rows="2" placeholder="Existing ad copy (if any)"></textarea>
+          <div class="form-bottom">
+            <span>Only add facts you can prove.</span>
+            <button id="auditButton" type="submit" class="btn btn-analyze"><span id="auditButtonText">Run audit</span><span aria-hidden="true">↗</span></button>
+          </div>
+        </form>
+      </section>
+      <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" aria-live="polite">
+        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> AUDIT REPORT</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
+        <div id="reportEmpty" class="report-empty">
+          <div class="report-empty-graphic" aria-hidden="true">⌁<span>✺</span></div>
+          <strong>No audit yet</strong>
+          <p>Upload a creative, add facts, run the audit.</p>
+          <a class="empty-docs-link" href="/docs">How scoring works →</a>
+        </div>
+        <div id="reportContent" hidden>
+          <div class="score-row">
+            <div class="score-ring" id="scoreRing" role="img" aria-label="Creative health score"><div class="score-ring-inner"><strong id="scoreValue">--</strong><small>/ 100</small></div></div>
+            <div class="score-info"><span class="score-caption">CREATIVE HEALTH</span><h3 id="scoreHeadline"></h3><p id="scoreSummary"></p></div>
+          </div>
+          <div class="breakdown" id="breakdown"></div>
+<section id="claimEvidencePanel" class="claim-evidence" aria-label="Claim evidence trace" hidden>
+            <div class="issues-heading"><span>CLAIM EVIDENCE TRACE</span><span id="claimEvidenceCount">0 CLAIMS</span></div>
+            <p class="claim-proof-note">Compared with seller-supplied facts. Not independently verified.</p>
+            <div id="claimEvidenceList" class="claim-evidence-list"></div>
+          </section>
+          <div class="issues-heading"><span>FINDINGS</span><span id="issueCount">00 ISSUES</span></div>
+          <div id="issuesList" class="issues-list"></div>
+          <div class="recommendation"><div><span>✧ SUGGESTED CAPTION</span><button id="copyCaption" title="Copy caption" class="copy-icon" type="button" aria-label="Copy suggested caption">⧉</button></div><p id="suggestedCaption"></p></div>
+          <div class="report-actions">
+            <button type="button" id="refineButton" class="btn btn-primary full">✳ Improve creative <span aria-hidden="true">↗</span></button>
+            <button type="button" id="verifyButton" class="btn btn-outline full" hidden>◎ Verify revision <span aria-hidden="true">↗</span></button>
+            <button type="button" id="downloadReport" class="btn btn-subtle full">↓ Export audit (JSON)</button>
+            <button type="button" id="downloadImage" class="btn btn-subtle full" hidden>↓ Download revised image</button>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <div class="sticky-cta" id="stickyCta">
+    <div class="sticky-cta-inner">
+      <span class="sticky-cta-label" id="stickyLabel">Ready when your creative + facts are set</span>
+      <button type="button" class="btn btn-analyze" id="stickyAudit">Run audit <span aria-hidden="true">↗</span></button>
+    </div>
+  </div>
+  <div class="bottom-rail"><span>✦ POWERED BY META MUSE SPARK + MUSE IMAGE</span><span>CREATIVE QUALITY ESTIMATE · NOT LEGAL CERTIFICATION</span></div>
+</main>
+<div role="status" aria-live="polite" id="toast" class="toast" hidden></div>
+<script src="/app.js" defer></script>
+</body>
+</html>
