@@ -9,14 +9,19 @@ const ui = {
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,phase:0};
+const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
+// Demo access code: session-only, never persisted beyond the tab. Only asked
+// for after the server itself demands it (401/403), never preemptively.
+const demoKey='adproof-demo-code';
+const getCode=()=>{try{return sessionStorage.getItem(demoKey)||'';}catch{return '';}};
+const setCode=(v)=>{try{if(v)sessionStorage.setItem(demoKey,v);else sessionStorage.removeItem(demoKey);}catch{}};
 function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));}
 function resetAudit(){state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=true;ui.downloadImage.hidden=true;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;phase(0);}
-async function api(endpoint,data){const timeoutMs=endpoint==='/api/improve'?125000:80000;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);try{const r=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data),signal:controller.signal});const result=await r.json().catch(()=>({}));if(!r.ok)throw Error(result.error || 'Server request failed.');return result;}catch(e){if(e&&e.name==='AbortError')throw Error('Permintaan kedaluwarsa. Silakan coba lagi.');throw e;}finally{clearTimeout(timer);}}
+async function api(endpoint,data,retried=false){const timeoutMs=endpoint==='/api/improve'?125000:80000;const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);try{const headers={'content-type':'application/json'};const code=getCode();if(code)headers['x-demo-code']=code;const r=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify(data),signal:controller.signal});const result=await r.json().catch(()=>({}));if((r.status===401||r.status===403)&&!retried){setCode('');const next=prompt('Kode akses demo:');if(next&&next.trim()){setCode(next.trim());return api(endpoint,data,true);}}if(!r.ok)throw Error(result.error || 'Server request failed.');return result;}catch(e){if(e&&e.name==='AbortError')throw Error('Permintaan kedaluwarsa. Silakan coba lagi.');throw e;}finally{clearTimeout(timer);}}
 function isImage(file){return file&&['image/jpeg','image/png','image/webp'].includes(file.type);}
 async function prepareImage(file){
  if(!isImage(file))throw Error('Gunakan PNG, JPG, atau WebP.');
@@ -55,7 +60,7 @@ function render(a,verified=false){
  ui.scoreHeadline.textContent=a.headline || 'Creative reviewed';
  ui.scoreSummary.textContent=a.summary || '';
  ui.breakdown.replaceChildren();
- for(const [label,key] of [['Claims','claim'],['Clarity','clarity'],['Layout','hierarchy'],['CTA','action']]){
+ for(const [label,key] of [['Claims','claim'],['Clarity','clarity'],['Layout','hierarchy'],['Action','action']]){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
  }
  ui.count.textContent=`${String(a.issues.length).padStart(2,'0')} ISSUES`;
@@ -102,4 +107,4 @@ ui.browse.addEventListener('click',e=>{e.stopPropagation();ui.file.click();});ui
 ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)await upload(f);ui.file.value='';});
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));
-fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONNECTED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
+fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;state.demoGate=!!info.demoGate;ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONNECTED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
