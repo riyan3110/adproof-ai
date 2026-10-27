@@ -54,6 +54,24 @@ export const schema = {
       }
     },
     strengths: { type: 'array', items: {type: 'string'}, maxItems: 4 },
+    // Claims are model-extracted observations, not independent fact-checks.
+    // A quote from seller-provided facts is verified against the actual input
+    // by normalizeAudit before we label a claim as supported or contradicted.
+    claim_ledger: {
+      type: 'array', maxItems: 8,
+      items: {
+        type: 'object', additionalProperties: false,
+        properties: {
+          claim: {type:'string'},
+          origin: {type:'string', enum:['creative','caption']},
+          assessment: {type:'string', enum:['supported_by_supplied_facts','unsupported_by_supplied_facts','contradicted_by_supplied_facts','unreadable','needs_human_review']},
+          fact_quote: {type:'string'},
+          reason: {type:'string'},
+          recommended_action: {type:'string'}
+        },
+        required: ['claim','origin','assessment','fact_quote','reason','recommended_action']
+      }
+    },
     checks: {
       type: 'object', additionalProperties: false,
       properties: {
@@ -65,7 +83,7 @@ export const schema = {
       required: ['claim', 'clarity', 'hierarchy', 'action']
     }
   },
-  required: ['score', 'headline', 'summary', 'recommended_caption', 'issues', 'strengths', 'checks']
+  required: ['score', 'headline', 'summary', 'recommended_caption', 'issues', 'strengths', 'claim_ledger', 'checks']
 };
 
 function imageValid(s, limit = MAX_BODY) {
@@ -76,9 +94,39 @@ function imageValid(s, limit = MAX_BODY) {
   return b64len > 80 && b64len % 4 === 0;
 }
 
-function normalizeAudit(a) {
+function normalizeAudit(a, suppliedFacts = '') {
   if (!a || typeof a !== 'object' || !Number.isInteger(a.score)) throw new Error('Format audit AI tidak valid. Coba ulangi.');
   const score = x => Math.max(0, Math.min(100, Number(x) || 0));
+  const provided = String(suppliedFacts).replace(/\\s+/g,' ').trim().toLocaleLowerCase('en');
+  const validAssessment = new Set(['supported_by_supplied_facts','unsupported_by_supplied_facts','contradicted_by_supplied_facts','unreadable','needs_human_review']);
+  const ledger = (Array.isArray(a.claim_ledger) ? a.claim_ledger : []).slice(0,8).map((entry,index) => {
+    const item = entry && typeof entry === 'object' ? entry : {};
+    const factQuote = String(item.fact_quote || '').trim().slice(0,350);
+    const quoteInFacts = factQuote.length >= 4 && provided.includes(factQuote.replace(/\\s+/g,' ').toLocaleLowerCase('en'));
+    let assessment = validAssessment.has(item.assessment) ? item.assessment : 'needs_human_review';
+    const requiresQuote = assessment === 'supported_by_supplied_facts' || assessment === 'contradicted_by_supplied_facts';
+    if (requiresQuote && !quoteInFacts) assessment = 'needs_human_review';
+    return {
+      id: `claim-${index+1}`,
+      claim: String(item.claim || '').slice(0,240),
+      origin: item.origin === 'caption' ? 'caption' : 'creative',
+      assessment,
+      // Never present a model-generated quotation as proof if it was not
+      // found verbatim in the seller-supplied facts.
+      fact_quote: quoteInFacts ? factQuote : '',
+      reason: String(item.reason || '').slice(0,320),
+      recommended_action: String(item.recommended_action || '').slice(0,260)
+    };
+  }).filter(entry=>entry.claim);
+  const evidence_summary = {
+    total: ledger.length,
+    supported_by_supplied_facts: ledger.filter(x=>x.assessment==='supported_by_supplied_facts').length,
+    unsupported_by_supplied_facts: ledger.filter(x=>x.assessment==='unsupported_by_supplied_facts').length,
+    contradicted_by_supplied_facts: ledger.filter(x=>x.assessment==='contradicted_by_supplied_facts').length,
+    unreadable: ledger.filter(x=>x.assessment==='unreadable').length,
+    needs_human_review: ledger.filter(x=>x.assessment==='needs_human_review').length,
+    basis: 'seller_supplied_facts_not_independently_verified',
+  };
   return {
     score: score(a.score), headline: String(a.headline || '').slice(0, 100),
     summary: String(a.summary || '').slice(0, 360),
@@ -91,6 +139,8 @@ function normalizeAudit(a) {
       suggestion: String(x.suggestion || '').slice(0, 280),
     })),
     strengths: (Array.isArray(a.strengths) ? a.strengths : []).slice(0, 4).map(String),
+    claim_ledger: ledger,
+    evidence_summary,
     checks: Object.fromEntries(['claim','clarity','hierarchy','action'].map(k=>[k, score(a.checks?.[k])])),
   };
 }
@@ -166,7 +216,7 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
 
   async function audit(body) {
     validation(body);
-    const prompt = `Audit this advertising creative rigorously. Product: ${body.product.trim()}. VERIFIED FACTS provided by the business:\n${body.facts.trim()}\nAdditional caption provided separately: ${String(body.caption||'').trim() || '(none)'}.\nDo not treat ad-copy claims as evidence. Compare every marketing claim against verified facts. Unsupported claims are unverified, not automatically false. Do not hallucinate regulatory violations, efficacy numbers or guarantees. Identify concrete flaws you can actually observe (if text is unreadable, say uncertainty). Give an estimated creative score, not a certified compliance score. Issues should be actionable. Be clear and short, user language Indonesian (Bahasa Indonesia) for all text output. Recommended caption must use only supplied verified facts. Return only the schema.`;
+    const prompt = `Audit this advertising creative rigorously. Product: ${body.product.trim()}. VERIFIED FACTS provided by the business:\n${body.facts.trim()}\nAdditional caption provided separately: ${String(body.caption||'').trim() || '(none)'}.\nDo not treat ad-copy claims as evidence. Compare every marketing claim against verified facts. Unsupported claims are unverified, not automatically false. Do not hallucinate regulatory violations, efficacy numbers or guarantees. Build a claim_ledger for up to 8 distinct concrete factual advertising claims you can READ from pixels or ad caption; do not invent claims. For each ledger entry, identify where the claim was observed (creative or caption), quote an EXACT supporting or contradicting fragment copied verbatim from the supplied product facts (fact_quote) or set fact_quote to an empty string if none. Use supported_by_supplied_facts only if an exact seller-fact quote directly supports the claim; contradicted_by_supplied_facts only with a direct contradictory seller-fact quote; unsupported_by_supplied_facts when no applicable fact exists; unreadable when pixels are illegible; needs_human_review for ambiguous cases. Never claim independent factual verification: seller-provided facts themselves are NOT independently verified. If no concrete readable claims exist return an empty claim_ledger. Keep evidence and recommended actions brief. Identify concrete flaws you can actually observe (if text is unreadable, say uncertainty). Give an estimated creative score, not a certified compliance score. Issues should be actionable. Be clear and short, user language Indonesian (Bahasa Indonesia) for all text output. Recommended caption must use only supplied verified facts. Return only the schema.`;
     const payload = {
       model: MODEL,
       messages: [
@@ -180,7 +230,7 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     if(!content) throw new Error('Meta tidak mengembalikan hasil audit. Coba ulangi.');
     let parsed;
     try { parsed = JSON.parse(content); } catch { throw new Error('Respons Meta tidak berbentuk JSON audit.'); }
-    return { audit: normalizeAudit(parsed), model:MODEL, tokens: data.usage?.total_tokens || null };
+    return { audit: normalizeAudit(parsed, body.facts), model:MODEL, tokens: data.usage?.total_tokens || null };
   }
 
   async function improve(body) {
