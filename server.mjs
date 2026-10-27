@@ -1,4 +1,5 @@
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -11,6 +12,18 @@ const MAX_BODY = 9 * 1024 * 1024;
 const ALLOWED_IMAGE = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/;
 const limits = new Map();
 const hasKey = () => !!process.env.MODEL_API_KEY?.trim();
+
+// Optional demo access-code gate. The secret lives server-side only
+// (DEMO_ACCESS_CODE env). When set, paid Meta endpoints require the code
+// via the x-demo-code request header. No default code is shipped.
+function codeMatches(provided, expected) {
+  const a = Buffer.from(String(provided || ''), 'utf8');
+  const b = Buffer.from(String(expected || ''), 'utf8');
+  if (!a.length || !b.length) return false;
+  const ha = crypto.createHash('sha256').update(a).digest();
+  const hb = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(ha, hb);
+}
 
 export const schema = {
   type: 'object',
@@ -77,7 +90,8 @@ function normalizeAudit(a) {
   };
 }
 
-export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY} = {}) {
+export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE} = {}) {
+  const gate = String(demoCode || '').trim();
   async function metaCall(endpoint, payload, timeout = 70000) {
     if (!key?.trim()) { const e = new Error('Meta API key belum dikonfigurasi di server.'); e.status = 503; throw e; }
     const controller = new AbortController();
@@ -178,8 +192,13 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY}
     };
     for(const [k,v] of Object.entries(headers)) res.setHeader(k,v);
     try {
-      if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),textModel:MODEL,imageModel:'muse-image-1.0'});
+      if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),demoGate:!!gate,textModel:MODEL,imageModel:'muse-image-1.0'});
       if(req.method==='POST' && ['/api/audit','/api/improve'].includes(url.pathname)) {
+        if(gate) {
+          const provided = String(req.headers['x-demo-code'] || '');
+          if(!provided) return json(res,401,{error:'Demo ini memerlukan kode akses.'});
+          if(!codeMatches(provided, gate)) return json(res,403,{error:'Kode akses salah.'});
+        }
         const ip = req.socket.remoteAddress || 'local'; const now=Date.now();
         const state=limits.get(ip) || {start:now,count:0};
         if(now-state.start>60_000) {state.start=now;state.count=0;}
