@@ -16,6 +16,10 @@
     },
     "api/improve.mjs": {
       "maxDuration": 150
+    },
+    "server.mjs": {
+      "includeFiles": "public/**",
+      "maxDuration": 150
     }
   }
 }
