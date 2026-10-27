@@ -22,12 +22,20 @@ Official Rules weights: Impact 30%, Meta AI Tooling 25%, Technical Depth & Execu
 | Claim X-Ray | Implemented as panel | Actual source image and observation; no fake coordinates |
 | Muse Code authorship | Verified genuine contribution | Existing issue #9/run and new issue #14/run; original commit retained, ChatGPT fixes separate |
 | Access | Private paid routes retained | Public homepage/Studio/docs; Judge Access; fail-closed production |
-| Tests / viewport / preview | See WORK-STATE | Regression mocks are not paid provider tests |
+| Tests / viewport / preview | 84/84 automated; six real-browser viewport flows | See WORK-STATE and docs/qa/studio-2026-10-28. Regression mocks are not paid provider tests; release PR records deployment checks |
 | Authentic Meta E2E | NOT RUN in this upgrade | No local MODEL_API_KEY/DEMO_ACCESS_CODE; no user-selected rights-cleared ad for the demo |
 | Full screenshot set / participant-only instructions | Incomplete | One relevant anti-project screenshot recovered; rules/submission authenticated details need verification |
 | Participant eligibility / chosen track / signed waiver | NEEDS VERIFICATION | Participant must confirm privately |
 | Final video | NOT RECORDED | Must use actual successful provider calls |
 | Final submission / X | NOT PERFORMED | Requires user's explicit instruction; no acceptance receipt |
+
+## Studio demonstration navigation
+
+The first screen exposes all three capabilities through an interactive verification rail. Open Claim X-Ray, Proof Constellation or Claim DNA to switch the inspection workbench even before an audit; only truthful empty states appear. After a genuine audit, select a claim, use “Trace this claim in Constellation”, then inspect a quotation/status node. DNA “Inspect source” selects the corresponding original/revised claim and image. Results tabs separate Claims, Findings and Suggested copy; export is in its own footer.
+
+Desktop-first composition and mobile flow were verified in a real browser at 1920/1440/1280/768/390/320px. Evidence screenshots are regression fixtures, not material for a genuine submission demo. A server health response only confirms configuration; successful model requests and a complete live cycle still require separate evidence.
+
+For the live run, the owner needs a rights-cleared real creative, documented product facts, a privately entered judge code, and an approved cost cap for one Spark → Image → Spark cycle. Do not retrieve production secrets or repeatedly retry paid generation without an agreed budget.
 
 ## Authentic demo storyboard
 

@@ -42,3 +42,7 @@ Selecting an audit card, graph claim or trajectory loads the actual correspondin
 - Reports contain user facts/caption and model observations; no code/key or raw image is exported in JSON. They are local downloads and should only be shared with appropriate rights.
 - In-memory rate limiting is not a global spending cap. No anonymous paid API or new paid service was enabled.
 - Automated tests use mocks. Live-provider validation, real product facts and authentic demo capture must be recorded separately.
+
+## Inspection workspace follow-up
+
+`activateProofView` changes the visible inspection mode without inventing observations. Selection is shared by source inspection and graph, while DNA source links explicitly select an audit stage and ledger index. An index is only a reference within that specific stage; matching across stages still uses the conservative engine. Caption claims display the actual supplied caption with the creative for context. Resizing redraws the graph against its container width while preserving the selected evidence detail. Clearing inputs releases all source references in the workbench and restores truthful empty states.
