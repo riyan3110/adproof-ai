@@ -31,7 +31,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   await page.route('**/api/audit',async r=>{
    if(r.request().headers()['x-demo-code']!=='browser-test-only')return r.fulfill({status:401,json:{error:'Test requires code'}});
    requests.push(r.request().postDataJSON());audits++;
-   await r.fulfill({json:{audit:audits===1?initial:after,model:'TEST MOCK Spark',tokens:0}});
+   await r.fulfill({json:{audit:audits===1?initial:after,model:'TEST MOCK Spark',tokens:0,original_reference_sent:audits>1}});
   });
   await page.route('**/api/improve',async r=>{assert.equal(r.request().headers()['x-demo-code'],'browser-test-only');assert.equal(r.request().postDataJSON().claims.length,4);edits++;await r.fulfill({json:{image:repaired,model:'TEST MOCK Image'}});});
   if(process.env.ADPROOF_PREVIEW_ACCESS_FILE)await page.goto((await fs.readFile(process.env.ADPROOF_PREVIEW_ACCESS_FILE,'utf8')).trim());
@@ -104,6 +104,14 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   let chooser=false;page.on('filechooser',()=>{chooser=true});await page.locator('#compareRange').focus();await page.keyboard.press('ArrowRight');assert.equal(chooser,false);
   if(width<761){assert.match(await page.locator('#stickyAudit').textContent(),/Verify/);await page.locator('#stickyAudit').click();}else await page.locator('#verifyButton').click();
   await page.locator('#auditPhase').filter({hasText:'RE-CHECK COMPLETE'}).waitFor();assert.equal(audits,2);assert.match(await page.locator('#metaProviderStatus').textContent(),/Full audit → repair → re-audit responded/);assert.equal(requests[0].facts,requests[1].facts);assert.equal(requests[0].caption,requests[1].caption);assert.equal(requests[1].image,repaired);
+   assert.equal(requests[0].referenceImage,undefined,'initial scan should not submit a second image');
+   assert.match(requests[1].referenceImage,/^data:image\\/jpeg;base64,/,'verify should send downsized original');
+   assert.ok(requests[1].referenceImage.length<320000);
+   assert.equal(audits,2,'comparison must be part of existing re-audit, not an extra paid call');
+   assert.equal(await page.locator('#repairGuardNotice').isVisible(),true,'candidate warning stays visible');
+   assert.match(await page.locator('#repairGuardNotice').textContent(),/CANDIDATE ONLY/);
+   assert.match(await page.locator('#scoreSummary').textContent(),/NOT proof the image improved/);
+   assert.match(await page.locator('#stickyLabel').textContent(),/NOT approved/);
   await page.locator('#deckDNA').click();assert.match(await page.locator('#evolutionList').textContent(),/Not in re-audit list/);assert.match(await page.locator('#evolutionList').textContent(),/Possible wording change/);
   await page.locator('.dna-row summary').first().click();await screenshot(page,`dna-${width}`);
   await page.locator('.dna-row[open] button').first().click();assert.equal(await page.locator('#proofStage').inputValue(),'initial');assert.notEqual(await page.locator('#xrayImage').getAttribute('src'),repaired);
@@ -112,6 +120,9 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   for(let i=0;i<4;i++){await page.locator('.proof-modebar [data-proof-view=constellation]').click();await page.locator('.proof-modebar [data-proof-view=xray]').click();}
   assert.equal(await page.locator('#xrayClaim').textContent(),'Wood frame');assert.equal(audits,2);assert.equal(edits,1);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#downloadReport').click()]);const report=JSON.parse(await fs.readFile(await download.path(),'utf8'));assert.equal(report.claim_evolution.entries.length,5);assert.ok(report.proof_constellation.initial.edges.length);assert.equal(JSON.stringify(report).includes('browser-test-only'),false);
+   assert.equal(report.repair_review.auto_approved,false);
+   assert.equal(report.repair_review.status,'review_required');
+   assert.equal(report.repair_review.original_reference_sent,true);
   // Test-only reproduction of owner-observed LumaDesk Mini cross-source case.
   // These observations exist only in the browser test, never in production.
   await page.evaluate(async()=>{
@@ -150,7 +161,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   await page.evaluate(async()=>{const {activateProofView}=await import('/proof-studio.js');activateProofView('xray');});
   assert.equal(await overflow(),false,`result overflow ${width}`);
   const memory=await page.evaluate(()=>({heapBytesApprox:performance.memory?.usedJSHeapSize??null,domElements:document.querySelectorAll('*').length}));assert.ok(memory.domElements<1500);
-  await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#xrayEmpty').isVisible(),true);assert.equal(await page.locator('#xrayImage').getAttribute('src'),null);assert.equal(await page.locator('#compareAfter').getAttribute('src'),null);assert.equal(await page.locator('.proof-node').count(),0);assert.equal(await page.locator('.dna-row').count(),0);assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
+  await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#xrayEmpty').isVisible(),true);assert.equal(await page.locator('#xrayImage').getAttribute('src'),null);assert.equal(await page.locator('#compareAfter').getAttribute('src'),null);assert.equal(await page.locator('.proof-node').count(),0);assert.equal(await page.locator('.dna-row').count(),0);assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#repairGuardNotice').isVisible(),false);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
   await page.evaluate(async()=>{const {renderProofStudio}=await import('/proof-studio.js');renderProofStudio({before:{claim_ledger:[]},after:null,facts:''})});assert.equal(await page.locator('.proof-node').count(),0);
   await page.evaluate(async()=>{const {renderProofStudio}=await import('/proof-studio.js');renderProofStudio({before:{claim_ledger:[{claim:'<img src=x onerror=alert(1)>',origin:'creative',assessment:'needs_human_review'}]},after:{},facts:''})});assert.equal(await page.locator('#proofWorkspace img[src=x]').count(),0);assert.match(await page.locator('#evolutionNote').textContent(),/Incomplete/);
   if(width===1440){
