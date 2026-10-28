@@ -147,6 +147,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   assert.match(await page.locator('#evolutionNote').textContent(),/Image repair does not edit the caption/);
   assert.match(await page.locator('.dna-row').filter({hasText:'LumaDesk Mini'}).textContent(),/Not in re-audit list/);
   assert.equal(await overflow(),false,`DNA cross-source state overflow ${width}`);
+  await page.evaluate(async()=>{const {activateProofView}=await import('/proof-studio.js');activateProofView('xray');});
   assert.equal(await overflow(),false,`result overflow ${width}`);
   const memory=await page.evaluate(()=>({heapBytesApprox:performance.memory?.usedJSHeapSize??null,domElements:document.querySelectorAll('*').length}));assert.ok(memory.domElements<1500);
   await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#xrayEmpty').isVisible(),true);assert.equal(await page.locator('#xrayImage').getAttribute('src'),null);assert.equal(await page.locator('#compareAfter').getAttribute('src'),null);assert.equal(await page.locator('.proof-node').count(),0);assert.equal(await page.locator('.dna-row').count(),0);assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
