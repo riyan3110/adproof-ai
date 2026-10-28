@@ -76,8 +76,9 @@ function safeReportData(source,{withHistory=true}={}){
  // Never read or restore untrusted stored auth keys, user-supplied script,
  // externally supplied proof graph edges or cached model "ready" flags.
  const {app,date,product,context:ctx,caption_scope,runs,original,verified,repair_review,disclaimer,archive_artifacts}=source;
+ const reportLanguage=source.report_language==='en'||source.report_language==='id'?source.report_language:'und';
  const result={
-  app,date:typeof date==='string'?date:null,product:typeof product==='string'?product.slice(0,130):ctx.product,
+  app,date:typeof date==='string'?date:null,report_language:reportLanguage,product:typeof product==='string'?product.slice(0,130):ctx.product,
   context:{product:ctx.product,facts:ctx.facts,caption:ctx.caption},
   caption_scope:typeof caption_scope==='string'?caption_scope.slice(0,350):'The supplied caption is unchanged in both audits.',
   runs:Array.isArray(runs)?runs.slice(0,8).map(r=>({
@@ -87,7 +88,7 @@ function safeReportData(source,{withHistory=true}={}){
    provenance:r?.provenance&&typeof r.provenance==='object'?{
     provider:String(r.provenance.provider||'').slice(0,90),model:String(r.provenance.model||'').slice(0,90),
     stage:String(r.provenance.stage||'').slice(0,24),completed_at:String(r.provenance.completed_at||'').slice(0,60),
-    input_sha256:String(r.provenance.input_sha256||'').slice(0,64)
+    input_sha256:String(r.provenance.input_sha256||'').slice(0,64),report_language:r.provenance.report_language==='en'||r.provenance.report_language==='id'?r.provenance.report_language:'und'
    }:null
   })):[],
   original,verified:verified||null,
