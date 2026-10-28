@@ -786,3 +786,54 @@ button:disabled{cursor:not-allowed;opacity:.42}
   .studio-body .report-wire-steps span{font-size:7px}
   .studio-body .pending-demo-disclaimer{font-size:8px;letter-spacing:.7px}
 }
+
+
+/* Honest, persistent demo access and model response indicators.
+   A configured server key is NOT proof of a live model response. */
+.studio-body .access-status-strip{
+  background:#26312a;
+  color:#eaf0e6;
+  border-bottom:1px solid #566a53;
+  display:flex;
+  align-items:center;
+  gap:clamp(16px,2.4vw,38px);
+  padding:9px clamp(16px,3vw,62px);
+  min-height:49px;
+  font-family:ui-sans-serif,system-ui,sans-serif;
+}
+.studio-body .access-status-item{display:flex;align-items:center;gap:10px;min-width:0}
+.studio-body .access-status-name{
+  white-space:nowrap;color:#a1b6a4;font-size:9px;
+  font-weight:850;letter-spacing:1.1px;
+}
+.studio-body .access-status-item strong{
+  font-size:11px;line-height:1.4;font-weight:750;color:#e0e8db;
+}
+.studio-body .access-status-item strong[data-state=verified]{color:#d0f7a0}
+.studio-body .access-status-item strong[data-state=partial]{color:#d5e5a7}
+.studio-body .access-status-item strong[data-state=invalid]{color:#ffbf9f}
+.studio-body .access-status-item strong[data-state=checking]{color:#f4d5a7}
+.studio-body .access-status-note{
+  margin-left:auto;font-size:10px;line-height:1.4;color:#b0bfb1;
+  text-align:right;
+}
+.studio-body .judge-access-error{
+  background:#422b2a;border:1px solid #9c655b;color:#ffddd3;
+  border-radius:3px;padding:11px 13px;margin:2px 0 0;
+  font-size:12px;line-height:1.5;
+}
+.studio-body .judge-access-error[hidden]{display:none!important}
+.studio-body .judge-access-button:disabled,.studio-body .judge-save:disabled{
+  opacity:.56;cursor:wait;
+}
+@media(max-width:1000px){
+  .studio-body .access-status-strip{flex-wrap:wrap;gap:5px 17px;min-height:0;padding:10px 16px}
+  .studio-body .access-status-note{flex:1 0 100%;margin-left:0;text-align:left;font-size:9px}
+}
+@media(max-width:600px){
+  .studio-body .access-status-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:9px 12px}
+  .studio-body .access-status-item{display:grid;gap:2px;align-content:start}
+  .studio-body .access-status-name{font-size:8px;letter-spacing:.8px}
+  .studio-body .access-status-item strong{font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+  .studio-body .access-status-note{grid-column:1/-1;font-size:9px}
+}
