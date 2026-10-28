@@ -448,7 +448,6 @@ function continueArchivedAudit(from){
  updateMetaStatus();
  for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;
  ui.originalTab.disabled=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;
- ui.archiveContinueActions?.classList.remove('active');
  ui.archiveNotice.hidden=false;
  ui.archiveNotice.textContent='CONTINUED FROM SAVED '+from.toUpperCase()+' · Archived baseline '+baseline.score+'/100 reused without a Meta call. Old round and both images kept in the next ZIP. Press Repair creative deliberately to generate a new image (potentially paid); Verify separately. The revision is never automatically approved.';
  ui.name.textContent='SAVED '+from.toUpperCase()+' · REPAIR BASELINE';
