@@ -605,3 +605,26 @@ button:disabled{cursor:not-allowed;opacity:.42}
 @media(prefers-reduced-motion:reduce){
   .studio-body *, .studio-body *:before,.studio-body *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+
+/* First-fold discipline: the creative surface must start in the first
+   desktop viewport, including 1280px laptops, not below a tall masthead. */
+@media(min-width:1100px){
+ .studio-body .workspace{padding-top:18px}
+ .studio-body .workspace-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;padding-bottom:14px;margin-bottom:14px}
+ .studio-body .workspace-head h1{font-size:clamp(60px,4.3vw,80px);margin:12px 0 7px;line-height:.93}
+ .studio-body .workspace-head h1 sup{margin-top:7px;font-size:9px}
+ .studio-body .proofroom-overline{font-size:9px}
+ .studio-body .proofroom-subtitle{font-size:12px}
+ .studio-body .progress-cluster{justify-items:end;gap:9px;padding-bottom:5px}
+ .studio-body .progress-caption{font-size:9px}
+ .studio-body .section-label{margin-bottom:8px}
+ .studio-body .preview-pane .panel-heading{margin-bottom:11px}
+}
+@media(max-width:540px){
+ .studio-body .workspace-head{gap:12px;margin-bottom:14px;padding-bottom:14px}
+ .studio-body .workspace-head h1{margin-top:12px}
+ .studio-body .progress-cluster{gap:7px}
+ .studio-body .engine-rail .deck-module{min-height:90px}
+ .studio-body .engine-rail .deck-module .deck-bottom{font-size:8px}
+}
