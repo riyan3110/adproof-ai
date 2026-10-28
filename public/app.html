@@ -20,6 +20,17 @@
     <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">Docs ↗</a>
   </div>
 </header>
+<div class="access-status-strip" role="group" aria-label="Live access and Meta provider status">
+  <div class="access-status-item">
+    <span class="access-status-name">JUDGE ACCESS</span>
+    <strong id="judgeAccessStatus" role="status" aria-live="polite">Code not verified</strong>
+  </div>
+  <div class="access-status-item">
+    <span class="access-status-name">META AI</span>
+    <strong id="metaProviderStatus" role="status" aria-live="polite">Checking configuration</strong>
+  </div>
+  <span class="access-status-note">Code verification is free. Model connectivity needs an actual audit.</span>
+</div>
 <main class="workspace" id="studioMain">
   <section class="workspace-head">
     <div class="workspace-title">
@@ -236,12 +247,13 @@
     <h2 id="judgeAccessTitle">Unlock Meta AI</h2>
     <p id="judgeAccessHint">Enter the private access code shared with judges. Public browsing remains free.</p>
     <label for="judgeAccessCode">Demo access code</label>
-    <input id="judgeAccessCode" type="password" required autocomplete="off" maxlength="128" placeholder="Enter code" aria-required="true">
+    <input id="judgeAccessCode" type="password" required autocomplete="off" maxlength="128" placeholder="Enter code" aria-required="true" aria-describedby="judgeAccessError">
+    <p id="judgeAccessError" class="judge-access-error" role="alert" hidden></p>
     <div class="judge-access-actions">
       <button type="button" class="judge-cancel" id="judgeAccessCancel">Cancel</button>
-      <button type="submit" class="judge-save">Continue ↗</button>
+      <button type="submit" class="judge-save">Verify code ↗</button>
     </div>
-    <small>Stored in this browser tab only. Never put the code in public posts.</small>
+    <small>Verified against this server without a paid Meta request. Saved in this tab only. Never share the code publicly.</small>
   </form>
 </dialog>
 <div role="status" aria-live="polite" id="toast" class="toast" hidden></div>
