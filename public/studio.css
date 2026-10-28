@@ -844,3 +844,35 @@ button:disabled{cursor:not-allowed;opacity:.42}
   .studio-body .workspace-head{padding-bottom:10px;margin-bottom:8px}
   .studio-body .section-label{margin-bottom:5px}
 }
+
+
+/* Claim DNA audit-trace provenance: a cross-source observation is not
+   proof that image-editing moved, removed or introduced the actual claim. */
+.studio-body #evolutionNote{
+  display:block;
+  padding:14px 17px;
+  margin:14px 0;
+  color:#344b39;
+  border:1px solid #a4b39b;
+  border-left:4px solid #78966c;
+  background:#eaf0e5;
+  font-size:12px;
+  line-height:1.6;
+}
+.studio-body .dna-origin-shift{
+  grid-column:2 / -1;
+  color:#6d634b;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.65px;
+  text-align:right;
+  line-height:1.6;
+}
+.studio-body .status-cross_source_observed{border-color:#b0bb9d;background:#ecf0e4}
+.studio-body .status-cross_source_observed .dna-status{color:#506d3f;font-weight:850}
+.studio-body .status-not_redetected .dna-status{color:#875d46}
+.studio-body .status-newly_detected .dna-status{color:#4f6f5a}
+@media(max-width:760px){
+ .studio-body .dna-origin-shift{grid-column:2;text-align:left;font-size:9px}
+ .studio-body #evolutionNote{font-size:11px;padding:12px}
+}
