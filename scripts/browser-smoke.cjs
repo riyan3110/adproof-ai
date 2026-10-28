@@ -36,6 +36,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   for(const [module,panel] of [['deckProof','constellationEmpty'],['deckDNA','evolutionEmpty'],['deckDetect','xrayEmpty']]){await page.locator('#'+module).click();assert.equal(await page.locator('#'+panel).isVisible(),true);assert.equal(await page.locator('#'+module).getAttribute('aria-pressed'),'true');}
   assert.equal(await page.locator('#refineButton').isDisabled(),true);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
   await page.evaluate(()=>scrollTo(0,0));await screenshot(page,`empty-${width}`);
+  assert.equal(await page.locator('.studio-nav').evaluate(nav=>[...nav.querySelectorAll('a,button')].filter(e=>e.getBoundingClientRect().height).some(e=>e.getBoundingClientRect().bottom>nav.getBoundingClientRect().bottom+1)),false,'header controls must remain inside header');
   const canvasY=await page.locator('#dropzone').evaluate(e=>e.getBoundingClientRect().y);
   if(width>=1280)assert.ok(canvasY<400,'canvas must be in the first desktop viewport');
   // Every module name must fit; whole names remain readable, including 320px.

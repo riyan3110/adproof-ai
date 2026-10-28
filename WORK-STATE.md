@@ -84,3 +84,5 @@ Baseline main `558d6e9b571b1d62ebd454a811634c4bd30b5f48` includes merged PR #16.
 ### Remaining boundaries
 
 Official event deadline rechecked 28 October: still 4 November 21:00 ET / 5 November 09:00 WIB. Public submission page does not expose authenticated final fields/video limits. No personal eligibility/registered track/waiver fact was newly verified. No secret was retrieved/decrypted; no authorized cost cap and usable private-code/real-ad combination was available, so no paid Meta E2E or video is claimed. See readiness for remaining owner steps.
+
+Final mobile visual correction: 320px header controls now remain inside the header; the empty-canvas headline wraps within its container. Full 390px/320px mocked browser flows were rerun successfully with an explicit header-containment assertion, no overflow and no JS errors. See QA `empty-320.png` and `mobile-final-results.json`.

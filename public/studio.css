@@ -121,3 +121,5 @@ button:disabled{cursor:not-allowed;opacity:.42}
 /* Notifications must not intercept the mobile workflow action. */
 .toast{pointer-events:none}
 @media(max-width:760px){.toast{top:12px;bottom:auto;left:12px;right:12px;width:auto;max-width:none;font-size:11px}}
+@media(max-width:760px){.studio-nav{height:auto;min-height:90px}.empty-canvas{max-width:100%;padding:12px}.empty-title{max-width:100%;overflow-wrap:anywhere}}
+@media(max-width:360px){.studio-nav{grid-template-columns:1fr;gap:8px}.studio-actions{flex-wrap:nowrap;justify-content:space-between}.studio-actions .connection{flex-basis:auto;justify-content:flex-start;gap:7px;font-size:8px}.studio-actions .judge-access-button{font-size:9px;padding:6px 9px}.studio-nav .icon-link{font-size:10px}.empty-title{font-size:17px}}
