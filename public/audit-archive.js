@@ -12,9 +12,14 @@ const u16=(v,n,x)=>v.setUint16(n,x,true);
 const u32=(v,n,x)=>v.setUint32(n,x>>>0,true);
 function assert(ok,msg){if(!ok)throw Error(msg);}
 function view(buf){return new DataView(buf.buffer,buf.byteOffset,buf.byteLength);}
+const CRC_TABLE=Uint32Array.from({length:256},(_,n)=>{
+ let crc=n;
+ for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);
+ return crc>>>0;
+});
 function zipCrc(bytes){
  let crc=0xffffffff;
- for(const byte of bytes){crc^=byte;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}
+ for(const byte of bytes)crc=(crc>>>8)^CRC_TABLE[(crc^byte)&255];
  return (crc^0xffffffff)>>>0;
 }
 export function sniffImageMime(bytes){
