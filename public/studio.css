@@ -901,3 +901,28 @@ button:disabled{cursor:not-allowed;opacity:.42}
 @media(max-width:600px){
   .studio-body .repair-guard-notice{padding:13px 15px;font-size:12px;margin-bottom:14px}
 }
+
+
+/* Audit archive: local-only, read-only rehydration of verified saved evidence. */
+.studio-body .archive-restore-notice{
+  display:block;
+  margin:12px 20px 14px;
+  padding:14px 18px;
+  color:#324735;
+  background:#ebf0e5;
+  border:1px solid #a8b89d;
+  border-left:5px solid #758965;
+  line-height:1.55;
+  font-size:12px;
+  font-weight:650;
+  overflow-wrap:anywhere;
+}
+.studio-body .archive-restore-notice[hidden]{display:none!important}
+.studio-body .export-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;min-width:0}
+.studio-body .export-actions .btn{white-space:normal;max-width:100%;min-height:37px;line-height:1.25}
+.studio-body #importReportInput[hidden]{display:none!important}
+@media(max-width:760px){
+  .studio-body .archive-restore-notice{margin:10px;padding:12px;font-size:11px}
+  .studio-body .export-actions{justify-content:stretch}
+  .studio-body .export-actions .btn{flex:1 1 140px}
+}

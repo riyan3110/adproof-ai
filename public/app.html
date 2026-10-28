@@ -197,6 +197,7 @@
   <div class="section-label result-label"><span>03 / AUDIT DOSSIER</span><span>OBSERVATIONS, NOT CERTIFICATION</span></div>
       <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" >
         <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> THE AUDIT RECORD</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
+        <div id="archiveRestoreNotice" class="archive-restore-notice" role="status" aria-live="polite" hidden></div>
         <div id="reportEmpty" class="report-empty report-empty-rich">
           <div class="report-idle-copy">
             <span class="empty-index">THE INSPECTION RECORD / PENDING</span>
@@ -205,6 +206,7 @@
             <div class="report-empty-actions">
               <button type="button" id="exploreProofButton" class="report-explore" aria-controls="constellationWorkspace">Explore the evidence flow ↗</button>
               <button type="button" class="report-upload-link" data-focus-input>Start with a creative ↑</button>
+              <button type="button" id="importReportStart" class="report-upload-link">Import saved audit ↗</button>
             </div>
             <span class="pending-demo-disclaimer">LAYOUT PREVIEW · NO MODEL OUTPUT · NO SCORES</span>
           </div>
@@ -236,7 +238,12 @@
           <div id="issuesList" class="issues-list"></div>
           </div><div id="reportCaption" hidden><div class="recommendation"><div><span>✧ SUGGESTED CAPTION</span><button id="copyCaption" title="Copy caption" class="copy-icon" type="button" aria-label="Copy suggested caption">⧉</button></div><p id="suggestedCaption"></p></div></div>
         </div>
-        <div class="export-strip"><div><strong>Take the evidence with you</strong><p id="exportState">Run an audit to create a report.</p></div><div class="export-actions"><button type="button" id="downloadReport" class="btn btn-subtle" disabled>↓ Export report</button><button type="button" id="downloadImage" class="btn btn-subtle" disabled>↓ Revised image</button></div></div>
+        <div class="export-strip"><div><strong>Take the evidence with you</strong><p id="exportState">Run an audit to create a report.</p></div><div class="export-actions">
+          <button type="button" id="importReportButton" class="btn btn-subtle">↑ Import report</button>
+          <input type="file" id="importReportInput" accept=".json,.zip,application/json,application/zip" aria-label="Import saved AdProof audit JSON or ZIP" hidden>
+          <button type="button" id="downloadReport" class="btn btn-subtle" disabled>↓ Export JSON</button>
+          <button type="button" id="downloadPackage" class="btn btn-subtle" disabled>↓ Export package ZIP</button>
+          <button type="button" id="downloadImage" class="btn btn-subtle" disabled>↓ Revised image</button></div></div>
       </section>
 <div class="sticky-cta" id="stickyCta"><div class="sticky-cta-inner"><span class="sticky-cta-label" id="stickyLabel">Add creative + facts</span><button type="button" class="btn btn-analyze" id="stickyAudit">Run audit ↗</button></div></div>
   </div></div>

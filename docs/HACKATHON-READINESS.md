@@ -102,3 +102,10 @@ Prior headings in this document describe the status **before** this owner-run te
 Prompt-hardening and internal regression checks were applied to the *existing* Repair/Verify workflow after the owner's real LumaDesk test revealed an invented `USB-C Powered` line despite facts specifying only USB 5V. Re-audit now sends a compact original reference alongside the revised image, and displays a clearly **unapproved candidate** warning based on conservative model-observation checks even if the aggregate score increases. Both real images remain available in memory for comparison; saved results can still be lost on refresh if not exported. Caption-only concerns no longer justify automatically invoking image editing.
 
 **Validation limitation:** Source regressions and browser mocked-provider tests can confirm code and flow but do not establish that Muse Image never deforms objects, that the model reliably finds all Photoshop/AI artifacts, or that paired-image visual analysis will meet accuracy requirements on real production images. No paid live-model call was made for this patch. Do not make a hackathon demo claim of guaranteed repair quality.
+
+
+## Demonstration archive recovery (28 October 2026)
+
+To avoid repeated paid audits after a browser refresh, AdProof AI exports/imports JSON and complete image+JSON ZIP packages locally. Historical JSON, including the owner-observed 35/58 LumaDesk example, restores claim observations and claim lineage but cannot recover missing original/revised pixels. New ZIP packages retain both images for a reconstructed Before/After.
+
+Imports are explicitly READ ONLY with no Meta API call, and old model observations are not presented as a newly verified inference. Live provider evaluation is grounded separately in the owner's screenshots and application-generated run metadata, not signed provider records. ZIP archive quality tests use mocked model responses and do not assert independent accuracy of Muse Spark or image editing.

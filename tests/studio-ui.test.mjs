@@ -213,3 +213,21 @@ test('existing verification dossier warns when AI repair is unapproved despite h
  assert.ok(guard.includes('auto_approved:false'));
  assert.ok(!js.includes('repair_approved:true'));
 });
+
+test('audit archive import/export controls preserve prior Studio elements and read-only restore contract',()=>{
+ const archive=readFileSync(new URL('../public/audit-archive.js',import.meta.url),'utf8');
+ const guard=readFileSync(new URL('../public/repair-guard.js',import.meta.url),'utf8');
+ for(const id of ['importReportButton','importReportStart','importReportInput','downloadPackage','archiveRestoreNotice'])
+  assert.ok(html.includes('id="'+id+'"'),'archive hook '+id);
+ assert.ok(js.includes('openAuditFile(file)'), 'file import must parse locally');
+ assert.ok(js.includes('restoreAuditSnapshot(archive)'), 'archive state must restore to UI');
+ assert.ok(js.includes('readOnly=true'),'imported fields must be readonly');
+ assert.ok(js.includes('state.imported?' ), 'archive state must be explicit');
+ assert.ok(js.includes('if(state.imported)throw Error'), 'guard paid operations from loaded archives');
+ assert.ok(js.includes('repair_review:state.repairReview'), 'new report exports preserve risk records');
+ assert.ok(js.includes('fromImageDataUrl(state.revised)'), 'real signature controls download MIME/extension');
+ assert.ok(archive.includes('sniffImageMime(bytes)'));
+ assert.ok(archive.includes('zipCrc(bytes)'));
+ assert.ok(!archive.includes('fetch('), 'archive processing must never call remote services');
+ assert.ok(guard.includes('auto_approved:false'));
+});

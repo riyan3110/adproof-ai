@@ -142,3 +142,15 @@ Final mobile visual correction: 320px header controls now remain inside the head
 - New **internal** pure risk-guard checks newly unsupported image claims (e.g., the owner's USB-C example), medium/high revised visual/readability/consistency issues and estimated clarity/layout deterioration. Even if no risk is found, the candidate is **NOT auto-approved**. The existing audit report shows review/possible regression and the JSON export includes `repair_review`. Original image remains available for Before/After; fields/reset preserve safeguards.
 - Image regeneration is suppressed where there is no grounded image target (e.g. caption-only claims), avoiding unnecessary paid rewrites. Caption text is not edited by Muse Image.
 - The guard does NOT prove pixel accuracy, originality of a product, or true causal regressions. Comparing two model impressions cannot certify safety, and downsampled original may hide small details. A human should inspect the candidate. Tests are mocked; no genuine paid Meta call was made in this development round.
+
+
+## Audit archive reliability patch — 28 October 2026 (ChatGPT-authored)
+
+Scope: data recovery, correct image file types, and no-cost read-only review within the EXISTING Audit Dossier. No new paid AI/model calls or changed Muse Code attribution.
+
+- Export JSON retains the original/verified model observations, context, audit runs and repair-review notes. Legacy adproof-audit.json (including the owner LumaDesk 35/58 session) can be imported without replaying Meta API calls or claiming fresh audit status.
+- Export package ZIP saves a strict STORE-only ZIP containing audit.json, original.png/jpg/webp, and optional revised.png/jpg/webp. After refresh, the packaged Before/After pixels can be restored. Extensions are derived from image magic bytes; the old JPEG misnamed as .webp is corrected for future downloads.
+- Import report reads local files entirely in-browser. ZIP central directory, known names, CRC32, payload bounds, image signatures, and declared artifacts are validated before altering current UI. JSON import regenerates Claim DNA/X-Ray/Proof Constellation from saved model observations rather than trusting arbitrary graph topology. Old JSON files do NOT contain source pixels.
+- Imported reports are READ ONLY: product fields locked, paid Audit/Repair/Verify disabled and an explicit saved-archive label. No API key or Judge Access code is written to exports. Uploading a new creative exits archive mode.
+- ZIP uses uncompressed entries for broad compatibility and no new runtime dependencies. Third-party compressed ZIPs are not accepted. The browser performs all file operations without server upload.
+- Tests cover legacy JSON, ZIP roundtrip, tampering/CRC, traversal, compression flags, image MIME mismatches, secrets, and 6-width Playwright import/export after reload. Existing Audit→Repair→Verify browser smoke also rechecked. See PR for release statuses.

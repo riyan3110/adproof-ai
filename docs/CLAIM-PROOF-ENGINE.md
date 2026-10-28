@@ -56,3 +56,14 @@ Muse Image receives preservation-first repair instructions: keep all correct phy
 The existing second Muse Spark audit compares **revised creative (image 1)** with a **downsampled original reference (image 2)** in one request; the original is included for comparison only and claim extraction still concerns the revised image and unchanged caption. A compact original is used to respect the Vercel payload limit. Image comparisons are model estimates, not high-resolution metrology or an external product authenticity check.
 
 A deterministic internal guard compares the two selected audit reports for new unsupported *image* claims, medium/high revised visual/structure/legibility issues, and estimated clarity/layout score decline. Its states are `regression_suspected` or `review_required`, **never an automatic pass**; the existing Audit Dossier and exported JSON explicitly warn when manual review is required. Importantly, a larger overall score does NOT prove quality improvement, and apparent absence from a limited claim ledger does NOT prove a defect was removed. Failed verification retains the original and candidate images for inspection.
+
+
+## Audit report archive import/export (browser-only)
+
+The existing Audit Dossier offers Import report (JSON or AdProof ZIP), Export JSON, Export package ZIP and Revised image. These file operations call no model or remote file service.
+
+- JSON is backward compatible with saved AdProof audit reports and restores scores, claim evidence, Claim DNA and source-traced proof relationships. Older JSON reports do not contain original/revised images; the application cannot reconstruct their pixels or invent replacements.
+- New ZIP exports audit.json plus the uploaded workflow's processed original image and optionally the revised image as actual PNG/JPEG/WebP bytes. Inputs may already have been resized/compressed as JPEG to meet the Vercel request limit. Exported filename extensions and MIME derive from image signature, never a potentially misleading data URL header.
+- Only AdProof-created uncompressed STORE ZIPs are accepted. The parser validates central/local entries, CRC32, fixed names, bounds and image signatures. Invalid imports are rejected before replacing the current working session. Archive content is treated as untrusted data, not executable instructions.
+- Imported reports are read-only historical snapshots, NOT independently authenticated provider output or fresh model results. Audit/Repair/Verify cannot run from an imported snapshot; a user can upload a new creative for a new workflow. The private Judge Access code and Meta API key are not written into saved archives.
+- Anyone receiving the archive can read the original and revised creatives, product facts, caption and findings. The archive is not encrypted; share only with authorized recipients.
