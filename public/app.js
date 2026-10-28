@@ -1,5 +1,6 @@
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
+import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   file:$('#fileInput'),drop:$('#dropzone'),browse:$('#browseButton'),replace:$('#newCreative'),empty:$('#emptyCanvas'),image:$('#creativeImage'),name:$('#fileName'),
@@ -9,11 +10,11 @@ const ui = {
   auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
-  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),
+  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
 // Avoid costly, potentially destructive regeneration when the audit has no
@@ -138,15 +139,15 @@ function syncDeck(){
  const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
  const count=Array.isArray(ledger)?ledger.length:0;
  const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
- put('deckPhase',state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
+ put('deckPhase',state.imported?'IMPORTED ARCHIVE · READ ONLY':state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
  put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
- ui.refine.disabled=state.busy||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
- ui.verify.disabled=state.busy||!state.revised||!!state.verified;
- ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;
- put('pipelineHint',state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
- put('exportState',current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
+ ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
+ ui.verify.disabled=state.busy||state.imported||!state.revised||!!state.verified;
+ ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported;
+ put('pipelineHint',state.imported?'Imported archive · read-only review. Upload a new creative to start a fresh audit.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
+ put('exportState',state.imported?(state.original?'Saved audit and images restored locally. No Meta request made.':'JSON report restored locally; source images were not stored in this file.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
   const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
@@ -154,7 +155,7 @@ function syncDeck(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit(){resetProofStudio();state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit(){resetProofStudio();state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -221,7 +222,7 @@ async function compactOriginalReference(dataUrl){
   }
   throw Error('Referensi gambar asli terlalu besar untuk pemeriksaan. Gunakan gambar sumber yang lebih kecil.');
 }
-async function upload(file){if(state.busy)return;try{const data=await prepareImage(file);state.original=data;state.originalFilename=file.name;resetAudit();ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
+async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
@@ -309,6 +310,7 @@ function render(a,verified=false){
  ui.downloadImage.hidden=false;
 }
 async function performAudit(image,verify=false){
+ if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru untuk menjalankan audit.');
  if(!state.configured)throw Error('Hubungkan MODEL_API_KEY di server terlebih dahulu.');
  setBusy(true,verify?'Verifying…':'Analyzing…');
  try{
@@ -327,6 +329,7 @@ async function performAudit(image,verify=false){
  }finally{setBusy(false);}
 }
 async function performImprove(){
+ if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
   if(!hasImageRepairTarget(state.initialAudit))throw Error('Tidak ada temuan gambar yang jelas untuk diperbaiki. Jangan paksa AI membuat ulang gambar tanpa alasan.');
  setBusy(true,'Refining…');
@@ -337,10 +340,10 @@ async function performImprove(){
  }finally{setBusy(false);}
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
-for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy){resetAudit();switchView('original');notify('Input changed. Run a fresh audit to keep evidence consistent.');}});
-ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
-ui.refine.addEventListener('click',async()=>{if(state.busy)return;try{await performImprove();}catch(e){notify(e.message,true);}});
-ui.verify.addEventListener('click',async()=>{if(state.busy||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
+for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){resetAudit();switchView('original');notify('Input changed. Run a fresh audit to keep evidence consistent.');}});
+ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy||state.imported)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
+ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){notify(e.message,true);}});
+ui.verify.addEventListener('click',async()=>{if(state.busy||state.imported||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
 ui.copyCaption.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ui.suggested.textContent);notify('Caption copied.');}catch{notify('Clipboard tidak tersedia.',true);}});
 ui.downloadReport.addEventListener('click',()=>{if(!state.audit)return;const report={app:'AdProof AI',date:new Date().toISOString(),product:state.context?.product,context:state.context,caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',runs:state.runs,repair_review:state.repairReview,...proofReport(),original:state.initialAudit,verified:state.verified,disclaimer:'AI-estimated guidance. Revised image is never auto-approved; human visual review required.'};download(JSON.stringify(report,null,2),'adproof-audit.json','application/json');});
 ui.downloadImage.addEventListener('click',()=>{if(!state.revised)return;const [header,b64]=state.revised.split(',');const mime=header.match(/data:(.*?);/)?.[1]||'image/webp';const bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));download(new Blob([bytes],{type:mime}),`adproof-revised.${mime.includes('png')?'png':mime.includes('jpeg')?'jpg':'webp'}`,mime);});
@@ -380,11 +383,11 @@ $('#exploreProofButton').addEventListener('click',()=>activateProofView('constel
 const stickyAudit=$('#stickyAudit'),stickyLabel=$('#stickyLabel');
 function syncSticky(){
  const done=state.phase===3;
- stickyAudit.disabled=state.busy;
- stickyAudit.textContent=state.busy?'Processing…':done?'Inspect changes →':state.phase===2?'Verify revision ↗':state.phase===1?'Repair creative ↗':'Run audit ↗';
- stickyLabel.textContent=state.busy?'Meta model request':done?'Candidate NOT approved · Review images':state.phase===2?'Review candidate image':state.phase===1?'Initial audit complete':!state.original?'Add a creative to begin':'Add facts to begin';
+ stickyAudit.disabled=state.busy||state.imported;
+ stickyAudit.textContent=state.imported?'Archive · read only':state.busy?'Processing…':done?'Inspect changes →':state.phase===2?'Verify revision ↗':state.phase===1?'Repair creative ↗':'Run audit ↗';
+ stickyLabel.textContent=state.imported?'Saved report · no Meta API used':state.busy?'Meta model request':done?'Candidate NOT approved · Review images':state.phase===2?'Review candidate image':state.phase===1?'Initial audit complete':!state.original?'Add a creative to begin':'Add facts to begin';
 }
-stickyAudit.addEventListener('click',()=>{if(state.busy)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1)ui.refine.click();else ui.form.requestSubmit();});
+stickyAudit.addEventListener('click',()=>{if(state.busy||state.imported)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1)ui.refine.click();else ui.form.requestSubmit();});
 new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
 ui.form.addEventListener('input',syncSticky);
 syncDeck();syncSticky();
