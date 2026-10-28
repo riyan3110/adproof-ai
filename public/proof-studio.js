@@ -108,10 +108,13 @@ function renderEvolution(){
  const evolution=buildEvolution(context.before,context.after);context.evolution=evolution;
  const list=$('evolutionList');list.replaceChildren();
  $('evolutionCount').textContent=context.after?`${evolution.entries.length} trajectories · ${evolution.sample_limited?'sampled claims':'model observations'}`:'Awaiting revised-image audit';
- $('evolutionNote').textContent=!context.after?'Run Repair, then re-audit the actual revised image.':
+ const samplingNote=!context.after?'Run Repair, then re-audit the actual revised image.':
    !evolution.complete?'Incomplete claim data. Matching is provisional; inspect both audits.':
    evolution.sample_limited?'Limited view: each audit supplies at most 8 selected claims. Missing from the list does NOT mean missing from the image or caption. Same wording may appear across both sources.':
    'This compares selected audit observations, not exhaustive image text. Missing from a list does not prove removal; inspect both image and caption.';
+ const captionNote=context.after&&context.caption?.trim()
+   ? ' Image repair does not edit the caption. Its unsupported claims still need manual revision.' : '';
+ $('evolutionNote').textContent=samplingNote+captionNote;
  if(!evolution.entries.length){list.append(make('p','proof-empty','No claims returned for comparison. This does not prove the absence of claims.'));return;}
  for(const [i,item]of evolution.entries.entries()){
   const row=make('details',`dna-row status-${item.status}`);const summary=make('summary');
