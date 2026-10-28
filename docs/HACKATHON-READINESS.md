@@ -74,3 +74,10 @@ The user requested a professional, visually distinctive Studio rather than the p
 ## Explicit schematic empty-state enhancement (28 October 2026)
 
 In response to feedback that the initial Studio appeared lifeless, the three evidence modes and audit dossier now show **wireframe illustrations labelled as non-model output** before the first audit. A public "Explore the evidence flow" action navigates to the actual claim/evidence inspector without making a paid model request. As soon as a real audit response arrives, authentic results replace explanatory visuals. Local `npm run check` and six Chromium viewport flows passed using mocked providers, not an authentic Meta API call. No additional claim about hackathon submission readiness is made.
+
+
+## Live Model API verification gate (28 October 2026)
+
+Preflight checks independently confirmed production pages/health answer HTTP 200; unauthenticated Model API routes answer 401 and a wrong Judge Access code answers 403. Both Model API environment variables are configured, but the real Meta **Muse Spark → Muse Image → Muse Spark** chain remains **NOT RUN** with genuine credentials/creative in this check. Do not treat `META CONFIGURED` or tests against mocked fetchers as a live completion.
+
+The image response path now validates PNG/JPEG/WebP signatures (including octet-stream signed URLs) to avoid browser-incompatible data URLs, with regression coverage and proper oversized-response error handling. CDN static page security headers match backend policy after this patch is deployed. Before filming, the owner must privately enter Judge Access, approve a finite paid test budget, supply a real ad image they can use, and verify one complete result. Keep the demo code and keys out of screenshots/videos and use actual provider outputs.
