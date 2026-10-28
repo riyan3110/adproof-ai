@@ -191,6 +191,7 @@ test('Claim DNA explicitly differentiates capped samples and claims seen across 
   assert.ok(proof.includes('First seen in re-audit'));
   assert.ok(proof.includes("item.after?.origin==='caption'"));
   assert.ok(proof.includes('No matched observation'));
+  assert.ok(proof.includes('Image repair does not edit the caption.'), 'unchanged caption with unsupported claims must remain an explicit warning');
   assert.ok(css.includes('.dna-origin-shift'));
   assert.ok(css.includes('#evolutionNote'));
   assert.ok(!proof.includes('Not re-detected'), 'misleading old label must not appear');
