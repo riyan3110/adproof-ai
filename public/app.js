@@ -157,12 +157,12 @@ ui.accessForm.addEventListener('submit',async event=>{
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
 function notify(message,error=false){ui.toast.textContent=t(message);ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function syncDeck(){
- const current=state.phase, ready=!!state.original;
+ const current=state.phase, ready=!!state.original, indonesian=getLanguage()==='id';
  const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
  const count=Array.isArray(ledger)?ledger.length:0;
- const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
+ const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=t(text);};
  put('deckPhase',state.imported?'IMPORTED ARCHIVE · READ ONLY':state.continuedFrom?'CONTINUED FROM ARCHIVE · LIVE REPAIR':state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
- put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
+ put('deckDetectState',current>0?(count?(indonesian?count+' klaim teramati · periksa':count+' observed claim'+(count===1?'':'s')+' · inspect'):'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
@@ -182,14 +182,14 @@ function syncDeck(){
 function renderArchiveHistory(){
  const rounds=state.history||[];
  ui.historyPanel.hidden=rounds.length===0;
- ui.historySummary.textContent='Previous audit rounds · '+rounds.length+' saved';
+ ui.historySummary.textContent=getLanguage()==='id'?'Putaran audit sebelumnya · '+rounds.length+' tersimpan':'Previous audit rounds · '+rounds.length+' saved';
  ui.historyList.replaceChildren();
  for(const [i,round] of rounds.entries()){
   const entry=document.createElement('li');
   const initial=round.report?.original?.score;
   const verified=round.report?.verified?.score;
   const choice=round.from==='revised'?'revised image':'original image';
-  entry.textContent='Round '+(i+1)+': '+(Number.isFinite(initial)?initial+'/100':'unscored')+
+  entry.textContent=getLanguage()==='id'?`Putaran ${i+1}: ${Number.isFinite(initial)?initial+'/100':'belum dinilai'}${Number.isFinite(verified)?' → '+verified+'/100':''} · dari ${round.from==='revised'?'gambar revisi':'gambar asli'}${round.original?' · gambar tersimpan':' · hanya laporan'}`:'Round '+(i+1)+': '+(Number.isFinite(initial)?initial+'/100':'unscored')+
     (Number.isFinite(verified)?' → '+verified+'/100':'')+
     ' · continued from '+choice+
     (round.original?' · images retained':' · report only');
@@ -294,7 +294,7 @@ function renderClaimEvidence(a, verified=false){
   unreadable:['UNREADABLE','uncertain'],
   needs_human_review:['REVIEW NEEDED','uncertain']
  };
- ui.claimCount.textContent=`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
+ ui.claimCount.textContent=getLanguage()==='id'?`${ledger.length} KLAIM · ${verified?'AUDIT ULANG':'AWAL'}`:`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
  for(const [index,item] of ledger.entries()){
   const mapped=labels[item.assessment]||labels.needs_human_review;
   const card=el('article','claim-evidence-item');
@@ -327,9 +327,9 @@ function render(a,verified=false){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
  }
  renderClaimEvidence(a,verified);
- const issues=Array.isArray(a.issues)?a.issues:[];ui.count.textContent=`${String(issues.length).padStart(2,'0')} ISSUES`;
+ const issues=Array.isArray(a.issues)?a.issues:[];ui.count.textContent=getLanguage()==='id'?`${String(issues.length).padStart(2,'0')} TEMUAN`:`${String(issues.length).padStart(2,'0')} ISSUES`;
  ui.issues.replaceChildren();
- if(!issues.length)ui.issues.append(el('p','no-issues','No clear issues detected. Review manually before publishing.'));
+ if(!issues.length)ui.issues.append(el('p','no-issues',t('No clear issues detected. Review manually before publishing.')));
  for(const issue of issues){
   const wrapper=el('div','issue');const button=el('button','issue-top');button.type='button';button.setAttribute('aria-expanded','false');
   const dot=el('span',`severity-dot ${issue.severity}`);const title=el('span','issue-title',issue.title);const cat=el('span','issue-cat',issue.category);const arrow=el('span','issue-chevron','+');button.append(dot,title,cat,arrow);
@@ -337,15 +337,15 @@ function render(a,verified=false){
   button.addEventListener('click',()=>{details.hidden=!details.hidden;button.setAttribute('aria-expanded',String(!details.hidden));arrow.textContent=details.hidden?'+':'−';});
   wrapper.append(button,details);ui.issues.append(wrapper);
  }
- ui.suggested.textContent=a.recommended_caption||'Belum ada saran caption.';
- if(verified && state.initialAudit) ui.scoreSummary.textContent=`${a.summary || ''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
+ ui.suggested.textContent=a.recommended_caption||t('No caption suggestion available.');
+ if(verified && state.initialAudit) ui.scoreSummary.textContent=getLanguage()==='id'?`${a.summary||''} · Perkiraan skor ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} dibanding sebelumnya. Skor lebih tinggi BUKAN bukti gambar membaik.`:`${a.summary||''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
   ui.repairNotice.hidden=!verified;
   if(verified){
     const risk=state.repairReview;
     ui.repairNotice.dataset.level=risk?.status==='regression_suspected'?'warning':'review';
     const heading=risk?.status==='regression_suspected'
-      ? '⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE'
-      : '⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED';
+      ? (getLanguage()==='id'?'⚠️ KEMUNGKINAN KUALITAS REVISI MEMBURUK · JANGAN SETUJUI OTOMATIS':'⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE')
+      : (getLanguage()==='id'?'⚠️ HANYA KANDIDAT · PERLU PEMERIKSAAN MANUSIA':'⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED');
     ui.repairNotice.textContent=heading+' — '+(risk?.reasons||['Compare original and revised before using.']).join(' ');
   }
  ui.refine.hidden=false;
