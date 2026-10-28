@@ -3,7 +3,8 @@
 // No server, model request, credentials or persistent browser storage.
 const encoder=new TextEncoder();
 const decoder=new TextDecoder('utf-8',{fatal:true});
-const MAX_ARCHIVE=18*1024*1024;
+const MAX_ARCHIVE=48*1024*1024;
+const MAX_HISTORY=8;
 const MAX_IMAGE=7*1024*1024;
 const MAX_REPORT=2*1024*1024;
 const FORMATS={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'};
@@ -50,7 +51,7 @@ export function toImageDataUrl(bytes){
  for(let i=0;i<bytes.length;i+=16384)encoded+=String.fromCharCode(...bytes.subarray(i,i+16384));
  return {dataUrl:'data:'+mime+';base64,'+btoa(encoded),mime,extension:FORMATS[mime]};
 }
-function safeReportData(source){
+function safeReportData(source,{withHistory=true}={}){
  assert(source&&typeof source==='object'&&!Array.isArray(source),'Laporan audit harus berupa objek JSON.');
  assert(source.app==='AdProof AI','Ini bukan laporan AdProof AI yang dapat dipulihkan.');
  const context=source.context;
@@ -75,12 +76,45 @@ function safeReportData(source){
  // Never read or restore untrusted stored auth keys, user-supplied script,
  // externally supplied proof graph edges or cached model "ready" flags.
  const {app,date,product,context:ctx,caption_scope,runs,original,verified,repair_review,disclaimer,archive_artifacts}=source;
- return {app,date:typeof date==='string'?date:null,product:typeof product==='string'?product.slice(0,130):ctx.product,
-  context:{product:ctx.product,facts:ctx.facts,caption:ctx.caption},caption_scope:typeof caption_scope==='string'?caption_scope.slice(0,350):'The supplied caption is unchanged in both audits.',
-  runs:Array.isArray(runs)?runs.slice(0,5).map(r=>({stage:String(r?.stage||'').slice(0,24),model:String(r?.model||'').slice(0,70),tokens:Number.isFinite(r?.tokens)?r.tokens:null,provenance:r?.provenance&&typeof r.provenance==='object'?{provider:String(r.provenance.provider||'').slice(0,90),model:String(r.provenance.model||'').slice(0,90),stage:String(r.provenance.stage||'').slice(0,24),completed_at:String(r.provenance.completed_at||'').slice(0,60),input_sha256:String(r.provenance.input_sha256||'').slice(0,64)}:null})):[],
-  original,verified:verified||null,repair_review:repair_review&&typeof repair_review==='object'?repair_review:null,
+ const result={
+  app,date:typeof date==='string'?date:null,product:typeof product==='string'?product.slice(0,130):ctx.product,
+  context:{product:ctx.product,facts:ctx.facts,caption:ctx.caption},
+  caption_scope:typeof caption_scope==='string'?caption_scope.slice(0,350):'The supplied caption is unchanged in both audits.',
+  runs:Array.isArray(runs)?runs.slice(0,8).map(r=>({
+   stage:String(r?.stage||'').slice(0,32),model:String(r?.model||'').slice(0,70),
+   tokens:Number.isFinite(r?.tokens)?r.tokens:null,
+   origin:r?.origin==='saved_archive'?'saved_archive':null,
+   provenance:r?.provenance&&typeof r.provenance==='object'?{
+    provider:String(r.provenance.provider||'').slice(0,90),model:String(r.provenance.model||'').slice(0,90),
+    stage:String(r.provenance.stage||'').slice(0,24),completed_at:String(r.provenance.completed_at||'').slice(0,60),
+    input_sha256:String(r.provenance.input_sha256||'').slice(0,64)
+   }:null
+  })):[],
+  original,verified:verified||null,
+  repair_review:repair_review&&typeof repair_review==='object'?{
+   status:repair_review.status==='regression_suspected'?'regression_suspected':'review_required',
+   reasons:Array.isArray(repair_review.reasons)?repair_review.reasons.slice(0,8).map(x=>String(x).slice(0,400)):[],
+   original_reference_sent:repair_review.original_reference_sent===true,
+   basis:'model_selected_observations_not_pixel_certification',
+   auto_approved:false
+  }:null,
   disclaimer:typeof disclaimer==='string'?disclaimer.slice(0,350):'Imported archive; not a new model verification.',
-  archive_artifacts:archive_artifacts&&typeof archive_artifacts==='object'?archive_artifacts:null};
+  archive_artifacts:archive_artifacts&&typeof archive_artifacts==='object'?archive_artifacts:null
+ };
+ if(withHistory&&source.archive_history!==undefined){
+  assert(Array.isArray(source.archive_history)&&source.archive_history.length<=MAX_HISTORY,'Riwayat audit terlalu banyak atau tidak valid.');
+  result.archive_history=source.archive_history.map(item=>{
+   assert(item&&typeof item==='object'&&['original','revised'].includes(item.from),'Sumber riwayat tidak valid.');
+   const report=safeReportData(item.report,{withHistory:false});
+   const assets=item.assets;
+   assert(assets==null||(typeof assets==='object'&&typeof assets.original==='string'&&(assets.revised==null||typeof assets.revised==='string')),'Referensi gambar riwayat tidak valid.');
+   return {from:item.from,report,assets:assets?{
+    original:String(assets.original).slice(0,96),
+    revised:assets.revised==null?null:String(assets.revised).slice(0,96)
+   }:null};
+  });
+ }
+ return result;
 }
 export function readAuditJson(text){
  assert(typeof text==='string'&&encoder.encode(text).length<=MAX_REPORT,'Ukuran laporan JSON terlalu besar.');
@@ -109,21 +143,34 @@ function zipStored(entries){
  u32(dv,12,totalCentral);u32(dv,16,offset);
  return new Blob([...locals,...centrals,end],{type:'application/zip'});
 }
-export function createAuditPackage(report,originalDataUrl,revisedDataUrl){
+export function createAuditPackage(report,originalDataUrl,revisedDataUrl,history=[]){
  const validated=safeReportData(report);
- assert(originalDataUrl,'Paket lengkap membutuhkan gambar asli. Unggah ulang gambar asli untuk membuat paket.');
+ assert(Array.isArray(history)&&history.length<=MAX_HISTORY,'Batas riwayat tercapai. Simpan arsip sebelum memulai putaran tambahan.');
+ assert(originalDataUrl,'Paket lengkap membutuhkan gambar asli.');
  const original=fromImageDataUrl(originalDataUrl);
  const revised=revisedDataUrl?fromImageDataUrl(revisedDataUrl):null;
  const assets={original:'original.'+original.extension,revised:revised?'revised.'+revised.extension:null};
- const json={...validated,archive_format_version:1,archive_artifacts:assets,
-  archive_note:'Local saved snapshot; import does not repeat or authenticate a Meta model call.'};
- const jsonBytes=encoder.encode(JSON.stringify(json,null,2));
- assert(jsonBytes.length<=MAX_REPORT,'Laporan JSON terlalu besar untuk paket.');
- const entries=[{name:'audit.json',bytes:jsonBytes},{name:assets.original,bytes:original.bytes}];
+ const entries=[{name:assets.original,bytes:original.bytes}];
  if(revised)entries.push({name:assets.revised,bytes:revised.bytes});
- const blob=zipStored(entries);
- assert(blob.size<=MAX_ARCHIVE,'Paket ZIP melebihi batas ukuran.');
- return {blob,filenames:entries.map(e=>e.name)};
+ const archive_history=history.map((item,i)=>{
+  assert(item&&['original','revised'].includes(item.from),'Jenis sumber putaran tidak valid.');
+  assert(item.original,'Gambar sumber riwayat '+(i+1)+' tidak tersedia. Riwayat tidak boleh dihapus.');
+  const safe=safeReportData(item.report,{withHistory:false});
+  const old=fromImageDataUrl(item.original),next=item.revised?fromImageDataUrl(item.revised):null;
+  if(safe.verified)assert(next,'Riwayat yang sudah diverifikasi harus menyertakan gambar revisi.');
+  const prefix='history/round'+String(i+1).padStart(2,'0')+'-';
+  const names={original:prefix+'original.'+old.extension,revised:next?prefix+'revised.'+next.extension:null};
+  entries.push({name:names.original,bytes:old.bytes});
+  if(next)entries.push({name:names.revised,bytes:next.bytes});
+  return {from:item.from,report:safe,assets:names};
+ });
+ const json={...validated,archive_format_version:2,archive_artifacts:assets,archive_history,
+  archive_note:'Saved previous rounds. Import is not a fresh model run or Meta-signed evidence.'};
+ const jsonBytes=encoder.encode(JSON.stringify(json,null,2));
+ assert(jsonBytes.length<=MAX_REPORT,'JSON riwayat melebihi batas ukuran.');
+ const blob=zipStored([{name:'audit.json',bytes:jsonBytes},...entries]);
+ assert(blob.size<=MAX_ARCHIVE,'Paket melebihi 48 MB. Riwayat tidak dihapus; simpan arsip lama dan kurangi ukuran gambar.');
+ return {blob,filenames:['audit.json',...entries.map(e=>e.name)]};
 }
 function unzipStored(input){
  assert(input instanceof Uint8Array&&input.length>22&&input.length<=MAX_ARCHIVE,'File ZIP tidak valid atau terlalu besar.');
@@ -134,7 +181,7 @@ function unzipStored(input){
  assert(eocd>=0,'Format ZIP tidak dikenali.');
  assert(v.getUint16(eocd+4,true)===0&&v.getUint16(eocd+6,true)===0,'ZIP multi-disk tidak didukung.');
  const count=v.getUint16(eocd+10,true), size=v.getUint32(eocd+12,true), start=v.getUint32(eocd+16,true);
- assert(count===v.getUint16(eocd+8,true)&&count>=2&&count<=3,'Isi paket ZIP tidak sesuai format AdProof.');
+ assert(count===v.getUint16(eocd+8,true)&&count>=2&&count<=3+2*MAX_HISTORY,'Isi paket ZIP tidak sesuai format AdProof.');
  assert(start+size===eocd,'Struktur ZIP tidak valid.');
  const output=new Map();let off=start;
  for(let i=0;i<count;i++){
@@ -146,7 +193,7 @@ function unzipStored(input){
   assert((flags&~0x0800)===0&&method===0&&raw===compressed&&raw<=MAX_IMAGE,'ZIP harus berisi file tanpa kompresi dan enkripsi.');
   assert(off+46+n+extra+comment<=eocd,'Nama file ZIP tidak lengkap.');
   let name;try{name=decoder.decode(input.subarray(off+46,off+46+n));}catch{throw Error('Nama file ZIP rusak.');}
-  assert(name==='audit.json'||/^(original|revised)\.(png|jpg|webp)$/.test(name),'Paket ZIP berisi nama file tak dikenal.');
+  assert(name==='audit.json'||/^(original|revised)\.(png|jpg|webp)$/.test(name)||/^history\/round0[1-8]-(original|revised)\.(png|jpg|webp)$/.test(name),'Paket ZIP berisi nama file tak dikenal.');
   assert(!output.has(name),'Paket ZIP mengandung file ganda.');
   assert(localOffset+30<=start&&v.getUint32(localOffset,true)===0x04034b50,'Data file ZIP rusak.');
   const localFlags=v.getUint16(localOffset+6,true),localMethod=v.getUint16(localOffset+8,true),
@@ -166,32 +213,41 @@ function unzipStored(input){
 }
 export function readAuditPackage(bytes){
  const entries=unzipStored(bytes),jsonBytes=entries.get('audit.json');
- assert(jsonBytes.length<=MAX_REPORT,'Laporan JSON dalam paket terlalu besar.');
+ assert(jsonBytes.length<=MAX_REPORT,'Laporan JSON dalam ZIP terlalu besar.');
  const report=readAuditJson(decoder.decode(jsonBytes));
  const artifacts=report.archive_artifacts;
- assert(artifacts&&typeof artifacts==='object'&&typeof artifacts.original==='string','Paket tidak mencantumkan gambar asli.');
- const originalBytes=entries.get(artifacts.original);
- assert(originalBytes,'Gambar asli tidak ditemukan dalam paket.');
- const original=toImageDataUrl(originalBytes);
- assert(artifacts.original==='original.'+original.extension,'Ekstensi gambar asli tidak sesuai format sebenarnya.');
- let revised=null;
- if(artifacts.revised!=null){
-  assert(typeof artifacts.revised==='string','Nama gambar revisi tidak valid.');
-  const revisedBytes=entries.get(artifacts.revised);
-  assert(revisedBytes,'Gambar revisi tidak ditemukan dalam paket.');
-  revised=toImageDataUrl(revisedBytes);
-  assert(artifacts.revised==='revised.'+revised.extension,'Ekstensi gambar revisi tidak sesuai format sebenarnya.');
- }
- assert(entries.size===(revised?3:2),'Isi paket tidak sesuai daftar gambar laporan.');
- if(report.verified)assert(revised,'Audit ulang harus memiliki gambar revisi dalam paket.');
- return {report,original:original.dataUrl,revised:revised?.dataUrl||null,hasImages:true};
+ assert(artifacts&&typeof artifacts==='object'&&typeof artifacts.original==='string','Gambar sumber tidak terdaftar.');
+ const unpackImage=(name,prefix)=>{
+  assert(typeof name==='string','Nama gambar arsip tidak valid.');
+  const bytes=entries.get(name);
+  assert(bytes,'File gambar arsip tidak ditemukan: '+prefix);
+  const image=toImageDataUrl(bytes);
+  assert(name===prefix+'.'+image.extension,'Ekstensi tidak sesuai format gambar sebenarnya.');
+  return image.dataUrl;
+ };
+ const original=unpackImage(artifacts.original,'original');
+ const revised=artifacts.revised==null?null:unpackImage(artifacts.revised,'revised');
+ if(report.verified)assert(revised,'Audit ulang memerlukan gambar revisi.');
+ let expected=revised?3:2;
+ const history=(report.archive_history||[]).map((item,i)=>{
+  const prefix='history/round'+String(i+1).padStart(2,'0')+'-';
+  assert(item.assets&&typeof item.assets==='object','Referensi gambar riwayat tidak ada.');
+  const old=unpackImage(item.assets.original,prefix+'original');
+  const next=item.assets.revised==null?null:unpackImage(item.assets.revised,prefix+'revised');
+  if(item.report.verified)assert(next,'Riwayat yang diverifikasi memerlukan gambar revisi.');
+  expected+=next?2:1;
+  return {from:item.from,report:item.report,original:old,revised:next};
+ });
+ assert(entries.size===expected,'Isi paket tidak cocok dengan daftar riwayat.');
+ return {report,original,revised,history,hasImages:true};
 }
 export async function openAuditFile(file){
  assert(file&&typeof file.arrayBuffer==='function','Pilih laporan .json atau paket .zip.');
- assert(file.size<=MAX_ARCHIVE,'Arsip melebihi 18 MB.');
+ assert(file.size<=MAX_ARCHIVE,'Arsip melebihi 48 MB.');
  const bytes=new Uint8Array(await file.arrayBuffer());
  if(bytes.length>=4&&bytes[0]===0x50&&bytes[1]===0x4b&&bytes[2]===3&&bytes[3]===4)
   return readAuditPackage(bytes);
  assert(file.name?.toLowerCase().endsWith('.json'),'File bukan laporan JSON atau paket ZIP.');
- return {report:readAuditJson(decoder.decode(bytes)),original:null,revised:null,hasImages:false};
+ const report=readAuditJson(decoder.decode(bytes));
+ return {report,original:null,revised:null,history:(report.archive_history||[]).map(item=>({from:item.from,report:item.report,original:null,revised:null})),hasImages:false};
 }
