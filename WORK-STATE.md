@@ -94,3 +94,12 @@ Final mobile visual correction: 320px header controls now remain inside the head
 - Increased readable type scale, simplified card treatments into bordered document surfaces, emphasized user creative, and kept before/after plus graph/DNA interactive.
 - **Independent local sandbox verification:** `npm run check` **85/85** passed. Chromium + Playwright real-browser full MOCKED flow passed at 1920/1440/1280/768/390/320px; no unexpected console/page errors or horizontal overflow. Desktop creative canvas top was 371/354/352px at 1920/1440/1280 respectively (under 400px first-fold assertion). Mobile 390/320 also passed navigation, upload, claim inspection, repair, re-audit, report export, stale input reset. Results from fake provider responses are **never** public demo evidence.
 - Follow-up PR/deployment verification should be recorded only when actually merged. Genuine paid Meta E2E and authenticated competition form checks remain outstanding.
+
+
+## Informative idle visuals (28 October 2026 — ChatGPT-authored)
+
+- User observed that X-Ray / Constellation / DNA / Audit Dossier remained visually empty before upload. Implemented **clearly labeled wireframe-only explanatory diagrams**, not synthetic Meta scores, fabricated claims, simulated images or test fixture output in production.
+- Kept all existing actual result panels unchanged: after a genuine audit, placeholders hide and results render from the original backend; input changes reset to safe, non-AI visuals.
+- Added **Explore the evidence flow** action in Audit Dossier's empty state. It activates the existing Proof Constellation UI without invoking a provider or enabling paid anonymous requests. Other empty CTA uses the existing upload/facts focus action.
+- Validation: source check **87/87**; real Chromium mocked browser flow at **1920/1440/1280/768/390/320px**, no horizontal overflow, no unexpected JS/console errors, all legacy audit/repair/verify, X-Ray/evidence/DNA, export and invalidation checks passed. Browser fixtures do not establish real Meta API success.
+- Scope: `public/app.html`, `public/studio.css`, `public/app.js`, structural tests, browser smoke. No model/backend/secret/rate-limit changes. Deployment status to be checked separately before claiming production.

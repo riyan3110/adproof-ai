@@ -69,3 +69,8 @@ AI Red Team Arena, What-If Lab, complex Proof Passport, paid infrastructure and 
 ## Editorial Proofroom design review (28 October 2026)
 
 The user requested a professional, visually distinctive Studio rather than the prior generic dark dashboard. A follow-up UI-only branch replaces uniform dark cards with a graphite-and-ivory editorial investigation environment, strengthens creative-canvas prominence and the evidence document hierarchy, while retaining the same source-backed claim functions. Independent browser mocked-flow checks at six desktop/mobile widths and source tests passed; these do **not** constitute an authentic Meta API demo. Final production readiness and video/submission status remain governed by the unresolved items above.
+
+
+## Explicit schematic empty-state enhancement (28 October 2026)
+
+In response to feedback that the initial Studio appeared lifeless, the three evidence modes and audit dossier now show **wireframe illustrations labelled as non-model output** before the first audit. A public "Explore the evidence flow" action navigates to the actual claim/evidence inspector without making a paid model request. As soon as a real audit response arrives, authentic results replace explanatory visuals. Local `npm run check` and six Chromium viewport flows passed using mocked providers, not an authentic Meta API call. No additional claim about hackathon submission readiness is made.
