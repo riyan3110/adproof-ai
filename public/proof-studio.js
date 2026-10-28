@@ -159,3 +159,9 @@ export function openClaimInspector(index,stage,focus=true){
 }
 
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(context&&currentView==='constellation')renderGraph();},100);});
+
+// No model call: rebuild only derived UI wording when the browser language changes.
+export function refreshProofLanguage(){
+ activateProofView(currentView);
+ if(context){renderGraph();renderEvolution();}
+}
