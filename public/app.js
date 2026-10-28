@@ -16,6 +16,17 @@ const ui = {
 const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
+// Avoid costly, potentially destructive regeneration when the audit has no
+// evidence-grounded image issue. Caption-only fixes belong to the caption.
+function hasImageRepairTarget(a){
+ const creativeClaim=Array.isArray(a?.claim_ledger)&&a.claim_ledger.some(c=>
+   c?.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment)&&String(c.recommended_action||'').trim());
+ const imageIssue=Array.isArray(a?.issues)&&a.issues.some(i=>
+   String(i?.evidence||'').trim()&&String(i?.suggestion||'').trim()&&
+   !/^caption\s*:/i.test(String(i.evidence||'').trim()));
+ return Boolean(creativeClaim||imageIssue);
+}
+
 // Access verification checks the server's demo gate WITHOUT charging the Meta API.
 // Being verified for Judge Access does not imply a live model has responded.
 const demoKey='adproof-demo-code';
@@ -131,7 +142,7 @@ function syncDeck(){
  put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
- ui.refine.disabled=state.busy||!state.initialAudit||!!state.verified;
+ ui.refine.disabled=state.busy||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
  ui.verify.disabled=state.busy||!state.revised||!!state.verified;
  ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;
  put('pipelineHint',state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
@@ -317,6 +328,7 @@ async function performAudit(image,verify=false){
 }
 async function performImprove(){
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
+  if(!hasImageRepairTarget(state.initialAudit))throw Error('Tidak ada temuan gambar yang jelas untuk diperbaiki. Jangan paksa AI membuat ulang gambar tanpa alasan.');
  setBusy(true,'Refining…');
  try{
   const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
