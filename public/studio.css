@@ -876,3 +876,28 @@ button:disabled{cursor:not-allowed;opacity:.42}
  .studio-body .dna-origin-shift{grid-column:2;text-align:left;font-size:9px}
  .studio-body #evolutionNote{font-size:11px;padding:12px}
 }
+
+
+/* Existing Audit Dossier: repair candidates are never silently approved. */
+.studio-body .repair-guard-notice{
+  margin:3px 0 17px;
+  padding:16px 19px;
+  border:1px solid #b8b9a5;
+  border-left:5px solid #85714c;
+  background:#f0ece0;
+  color:#493f2d;
+  font-size:13px;
+  font-weight:650;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+.studio-body .repair-guard-notice[data-level=warning]{
+  background:#f7ebe4;
+  border-color:#c79c85;
+  border-left-color:#b76543;
+  color:#713d29;
+}
+.studio-body .repair-guard-notice[hidden]{display:none!important}
+@media(max-width:600px){
+  .studio-body .repair-guard-notice{padding:13px 15px;font-size:12px;margin-bottom:14px}
+}
