@@ -67,3 +67,14 @@ The existing Audit Dossier offers Import report (JSON or AdProof ZIP), Export JS
 - Only AdProof-created uncompressed STORE ZIPs are accepted. The parser validates central/local entries, CRC32, fixed names, bounds and image signatures. Invalid imports are rejected before replacing the current working session. Archive content is treated as untrusted data, not executable instructions.
 - Imported reports are read-only historical snapshots, NOT independently authenticated provider output or fresh model results. Audit/Repair/Verify cannot run from an imported snapshot; a user can upload a new creative for a new workflow. The private Judge Access code and Meta API key are not written into saved archives.
 - Anyone receiving the archive can read the original and revised creatives, product facts, caption and findings. The archive is not encrypted; share only with authorized recipients.
+
+
+## Continue editing a saved audit — paid actions remain explicit
+
+On import of a **full ZIP** the report starts read-only for safe review. In the existing Dossier, the user can choose **Repair original** or **Repair revised**; this switches the model-selected saved baseline to the corresponding original or previously verified audit and uses that image for the *next* repair. The action only transforms local in-memory state. An uploaded JSON-only file with no image pixels cannot be resumed without the complete ZIP. A revised source is only available if a previous revision and verified audit both exist.
+
+- Choosing the revised LumaDesk image reuses score 58 as the new baseline, not the historic score 35. Repair is a *new* potentially paid Muse Image request only after the user separately clicks Repair creative, and Verify is a separate potentially paid Muse Spark request with the selected baseline's compressed original reference.
+- Saved original and previous revised images, reports and risk warnings are preserved in the next exported ZIP under history/roundNN-*; later revisions do not overwrite earlier evidence. Claim DNA for the newest round compares the current selected baseline and new re-audit, not unmatched historical observations.
+- A saved baseline is an archived report, not a fresh Meta execution. Runtime provider labels do not imply that a new Spark call occurred when only Muse Image was invoked after continuation.
+- Reports are **not** independently authenticated; modifying facts or caption invalidates the reused evidence and requires a new audit. No auto-approval occurs even when the repair score increases.
+- Archive history has an explicit maximum of eight prior rounds and the ZIP format has a 48MB size cap. If exceeded, the system refuses the next continuation/export instead of silently discarding older rounds.

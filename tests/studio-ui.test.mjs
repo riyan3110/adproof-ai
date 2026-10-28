@@ -231,3 +231,26 @@ test('audit archive import/export controls preserve prior Studio elements and re
  assert.ok(!archive.includes('fetch('), 'archive processing must never call remote services');
  assert.ok(guard.includes('auto_approved:false'));
 });
+
+
+test('saved audit can resume from original or revised only after explicit action and never charge Meta on import',()=>{
+ for(const id of ['archiveContinueActions','continueFromOriginal','continueFromRevised','archiveHistoryPanel','archiveHistorySummary','archiveHistoryList']){
+  assert.ok(html.includes('id="'+id+'"'),id+' missing');
+ }
+ assert.ok(js.includes("continueArchivedAudit('original')"));
+ assert.ok(js.includes("continueArchivedAudit('revised')"));
+ assert.ok(js.includes("state.history=[...state.history,preserved]"));
+ assert.ok(js.includes("stage:'archive_baseline'"));
+ assert.ok(js.includes("origin:'saved_archive'"));
+ assert.ok(js.includes("state.verified=null;state.revised=null;state.repairReview=null;"));
+ assert.ok(js.includes("state.initialAudit=baseline;"));
+ assert.ok(js.includes("state.original=image;"));
+ assert.ok(js.includes("state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline')"));
+ assert.ok(js.includes("createAuditPackage(reportSnapshot(),state.original,state.revised,state.history)"));
+ assert.ok(js.includes("state.history.length>=8"),'must refuse new edits if history cannot be retained');
+ assert.ok(js.includes("if(state.imported)throw Error"),'archive review cannot call AI by itself');
+ assert.ok(js.includes("if(!state.configured)throw Error"),'new paid action requires actual configured API');
+ const css2=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
+ assert.ok(css2.includes('.archive-continue-actions'));
+ assert.ok(css2.includes('@media(max-width:760px)'));
+});

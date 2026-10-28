@@ -10,11 +10,11 @@ const ui = {
   auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
-  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),
+  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
 // Avoid costly, potentially destructive regeneration when the audit has no
@@ -47,7 +47,7 @@ function setCode(code) {
 function updateMetaStatus() {
  const label=!state.configured?'API key not configured'
   :state.reauditResponded?'Full audit → repair → re-audit responded'
-  :state.imageResponded?'Muse Spark and Muse Image responded · Re-audit pending'
+  :state.imageResponded?(state.sparkResponded?'Muse Spark and Muse Image responded · Re-audit pending':'Muse Image responded · Spark baseline restored from archive')
   :state.sparkResponded?'Muse Spark responded · Muse Image not tested'
   :'API key configured · Models not tested';
  ui.providerStatus.textContent=label;
@@ -139,23 +139,44 @@ function syncDeck(){
  const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
  const count=Array.isArray(ledger)?ledger.length:0;
  const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
- put('deckPhase',state.imported?'IMPORTED ARCHIVE · READ ONLY':state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
+ put('deckPhase',state.imported?'IMPORTED ARCHIVE · READ ONLY':state.continuedFrom?'CONTINUED FROM ARCHIVE · LIVE REPAIR':state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
  put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
  ui.verify.disabled=state.busy||state.imported||!state.revised||!!state.verified;
  ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported;
- put('pipelineHint',state.imported?'Imported archive · read-only review. Upload a new creative to start a fresh audit.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
- put('exportState',state.imported?(state.original?'Saved audit and images restored locally. No Meta request made.':'JSON report restored locally; source images were not stored in this file.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
+ ui.continueActions.hidden=!state.imported||!state.original;
+ ui.continueOriginal.disabled=state.busy||state.importing||!state.imported||!state.original||state.history.length>=8;
+ ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
+ renderArchiveHistory();
+ put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
+ put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
   const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
  }
 }
+function renderArchiveHistory(){
+ const rounds=state.history||[];
+ ui.historyPanel.hidden=rounds.length===0;
+ ui.historySummary.textContent='Previous audit rounds · '+rounds.length+' saved';
+ ui.historyList.replaceChildren();
+ for(const [i,round] of rounds.entries()){
+  const entry=document.createElement('li');
+  const initial=round.report?.original?.score;
+  const verified=round.report?.verified?.score;
+  const choice=round.from==='revised'?'revised image':'original image';
+  entry.textContent='Round '+(i+1)+': '+(Number.isFinite(initial)?initial+'/100':'unscored')+
+    (Number.isFinite(verified)?' → '+verified+'/100':'')+
+    ' · continued from '+choice+
+    (round.original?' · images retained':' · report only');
+  ui.historyList.append(entry);
+ }
+}
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit(){resetProofStudio();state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){resetProofStudio();if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -314,7 +335,7 @@ async function performAudit(image,verify=false){
  if(!state.configured)throw Error('Hubungkan MODEL_API_KEY di server terlebih dahulu.');
  setBusy(true,verify?'Verifying…':'Analyzing…');
  try{
-  if(!verify){resetAudit();switchView('original');state.context=inputContext();}
+  if(!verify){resetAudit({preserveHistory:state.history.length>0});switchView('original');state.context=inputContext();}
   const auditPayload={...payload(image)};
    if(verify)auditPayload.referenceImage=await compactOriginalReference(state.original);
    const out=await api('/api/audit',auditPayload);
@@ -336,11 +357,11 @@ async function performImprove(){
  try{
   const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
   if(typeof out.image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(out.image))throw Error('Repair response did not contain a valid image. Please retry.');state.imageResponded=true;updateMetaStatus();
-  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
+  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
  }finally{setBusy(false);}
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
-for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){resetAudit();switchView('original');notify('Input changed. Run a fresh audit to keep evidence consistent.');}});
+for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
 ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy||state.imported)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
 ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){notify(e.message,true);}});
 ui.verify.addEventListener('click',async()=>{if(state.busy||state.imported||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
@@ -348,18 +369,22 @@ ui.copyCaption.addEventListener('click',async()=>{try{await navigator.clipboard.
 // Export the exact saved observation set; graph and DNA are rebuilt from
 // model-selected ledgers, never trusted as executable imported data.
 function reportSnapshot(){
- if(state.imported&&state.archivedReport)
-  return {...state.archivedReport,...proofReport()};
- return {app:'AdProof AI',date:new Date().toISOString(),product:state.context?.product,context:state.context,
+ const report=state.imported&&state.archivedReport?
+  {...state.archivedReport,...proofReport()}:
+  {app:'AdProof AI',date:new Date().toISOString(),product:state.context?.product,context:state.context,
    caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',
    runs:state.runs,repair_review:state.repairReview,...proofReport(),
    original:state.initialAudit,verified:state.verified,
-   disclaimer:'AI-estimated observations, not independent verification. Image repair requires human review.'};
+   disclaimer:'Saved model observations, not independently certified. Image edits always need human review.'};
+ // JSON contains metadata only, no image bytes. ZIP adds historical pixels.
+ report.archive_history=(state.history||[]).map(round=>({from:round.from,report:round.report}));
+ return report;
 }
-function restoreAuditSnapshot({report,original,revised,hasImages}){
+function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  // Validation/parsing and ZIP integrity checks are complete BEFORE modifying
  // the current session. No API call, re-scoring or remote verification here.
  state.original=null;resetAudit();
+ state.history=history;
  state.original=original||null;state.originalFilename=original?'original (archived)':'no original in JSON';
  state.revised=revised||null;
  state.context={...report.context};
@@ -370,6 +395,7 @@ function restoreAuditSnapshot({report,original,revised,hasImages}){
  state.runs=report.runs||[];
  state.archivedReport=report;
  state.imported=true;
+ state.continuedFrom=null;
  state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
  updateMetaStatus(); // saved model output is NOT a new verified Meta call
  ui.product.value=report.context.product;
@@ -383,8 +409,8 @@ function restoreAuditSnapshot({report,original,revised,hasImages}){
  ui.name.textContent=hasImages?'ORIGINAL IMAGE · SAVED ARCHIVE':'AUDIT JSON · IMAGES NOT INCLUDED';
  ui.archiveNotice.hidden=false;
  ui.archiveNotice.textContent=hasImages
-   ? 'IMPORTED ARCHIVE · READ ONLY. Original image, revised image (if available), and saved audit observations restored locally. No Meta AI call was made. This file is a saved snapshot, not an independently authenticated or newly verified audit.'
-   : 'IMPORTED JSON · READ ONLY. Claim DNA, claim evidence, and Proof Constellation were rebuilt from the saved audit. The old JSON contains NO original/revised pixels, so images cannot be reconstructed. No Meta AI call was made. Upload a new creative to start a separate audit.';
+   ? 'IMPORTED ARCHIVE · READ ONLY UNTIL YOU CHOOSE A SOURCE. Select Repair original or Repair revised below to continue using the saved audit (no repeat initial audit). No Meta AI call was made on import. Saved report is not independently authenticated.'
+   : 'IMPORTED JSON · READ ONLY. Claim DNA and proof records restored, but the old JSON contains NO original/revised pixels. Continue editing requires ZIP with images; cannot invent missing pixels. No Meta AI call was made.';
  phase(state.verified?3:1);
  render(state.audit,Boolean(state.verified));
  renderProofStudio({before:state.initialAudit,after:state.verified,
@@ -397,6 +423,44 @@ function restoreAuditSnapshot({report,original,revised,hasImages}){
  syncDeck();syncSticky();
  notify(hasImages?'Saved archive restored. No paid model request.':'Saved JSON restored without images. No paid model request.');
 }
+// Explicit continuation preserves the whole imported round and all older
+// rounds as evidence before any changes. No inference is performed here.
+function continueArchivedAudit(from){
+ if(state.busy||state.importing||!state.imported) return;
+ if(!['original','revised'].includes(from))return;
+ if(state.history.length>=8){notify('Riwayat sudah mencapai 8 putaran. Ekspor ZIP lama dahulu; tidak akan ada riwayat yang dihapus otomatis.',true);return;}
+ const image=from==='revised'?state.revised:state.original;
+ const baseline=from==='revised'?state.verified:state.initialAudit;
+ if(!image||!baseline){notify('Gambar dan audit untuk sumber ini tidak tersedia. Impor paket ZIP lengkap.',true);return;}
+ const snapshot=reportSnapshot();
+ const preserved={from,report:snapshot,original:state.original,revised:state.revised};
+ const priorModel=state.runs.filter(x=>x.stage===(from==='revised'?'reaudit':'initial')).at(-1);
+ state.history=[...state.history,preserved];
+ state.imported=false;state.archivedReport=null;state.continuedFrom=from;
+ state.original=image;
+ state.originalFilename='saved '+from+' · repair baseline';
+ state.initialAudit=baseline;
+ state.audit=baseline;
+ state.verified=null;state.revised=null;state.repairReview=null;
+ state.runs=[{stage:'archive_baseline',origin:'saved_archive',model:priorModel?.model||'Saved audit model (not rerun)',
+  tokens:null,provenance:priorModel?.provenance||null}];
+ state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
+ updateMetaStatus();
+ for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;
+ ui.originalTab.disabled=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;
+ ui.archiveNotice.hidden=false;
+ ui.archiveNotice.textContent='CONTINUED FROM SAVED '+from.toUpperCase()+' · Archived baseline '+baseline.score+'/100 reused without a Meta call. Old round and both images kept in the next ZIP. Press Repair creative deliberately to generate a new image (potentially paid); Verify separately. The revision is never automatically approved.';
+ ui.name.textContent='SAVED '+from.toUpperCase()+' · REPAIR BASELINE';
+ resetProofStudio();
+ render(baseline,false);
+ renderProofStudio({before:baseline,after:null,facts:state.context.facts,caption:state.context.caption,
+  originalImage:state.original,revisedImage:null,onInspect:()=>switchView('original')});
+ phase(1);switchView('original');selectReportView('claims');activateProofView('xray');
+ syncDeck();syncSticky();
+ notify('Saved '+from+' audit reused. No new API request. Review issues, then press Repair when ready.');
+}
+ui.continueOriginal.addEventListener('click',()=>continueArchivedAudit('original'));
+ui.continueRevised.addEventListener('click',()=>continueArchivedAudit('revised'));
 ui.downloadReport.addEventListener('click',()=>{
  if(state.busy||!state.audit)return;
  try{download(JSON.stringify(reportSnapshot(),null,2),'adproof-audit.json','application/json');}
@@ -405,7 +469,7 @@ ui.downloadReport.addEventListener('click',()=>{
 ui.downloadPackage.addEventListener('click',()=>{
  if(state.busy||!state.audit||!state.original)return;
  try{
-  const pkg=createAuditPackage(reportSnapshot(),state.original,state.revised);
+  const pkg=createAuditPackage(reportSnapshot(),state.original,state.revised,state.history);
   download(pkg.blob,'adproof-audit-package.zip','application/zip');
   notify('Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.');
  }catch(e){notify(e.message,true);}

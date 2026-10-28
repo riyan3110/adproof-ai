@@ -109,3 +109,10 @@ Prompt-hardening and internal regression checks were applied to the *existing* R
 To avoid repeated paid audits after a browser refresh, AdProof AI exports/imports JSON and complete image+JSON ZIP packages locally. Historical JSON, including the owner-observed 35/58 LumaDesk example, restores claim observations and claim lineage but cannot recover missing original/revised pixels. New ZIP packages retain both images for a reconstructed Before/After.
 
 Imports are explicitly READ ONLY with no Meta API call, and old model observations are not presented as a newly verified inference. Live provider evaluation is grounded separately in the owner's screenshots and application-generated run metadata, not signed provider records. ZIP archive quality tests use mocked model responses and do not assert independent accuracy of Muse Spark or image editing.
+
+
+## Archived editing continuation (28 October 2026)
+
+A full saved LumaDesk ZIP containing original and revised images can now be resumed in the existing Proofroom without repeating the first paid audit. Choosing original uses saved score 35; choosing revised uses saved score 58, then a new **user-initiated** Repair and Verify can produce the next generation. Previous reports/images are archived in version-2 ZIP under distinct history filenames. Old ZIPs remain importable. User must press Repair/Verify explicitly, so merely importing/resuming costs no Meta API credits.
+
+No actual live Meta call was performed to validate the new flow. Automated tests use clear mock data; do not present fixture responses as new Meta results. The repaired candidate remains unapproved and subject to manual quality review.
