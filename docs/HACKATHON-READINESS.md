@@ -95,3 +95,10 @@ The project owner supplied screenshots of a production browser session displayin
 The same session exposed a Claim DNA source-matching flaw: image claims appearing again in caption were counted as newly detected, while unchanged branding was called not re-detected due a selected eight-claim re-audit list. The follow-up fix labels unique case-insensitive cross-source observations, explains origin differences and sampling uncertainty, and warns that image edits do **not** update the caption. Do not claim a removal is verified solely from an absent claim-ledger entry. Capture a fresh post-fix session for demo material; the old screenshot remains historical debugging evidence.
 
 Prior headings in this document describe the status **before** this owner-run test. The final hackathon video, eligibility/category checks and submission remain outstanding, and a confirmed Meta billing/model invocation log has not been independently inspected.
+
+
+## Repair fidelity safeguard review (28 October 2026)
+
+Prompt-hardening and internal regression checks were applied to the *existing* Repair/Verify workflow after the owner's real LumaDesk test revealed an invented `USB-C Powered` line despite facts specifying only USB 5V. Re-audit now sends a compact original reference alongside the revised image, and displays a clearly **unapproved candidate** warning based on conservative model-observation checks even if the aggregate score increases. Both real images remain available in memory for comparison; saved results can still be lost on refresh if not exported. Caption-only concerns no longer justify automatically invoking image editing.
+
+**Validation limitation:** Source regressions and browser mocked-provider tests can confirm code and flow but do not establish that Muse Image never deforms objects, that the model reliably finds all Photoshop/AI artifacts, or that paired-image visual analysis will meet accuracy requirements on real production images. No paid live-model call was made for this patch. Do not make a hackathon demo claim of guaranteed repair quality.
