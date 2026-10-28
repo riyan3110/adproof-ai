@@ -86,3 +86,12 @@ The image response path now validates PNG/JPEG/WebP signatures (including octet-
 ## Judge Access verification status (28 October 2026)
 
 Previously "Code entered" only meant local storage, not authentication. The Studio now submits the code to a dedicated nonbillable `POST /api/access` endpoint, reports accepted or rejected explicitly, and rechecks the tab-stored code on refresh. It presents distinct states for "code accepted by server", "Meta model key configured but not yet live-tested", and actual responses from Spark and Image only when a provider stage has returned successfully within the tab. This **does not** itself establish end-to-end Meta success. Full live provider evaluation remains blocked until the user consents to a finite cost and provides a usable real creative.
+
+
+## Owner-observed production end-to-end flow (28 October 2026)
+
+The project owner supplied screenshots of a production browser session displaying a complete Audit → Muse Image repair → Verify workflow on a **fictional AI-created lamp advertisement**. Initial claim-risk score **35/100** increased to **58/100** in the re-audit. Original questionable health/savings claims were removed **from the image** but retained in the unchanged ad caption; an unsupported "USB-C Powered" appeared in the revised image. This is useful authentic *application use* evidence, though the screenshot alone cannot independently validate provider-side billing/model logs, and seller-supplied facts are not independent verification.
+
+The same session exposed a Claim DNA source-matching flaw: image claims appearing again in caption were counted as newly detected, while unchanged branding was called not re-detected due a selected eight-claim re-audit list. The follow-up fix labels unique case-insensitive cross-source observations, explains origin differences and sampling uncertainty, and warns that image edits do **not** update the caption. Do not claim a removal is verified solely from an absent claim-ledger entry. Capture a fresh post-fix session for demo material; the old screenshot remains historical debugging evidence.
+
+Prior headings in this document describe the status **before** this owner-run test. The final hackathon video, eligibility/category checks and submission remain outstanding, and a confirmed Meta billing/model invocation log has not been independently inspected.
