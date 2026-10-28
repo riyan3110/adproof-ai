@@ -339,3 +339,85 @@ button:disabled{cursor:not-allowed;opacity:.42}
 .preview-pane .file-chip{color:#b9c9b8}
 .preview-pane .mini-square{background:var(--proof-lime);color:var(--proof-ink)}
 .preview-pane .text-button{color:var(--proof-lime)}
+
+
+/* EDITORIAL PROOFROOM — evidence document + inspection surfaces */
+.studio-body .right-pane{display:flex;flex-direction:column;gap:0;min-width:0;background:var(--proof-sheet);max-width:none;margin:0}
+.studio-body .details-card{background:transparent;border:0;border-radius:0;box-shadow:none;padding:29px clamp(18px,2.1vw,32px) 18px}
+.studio-body .details-card .panel-heading{padding-bottom:15px;border-bottom:1px solid var(--proof-rule);margin-bottom:9px}
+.studio-body .details-card .panel-title{color:var(--proof-ink);font-size:10px;letter-spacing:1.5px}
+.studio-body .details-card .tiny-meta{color:var(--proof-muted)}
+.studio-body .disc-lime{background:#718b48}
+.source-form-intro{font:400 clamp(24px,2vw,33px)/1.1 Georgia,"Times New Roman",serif;letter-spacing:-.8px;color:var(--proof-ink);margin:20px 0 23px;max-width:320px}
+.studio-body .details-card label{font-size:11px;color:#36453d;font-weight:800;margin:13px 0 7px}
+.studio-body .details-card input,.studio-body .details-card textarea{background:#f0efe8;border:1px solid #c6cac0;border-radius:0;color:var(--proof-ink);font-size:14px;line-height:1.5;padding:12px 13px;box-shadow:none;outline-offset:2px}
+.studio-body .details-card input:focus,.studio-body .details-card textarea:focus{border-color:#475943;background:#fffef9;outline:2px solid #c5d1b0}
+.studio-body .details-card input::placeholder,.studio-body .details-card textarea::placeholder{color:#7d8a80}
+.studio-body .details-card #facts{min-height:132px}
+.studio-body .details-card #caption{min-height:76px}
+.studio-body .details-card .required{color:#b4593d}
+.studio-body .details-card .optional{color:#76877a}
+.studio-body .form-bottom{margin-top:15px;gap:13px}
+.studio-body .form-bottom span{color:var(--proof-muted);font-size:10px}
+.studio-body .form-bottom .btn{border:1px solid var(--proof-ink);border-radius:0;background:var(--proof-ink);color:var(--proof-lime);font-size:13px;min-height:52px}
+.studio-body .form-bottom .btn:not(:disabled):hover{background:#39473b}
+.studio-body .context-note{color:var(--proof-muted);border-top:1px solid var(--proof-rule);padding:16px 24px;font-size:10px}
+.studio-body .context-note>span{color:#315f3b;font-weight:800}
+.studio-body .pipeline-bar{margin:12px 0 0;padding:18px 23px;background:var(--proof-lime);color:var(--proof-ink);border:1px solid var(--proof-ink);border-radius:0;gap:18px}
+.studio-body .pipeline-bar .tiny-meta{color:#435236;font-weight:850}
+.studio-body .pipeline-bar p{color:#283b2d;font-size:12px;font-weight:600}
+.studio-body .pipeline-actions .btn{min-height:46px;border:1px solid var(--proof-ink);border-radius:2px;background:var(--proof-ink);color:var(--proof-lime);font-size:11px;font-weight:800;padding:10px 15px}
+.studio-body .pipeline-actions .btn-outline{background:transparent;color:var(--proof-ink)}
+.studio-body .pipeline-actions button:disabled{opacity:.42}
+.studio-body .proof-workspace{background:var(--proof-sheet);color:var(--proof-ink);border:1px solid var(--proof-ink);border-radius:0;margin-top:28px;padding:0;overflow:hidden}
+.studio-body .proof-heading{padding:30px clamp(20px,2.8vw,42px) 21px;margin:0;gap:22px}
+.studio-body .proof-heading .eyebrow{color:#975e3d;font-weight:850;font-size:10px}
+.studio-body .proof-heading h2{color:var(--proof-ink);font:400 clamp(31px,3.3vw,51px)/1.08 Georgia,serif;letter-spacing:-1.7px;margin-top:9px}
+.studio-body .proof-stage-label{color:var(--proof-muted);font-size:11px;font-weight:650}
+.studio-body .proof-stage-label select,.studio-body .xray-inspection select{background:#f0efe7;color:var(--proof-ink);border:1px solid #a7b2a5;border-radius:2px;padding:10px;min-height:44px}
+.studio-body .proof-modebar{background:#e8e8df;border-top:1px solid var(--proof-rule);border-bottom:1px solid var(--proof-rule);padding:0 clamp(12px,2vw,32px);gap:4px}
+.studio-body .proof-modebar button{color:#4d6155;font-size:12px;font-weight:750;padding:16px clamp(9px,1.5vw,22px);min-height:53px;border-bottom-width:3px}
+.studio-body .proof-modebar button[aria-pressed=true]{color:var(--proof-ink);background:var(--proof-sheet);border-bottom-color:var(--proof-ink)}
+.studio-body .inspection-pane{background:var(--proof-sheet);padding:clamp(20px,2.8vw,44px);color:var(--proof-ink)}
+.studio-body .proof-pending{min-height:320px;display:flex;align-items:flex-start;justify-content:center;position:relative;gap:15px;overflow:hidden;border:1px solid #c6cabd;border-radius:0;padding:46px clamp(22px,4vw,58px);background:linear-gradient(120deg,#eeeae0 0%,#f5f4eb 60%,#edf0df 100%);color:var(--proof-ink)}
+.studio-body .proof-pending:after{position:absolute;right:-20px;bottom:-97px;font:400 clamp(150px,19vw,320px)/1 Georgia,serif;color:#bcc5b9;opacity:.3;pointer-events:none}
+.studio-body #xrayEmpty:after{content:"01"}
+.studio-body #constellationEmpty:after{content:"02"}
+.studio-body #evolutionEmpty:after{content:"03"}
+.studio-body .proof-pending>*{position:relative;z-index:1}
+.studio-body .proof-pending .empty-index{color:#9d5c3a;font-size:10px;letter-spacing:2px;font-weight:850}
+.studio-body .proof-pending strong{font:400 clamp(30px,3vw,48px)/1.07 Georgia,serif;color:var(--proof-ink);letter-spacing:-1.4px;max-width:510px}
+.studio-body .proof-pending p{color:#58685c;font-size:13px;line-height:1.6;max-width:400px}
+.studio-body .proof-pending .text-button{color:#365d35;font-size:12px;text-decoration:underline;text-underline-offset:4px;font-weight:800}
+.studio-body .proof-boundary{background:#e9ebe1;color:#3d5c3c;border-top:1px solid var(--proof-rule);padding:14px 30px;letter-spacing:1px;font-size:9px}
+.studio-body .proof-boundary span{color:#65766b;font-size:11px}
+.studio-body .inspection-title h3{color:var(--proof-ink);font:400 30px Georgia,serif}
+.studio-body .inspection-title .tiny-meta{color:var(--proof-muted)}
+.studio-body .xray-source{background:#222d2b;border-radius:0;border:1px solid #394b42}
+.studio-body .source-heading{color:#d5e5d5;border-bottom-color:#485b50;font-size:9px}
+.studio-body #xrayCaption{color:#e7ecdc;border-top-color:#485b50}
+.studio-body .xray-inspection>label{font-size:12px;color:var(--proof-ink);font-weight:850}
+.studio-body .xray-panel{background:transparent}
+.studio-body .xray-panel .panel-title{color:#8a5c40}
+.studio-body .xray-panel strong{color:var(--proof-ink);font:400 29px/1.22 Georgia,serif}
+.studio-body .xray-panel p{color:#495b51;font-size:13px}
+.studio-body .xray-panel small{color:#647569}
+.studio-body .xray-panel .text-button{color:#355d32;text-decoration:underline}
+.studio-body .xray-status{color:#345134;border-color:#9aa995;background:#eff4e7}
+.studio-body .proof-selector{border:1px solid #adb9a9;background:#efefe7;color:#2d4136;border-radius:2px;font-weight:750;padding:10px 15px}
+.studio-body .proof-selector[aria-pressed=true]{background:var(--proof-ink);color:var(--proof-lime);border-color:var(--proof-ink)}
+.studio-body .network-inspector{grid-template-columns:minmax(0,1fr) 260px;gap:23px}
+.studio-body .constellation{background:radial-gradient(ellipse at center,#384b3d88,transparent 77%),#1c2825;border:1px solid #344b3b;border-radius:0}
+.studio-body .proof-node rect{fill:#263b31;stroke:#a0cbb0}
+.studio-body .proof-node.selected rect{stroke:var(--proof-lime)}
+.studio-body .proof-node-detail{border-color:#76935a;color:var(--proof-ink)}
+.studio-body .proof-node-detail>strong{font:400 19px Georgia,serif;color:var(--proof-ink)}
+.studio-body .proof-node-detail p,.studio-body .proof-node-detail small{color:#536357}
+.studio-body .proof-node-detail .text-button{color:#376438}
+.studio-body .claim-proof-note{color:#637366}
+.studio-body .dna-row{border-color:#bdc7b9;background:#f0f1e8;border-radius:0}
+.studio-body .dna-row summary,.studio-body .dna-label{color:var(--proof-ink)}
+.studio-body .dna-status{color:#596e58}
+.studio-body .dna-stage{background:#fafaf5;border:1px solid #b9c3b8;color:var(--proof-ink);border-radius:0}
+.studio-body .dna-stage p,.studio-body .dna-explanation{color:#536256}
+.studio-body .dna-stage button{color:#3d6d3d}
