@@ -139,3 +139,31 @@ test('Proofroom identity is deliberate editorial visual language, not generic da
  assert.ok(studioCSS.includes('@media(max-width:540px)'),'mobile-specific typography and hierarchy required');
  assert.ok(studioCSS.includes('prefers-reduced-motion:reduce'),'motion preferences must remain supported');
 });
+
+
+test('empty-state illustrations are explicitly non-AI schematics',()=>{
+ const studioCSS=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
+ for(const id of ['xrayEmpty','constellationEmpty','evolutionEmpty','reportEmpty']){
+  const point=html.indexOf('id="'+id+'"');
+  assert.ok(point>=0,'missing empty section '+id);
+  const section=html.slice(point,point+2200);
+  assert.match(section,/SCHEMATIC ONLY|LAYOUT PREVIEW/,'illustration must disclaim synthetic output');
+ }
+ for(const cls of ['xray-wire','graph-wire','dna-wire','report-wireframe']){
+  assert.ok(html.includes('class="'+cls+'"')||html.includes(' '+cls+'"'),'missing illustration '+cls);
+ }
+ for(const disclaimer of ['NO DETECTED CLAIMS','NO EVIDENCE CONNECTED','NO REVISIONS COMPARED','NO MODEL OUTPUT · NO SCORES']){
+  assert.ok(html.includes(disclaimer),'missing honest status: '+disclaimer);
+ }
+ assert.ok(studioCSS.includes('.studio-body .proof-pending.proof-pending-rich'));
+ assert.ok(studioCSS.includes('.studio-body .report-empty.report-empty-rich'));
+ assert.ok(studioCSS.includes('@media(max-width:390px)'),'small mobile wireframes must be responsive');
+ const fakeScore=html.split('id="reportEmpty"')[1].split('id="reportContent"')[0];
+ assert.ok(!/\b\d{1,3}\s*\/\s*100\b/.test(fakeScore),'no made-up audit score is allowed');
+});
+test('public workflow explainer switches existing UI without a fake Meta request',()=>{
+ assert.ok(html.includes('id="exploreProofButton"'));
+ assert.ok(html.includes('aria-controls="constellationWorkspace"'));
+ assert.ok(js.includes("$('#exploreProofButton').addEventListener('click',()=>activateProofView('constellation',true))"));
+ assert.ok(html.includes('data-focus-input'),'empty screen must offer real upload starting point');
+});
