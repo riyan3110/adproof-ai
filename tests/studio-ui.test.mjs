@@ -196,3 +196,20 @@ test('Claim DNA explicitly differentiates capped samples and claims seen across 
   assert.ok(css.includes('#evolutionNote'));
   assert.ok(!proof.includes('Not re-detected'), 'misleading old label must not appear');
 });
+
+test('existing verification dossier warns when AI repair is unapproved despite higher score',()=>{
+ const studioCSS=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
+ const guard=readFileSync(new URL('../public/repair-guard.js',import.meta.url),'utf8');
+ assert.ok(html.includes('id="repairGuardNotice"'));
+ assert.ok(html.includes('aria-live="polite"'));
+ assert.ok(js.includes("import {reviewRepairCandidate} from './repair-guard.js'"));
+ assert.ok(js.includes("originalReferenceSent:out.original_reference_sent===true"));
+ assert.ok(js.includes("auditPayload.referenceImage=await compactOriginalReference(state.original)"));
+ assert.ok(js.includes("A higher score is NOT proof the image improved."));
+ assert.ok(js.includes("POSSIBLE REPAIR REGRESSION"));
+ assert.ok(js.includes("repair_review:state.repairReview"));
+ assert.ok(js.includes("Candidate NOT approved"));
+ assert.ok(studioCSS.includes('.repair-guard-notice[data-level=warning]'));
+ assert.ok(guard.includes('auto_approved:false'));
+ assert.ok(!js.includes('repair_approved:true'));
+});
