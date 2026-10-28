@@ -15,11 +15,12 @@ The browser freezes product/facts/caption for each audit→repair→reaudit cycl
 Dependency-free `public/claim-engine.js` exports pure functions shared by browser and Node tests. Core was produced by genuine Muse Code in issue #14, commit `91eb887`; subsequent conservative matching fixes and integration are ChatGPT contributions.
 
 - Maximum eight claims per ledger. IDs like `claim-1` are stage-local, never cross-stage identity.
-- Exact pairs require unique normalized text and the same known origin. Normalization changes case/whitespace only, preserving punctuation, negation and numbers.
+- First pair exact unique normalized text **in the same known source**. Then pair unique, identical normalized text **across image and caption** with explicit `cross_source_observed` status; this establishes only an observation in a different source, never that the claim was physically moved or that the original text disappeared. Matching ignores capitalization/whitespace but preserves punctuation, negation and numbers. Ambiguous duplicates are not auto-paired.
 - Candidate pairs require the same origin, number/currency/polarity features, token-set Jaccard overlap of at least 0.6, and reciprocal unique best matching. This is a lexical heuristic, not semantic identity. Ties remain unmatched.
 - Exact retained claims keep their evidence status; unsupported/contradicted claims remain problematic. A changed model assessment alone does not establish repair.
 - Possible changed wording remains provisional. Different numbers/polarity can be emitted as unmatched/new; conservative false negatives are preferable to asserting identity.
-- Not re-detected never means repaired, removed or false. New observations may be previously missed claims.
+- **Not in re-audit list** means a claim was not included among the later model-selected ledger entries. Even if model records are well-formed, their maximum-eight-claims cap means absence is **not** proof the source image/caption lost that text. **First seen in re-audit** can be previously missed text, not necessarily newly introduced content. The UI displays an explicit sampling warning when either ledger reaches its eight-claim limit.
+- The user's caption is not edited by Muse Image, and its unsupported claims require separate manual revision. Caption-vs-image observations are labeled distinctly in expanded trajectories.
 - Missing or malformed data is incomplete; valid empty arrays mean no detections, not no claims.
 
 Expandable trajectories show both observations and input excerpts. Inspect links select the matching original/revised image and claim inspector. No model call or paid infrastructure is required to compute lineage.

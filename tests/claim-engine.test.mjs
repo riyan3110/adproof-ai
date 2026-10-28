@@ -135,12 +135,77 @@ describe('buildEvolution exact matching', () => {
     assert.deepEqual(r.entries.map((e) => e.status), ['not_redetected', 'newly_detected']);
   });
 
-  it('origin mismatch never matches, even with identical text', () => {
+  it('unique identical wording in a different source is flagged without claiming removal or source migration', () => {
     const r = buildEvolution(
-      mkAudit([mkClaim({ claim: 'Gratis ongkir', origin: 'creative' })]),
-      mkAudit([mkClaim({ claim: 'Gratis ongkir', origin: 'caption' })]),
+      mkAudit([mkClaim({ claim: 'Protect Your Eyes', origin: 'creative' })]),
+      mkAudit([mkClaim({ claim: 'protect your eyes', origin: 'caption' })]),
     );
-    assert.deepEqual(r.entries.map((e) => e.status), ['not_redetected', 'newly_detected']);
+    assert.deepEqual(r.entries.map((e) => e.status), ['cross_source_observed']);
+    assert.equal(r.entries[0].match, 'cross_source_exact');
+    assert.equal(r.entries[0].before.origin, 'creative');
+    assert.equal(r.entries[0].after.origin, 'caption');
+    assert.match(r.entries[0].explanation, /does not establish.*moved/);
+    assertConservativeText(r.entries);
+  });
+
+  it('does not merge reworded cross-source claims or change numeric amounts', () => {
+    const a = mkClaim({claim:'Save 90% electricity',origin:'creative'});
+    for(const other of ['Save 80% electricity','Save 90% electricity guaranteed']) {
+      const r=buildEvolution(mkAudit([a]),mkAudit([mkClaim({claim:other,origin:'caption'})]));
+      assert.deepEqual(r.entries.map(e=>e.status), ['not_redetected','newly_detected']);
+      assert.ok(r.entries.every(e=>e.match==='none'));
+    }
+  });
+
+  it('does not guess one-to-one identities across duplicated source observations', () => {
+    const r=buildEvolution(
+      mkAudit([mkClaim({claim:'Save up to 90% Electricity',origin:'creative'}),mkClaim({claim:'Save up to 90% Electricity',origin:'creative'})]),
+      mkAudit([mkClaim({claim:'save up to 90% electricity',origin:'caption'})])
+    );
+    assert.ok(r.entries.every(e=>e.status==='ambiguous'));
+    assert.deepEqual(r.summary,{ambiguous:3});
+  });
+
+  it('flags capped model-selected audit lists without asserting missing visual text was removed', () => {
+    const old=[
+      mkClaim({claim:'LumaDesk Mini',origin:'creative',assessment:'supported_by_supplied_facts'}),
+      mkClaim({claim:'LED DESK LAMP',origin:'creative'}),
+      mkClaim({claim:'Save up to 90% Electricity',origin:'creative'}),
+      mkClaim({claim:'Protect Your Eyes',origin:'creative'}),
+      mkClaim({claim:'Better Sleep in 7 Days',origin:'creative'}),
+      mkClaim({claim:'A Smarter Light for a Healthier You',origin:'creative'}),
+      mkClaim({claim:'The ultimate desk lamp with revolutionary LED technology',origin:'caption'}),
+      mkClaim({claim:'Guaranteed better sleep in just 7 days',origin:'caption'})
+    ];
+    const revised=[
+      mkClaim({claim:'5W Power Consumption',origin:'creative',assessment:'supported_by_supplied_facts'}),
+      mkClaim({claim:'USB 5V Power',origin:'creative'}),
+      mkClaim({claim:'USB-C Powered',origin:'creative'}),
+      mkClaim({claim:'3000K Warm White Light',origin:'creative'}),
+      mkClaim({claim:'Adjustable Lamp Head - Touch On/Off',origin:'creative'}),
+      mkClaim({claim:'Save up to 90% electricity',origin:'caption'}),
+      mkClaim({claim:'protect your eyes',origin:'caption'}),
+      mkClaim({claim:'Guaranteed better sleep in just 7 days',origin:'caption'})
+    ];
+    const r=buildEvolution(mkAudit(old),mkAudit(revised));
+    assert.equal(r.sample_limited,true);
+    assert.equal(r.complete,true,'well-formed is not exhaustive');
+    assert.equal(r.entries.filter(e=>e.status==='cross_source_observed').length,2);
+    assert.equal(r.entries.filter(e=>e.status==='not_redetected').length,5);
+    assert.equal(r.entries.filter(e=>e.status==='newly_detected').length,5);
+    const names=r.entries.map(e=>e.before?.claim||e.after?.claim);
+    assert.ok(names.includes('USB-C Powered'));
+    const brand=r.entries.find(e=>e.before?.claim==='LumaDesk Mini');
+    assert.equal(brand.status,'not_redetected');
+    assert.match(brand.explanation,/not listed|may still be visible/i);
+    const saving=r.entries.find(e=>e.before?.claim==='Save up to 90% Electricity');
+    assert.equal(saving.after?.origin,'caption');
+    assert.equal(saving.status,'cross_source_observed');
+    const eye=r.entries.find(e=>e.before?.claim==='Protect Your Eyes');
+    assert.equal(eye.after?.origin,'caption');
+    assert.equal(eye.status,'cross_source_observed');
+    assert.equal(Object.values(r.summary).reduce((sum,count)=>sum+count,0),r.entries.length);
+    assertConservativeText(r.entries);
   });
 
   it('absent claims are not_redetected, never settled language', () => {

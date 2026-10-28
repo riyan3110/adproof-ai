@@ -1,6 +1,6 @@
 import {buildEvolution, buildConstellation} from './claim-engine.js';
 const $=id=>document.getElementById(id);
-const labels={pending:'Awaiting re-audit',retained:'Retained',still_problematic:'Still problematic',uncertain:'Review needed',changed_candidate:'Possible wording change',not_redetected:'Not re-detected',newly_detected:'Newly detected',ambiguous:'Ambiguous match'};
+const labels={pending:'Awaiting re-audit',retained:'Retained',still_problematic:'Still problematic',uncertain:'Review needed',changed_candidate:'Possible wording change',not_redetected:'Not in re-audit list',newly_detected:'First seen in re-audit',cross_source_observed:'Recorded in another source',ambiguous:'Ambiguous match'};
 const assessmentLabels={supported_by_supplied_facts:'Supported by input',unsupported_by_supplied_facts:'Not supported by input',contradicted_by_supplied_facts:'Conflicts with input',needs_human_review:'Human review needed',unreadable:'Unreadable'};
 const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=String(text);return e;};
 function svg(tag,attrs,text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));if(text!==undefined)e.textContent=text;return e;}
@@ -107,15 +107,27 @@ function renderGraph(){
 function renderEvolution(){
  const evolution=buildEvolution(context.before,context.after);context.evolution=evolution;
  const list=$('evolutionList');list.replaceChildren();
- $('evolutionCount').textContent=context.after?`${evolution.entries.length} trajectories`:'Awaiting revised-image audit';
- $('evolutionNote').textContent=!context.after?'Run Repair, then re-audit the actual revised image.':!evolution.complete?'Incomplete claim data. Matching is provisional; inspect both audits.':'Matching uses wording and source, not array IDs. Missing ≠ repaired. Candidate changes need review.';
+ $('evolutionCount').textContent=context.after?`${evolution.entries.length} trajectories · ${evolution.sample_limited?'sampled claims':'model observations'}`:'Awaiting revised-image audit';
+ const samplingNote=!context.after?'Run Repair, then re-audit the actual revised image.':
+   !evolution.complete?'Incomplete claim data. Matching is provisional; inspect both audits.':
+   evolution.sample_limited?'Limited view: each audit supplies at most 8 selected claims. Missing from the list does NOT mean missing from the image or caption. Same wording may appear across both sources.':
+   'This compares selected audit observations, not exhaustive image text. Missing from a list does not prove removal; inspect both image and caption.';
+ const captionNote=context.after&&context.caption?.trim()
+   ? ' Image repair does not edit the caption. Its unsupported claims still need manual revision.' : '';
+ $('evolutionNote').textContent=samplingNote+captionNote;
  if(!evolution.entries.length){list.append(make('p','proof-empty','No claims returned for comparison. This does not prove the absence of claims.'));return;}
  for(const [i,item]of evolution.entries.entries()){
   const row=make('details',`dna-row status-${item.status}`);const summary=make('summary');
-  summary.append(make('span','dna-number',String(i+1).padStart(2,'0')),make('span','dna-label',item.before?.claim||item.after?.claim||'Unreadable claim'),make('span','dna-status',labels[item.status]||'Review needed'));
+  const statusText=item.status==='cross_source_observed'
+    ? `Also in ${item.after?.origin==='caption'?'caption':'image'}`
+    : labels[item.status]||'Review needed';
+  summary.append(make('span','dna-number',String(i+1).padStart(2,'0')),make('span','dna-label',item.before?.claim||item.after?.claim||'Unreadable claim'),make('span','dna-status',statusText));
+  if(item.status==='cross_source_observed'){
+    summary.append(make('span','dna-origin-shift',`${item.before?.origin==='caption'?'CAPTION':'IMAGE'} → ${item.after?.origin==='caption'?'CAPTION':'IMAGE'}`));
+  }
   const stages=make('div','dna-stages');
   for(const [name,claim,index,stage]of [['INITIAL',item.before,item.before_index,'initial'],['RE-AUDIT',item.after,item.after_index,'revised']]){
-   const card=make('div','dna-stage');card.append(make('small','',name),make('p','',claim?.claim||'No matched observation'),make('span','',claim?assessmentLabels[claim.assessment]||'Human review needed':'Not evidence of removal'));
+   const card=make('div','dna-stage');card.append(make('small','',`${name}${claim?.origin?' · '+(claim.origin==='caption'?'CAPTION':claim.origin==='creative'?'IMAGE':'SOURCE UNKNOWN'):''}`),make('p','',claim?.claim||'No matched observation'),make('span','',claim?assessmentLabels[claim.assessment]||'Human review needed':'Not evidence of removal'));
    if(claim?.fact_quote)card.append(make('q','',claim.fact_quote));
    if(claim){const b=make('button','text-button','Inspect source ↗');b.type='button';b.onclick=()=>openClaimInspector(index,stage);card.append(b);}
    stages.append(card);
