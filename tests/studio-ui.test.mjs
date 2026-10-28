@@ -254,3 +254,25 @@ test('saved audit can resume from original or revised only after explicit action
  assert.ok(css2.includes('.archive-continue-actions'));
  assert.ok(css2.includes('@media(max-width:760px)'));
 });
+
+test('auto language selector and locale boundary preserve claims, archive evidence and AI call gating',()=>{
+ const locale=readFileSync(new URL('../public/i18n.js',import.meta.url),'utf8');
+ const backend=readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
+ const proof=readFileSync(new URL('../public/proof-studio.js',import.meta.url),'utf8');
+ assert.ok(html.includes('id="languageSelect"'));
+ for(const choice of ['value="auto"','value="en"','value="id"'])assert.ok(html.includes(choice),choice);
+ assert.ok(html.includes('id="archiveLanguageNote"'));
+ assert.ok(js.includes('language:getLanguage()'));
+ assert.ok(js.includes('out.report_language||getLanguage()'));
+ assert.ok(js.includes('state.reportLanguage=report.report_language'));
+ assert.ok(js.includes('report_language:state.reportLanguage'));
+ assert.ok(js.includes('applySelectedLanguage()'));
+ assert.ok(locale.includes('navigator.languages'),'auto must use real browser locale');
+ assert.ok(locale.includes('localStorage.setItem(key,preference)'),'only the language override is persisted');
+ assert.ok(!locale.includes('fetch('),'UI translation must not make model or translation API calls');
+ assert.ok(!locale.includes('innerHTML'),'UI translation must never parse claim content as HTML');
+ assert.ok(proof.includes('refreshProofLanguage'));
+ assert.ok(backend.includes('reportLanguageName'));
+ assert.ok(backend.includes('Do NOT translate quoted ad claims'));
+ assert.ok(backend.includes('Preserve the ORIGINAL LANGUAGE'));
+});
