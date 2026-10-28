@@ -123,7 +123,7 @@ const browserOpts={headless:true,args:['--no-sandbox']};
   assert.equal(audits,2);assert.equal(images,1);
   // The next fresh image deliberately exits the archive without carrying stale claims.
   await page.locator('#fileInput').setInputFiles({name:'next-creative.png',mimeType:'image/png',buffer:Buffer.from(source.split(',')[1],'base64')});
-  assert.equal(await page.locator('#archiveRestoreNotice').isVisible(),false);
+  await page.locator('#archiveRestoreNotice').waitFor({state:'hidden'});
   assert.equal(await page.locator('#product').getAttribute('readonly'),null);
   assert.equal(await page.locator('#auditButton').isDisabled(),false);
   assert.equal(await page.locator('#reportContent').isVisible(),false);
