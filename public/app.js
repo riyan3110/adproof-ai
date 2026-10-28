@@ -1,4 +1,4 @@
-import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView} from './proof-studio.js';
+import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 import {loadPreference,setPreference,getPreference,getLanguage,t,applyLanguage,observeDynamicLabels,onBrowserLanguageChange} from './i18n.js';
@@ -33,6 +33,8 @@ function renderSavedLanguageNotice(){
  ui.archiveLanguageNote.textContent=first+detail;
 }
 function applySelectedLanguage(){
+ refreshProofLanguage();
+ syncDeck();syncSticky();
  applyLanguage();
  renderSavedLanguageNotice();
 }
@@ -153,7 +155,7 @@ ui.accessForm.addEventListener('submit',async event=>{
  }
 });
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
-function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
+function notify(message,error=false){ui.toast.textContent=t(message);ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function syncDeck(){
  const current=state.phase, ready=!!state.original;
  const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
