@@ -10,38 +10,114 @@ const ui = {
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
-  accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel')
+  accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[]};
+const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 let toastTimer=null;
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
-// A private judge code can be entered before testing or when the backend returns 401/403.
-// It is stored in sessionStorage only, never as a URL parameter or a public token.
+// Access verification checks the server's demo gate WITHOUT charging the Meta API.
+// Being verified for Judge Access does not imply a live model has responded.
 const demoKey='adproof-demo-code';
+let accessCheckGeneration=0;
 const getCode=()=>{try{return sessionStorage.getItem(demoKey)||'';}catch{return '';}};
-const setCode=(v)=>{try{if(v)sessionStorage.setItem(demoKey,v);else sessionStorage.removeItem(demoKey);}catch{} if(ui.accessButton)ui.accessButton.textContent=v?'Code entered':'Judge access';};
+function setAccessStatus(label,kind) {
+ ui.accessStatus.textContent=label;
+ ui.accessStatus.dataset.state=kind;
+}
+function setCode(code) {
+ try{if(code)sessionStorage.setItem(demoKey,code);else sessionStorage.removeItem(demoKey);}catch{}
+ state.accessVerified=!!code;
+ ui.accessButton.textContent=code?'Access verified ✓':'Judge access';
+ if(code)setAccessStatus('Code verified by server ✓','verified');
+ else setAccessStatus('Code not verified','missing');
+}
+function updateMetaStatus() {
+ const label=!state.configured?'API key not configured'
+  :state.reauditResponded?'Full audit → repair → re-audit responded'
+  :state.imageResponded?'Muse Spark and Muse Image responded · Re-audit pending'
+  :state.sparkResponded?'Muse Spark responded · Muse Image not tested'
+  :'API key configured · Models not tested';
+ ui.providerStatus.textContent=label;
+ ui.providerStatus.dataset.state=state.reauditResponded?'verified':state.sparkResponded?'partial':state.configured?'pending':'invalid';
+ ui.connection.classList.toggle('ready',state.configured);
+ ui.connection.classList.toggle('missing',!state.configured);
+ ui.connectionText.textContent=!state.configured?'API NOT SET'
+  :state.reauditResponded?'META FLOW TESTED'
+  :state.imageResponded?'META MODELS RESPONDED'
+  :state.sparkResponded?'SPARK RESPONDED':'META CONFIGURED';
+}
+function showCodeError(message) {
+ ui.accessError.textContent=message;
+ ui.accessError.hidden=false;
+}
+async function verifyCode(code,{restoring=false}={}) {
+ const generation=++accessCheckGeneration;
+ setAccessStatus('Checking code on server…','checking');
+ ui.accessButton.disabled=true;
+ ui.accessSubmit.disabled=true;
+ ui.accessSubmit.textContent='Checking…';
+ try{
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
+  let res,reply;
+  try{
+   res=await fetch('/api/access',{method:'POST',headers:{'x-demo-code':code},signal:controller.signal});
+   reply=await res.json().catch(()=>({}));
+  }finally{clearTimeout(timer);}
+  if(generation!==accessCheckGeneration)return false;
+  if(res.ok && reply.ok===true && reply.access==='verified') {
+   setCode(code);
+   ui.accessError.hidden=true;
+   return true;
+  }
+  setCode('');
+  const error=res.status===403?'Kode salah. Periksa dan masukkan ulang.'
+   :res.status===401?'Kode belum diterima server.'
+   :res.status===429?'Terlalu banyak percobaan. Coba lagi sebentar.'
+   :reply.error||'Tidak dapat memverifikasi kode sekarang.';
+  setAccessStatus(res.status===403?'Code rejected':res.status===429?'Check limited':'Verification unavailable','invalid');
+  if(!restoring)showCodeError(error);
+  else notify('Kode tersimpan tidak dapat diverifikasi. Masukkan ulang melalui Judge access.',true);
+  return false;
+ }catch(e){
+  if(generation!==accessCheckGeneration)return false;
+  setCode('');
+  setAccessStatus('Verification unavailable','invalid');
+  if(!restoring)showCodeError('Koneksi verifikasi gagal. Periksa jaringan dan coba lagi.');
+  return false;
+ }finally{
+  if(generation===accessCheckGeneration) {
+   ui.accessButton.disabled=false;
+   ui.accessSubmit.disabled=false;
+   ui.accessSubmit.textContent='Verify code ↗';
+  }
+ }
+}
 function openJudgeDialog(message='Enter the private demo code shared with you.') {
-  return new Promise(resolve=>{
-    if(!ui.accessDialog || typeof ui.accessDialog.showModal!=='function' || ui.accessDialog.open){
-      notify('Cannot open access dialog. Try again in a supported browser.',true);resolve(false);return;
-    }
-    ui.accessDialog.returnValue='';
-    ui.accessHint.textContent=message;
-    ui.accessInput.value='';
-    ui.accessDialog.addEventListener('close',()=>{ui.accessInput.value='';resolve(ui.accessDialog.returnValue==='saved');},{once:true});
-    ui.accessDialog.showModal();
-    ui.accessInput.focus();
-  });
+ return new Promise(resolve=>{
+  if(!ui.accessDialog || typeof ui.accessDialog.showModal!=='function' || ui.accessDialog.open){
+   notify('Cannot open access dialog. Try again in a supported browser.',true);resolve(false);return;
+  }
+  ui.accessDialog.returnValue='';
+  ui.accessHint.textContent=message;
+  ui.accessInput.value='';
+  ui.accessError.hidden=true;
+  ui.accessDialog.addEventListener('close',()=>{ui.accessInput.value='';resolve(ui.accessDialog.returnValue==='saved');},{once:true});
+  ui.accessDialog.showModal();
+  ui.accessInput.focus();
+ });
 }
 ui.accessButton.addEventListener('click',()=>{void openJudgeDialog();});
-ui.accessForm.addEventListener('submit',event=>{
-  event.preventDefault();
-  const code=ui.accessInput.value.trim();
-  if(!code){ui.accessInput.focus();return;}
-  setCode(code);
+ui.accessForm.addEventListener('submit',async event=>{
+ event.preventDefault();
+ const code=ui.accessInput.value.trim();
+ if(!code){ui.accessInput.focus();return;}
+ const verified=await verifyCode(code);
+ if(verified){
   ui.accessInput.value='';
   ui.accessDialog.close('saved');
-  notify('Access code entered for this tab. It will be verified on the next AI request.');
+  notify('Judge Access verified by server. Meta models are tested only when you run an audit.');
+ }
 });
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
 function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
@@ -83,6 +159,7 @@ async function api(endpoint,data,retried=false){
  }finally{clearTimeout(timer);}
  if(r.status===401||r.status===403){
   setCode('');
+  setAccessStatus('Code rejected by AI endpoint','invalid');
   if(!retried){
    const provided=await openJudgeDialog(r.status===403?'That code was not accepted. Enter the judge code again.':'Live Meta AI requires a private demo code. Enter it to continue.');
    if(provided)return api(endpoint,data,true);
@@ -197,7 +274,7 @@ async function performAudit(image,verify=false){
  setBusy(true,verify?'Verifying…':'Analyzing…');
  try{
   if(!verify){resetAudit();switchView('original');state.context=inputContext();}
-  const out=await api('/api/audit',payload(image));if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
+  const out=await api('/api/audit',payload(image));if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');state.sparkResponded=true;if(verify)state.reauditResponded=true;updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){state.verified=out.audit;phase(3);}else{state.initialAudit=out.audit;state.verified=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
  }finally{setBusy(false);}
@@ -207,7 +284,7 @@ async function performImprove(){
  setBusy(true,'Refining…');
  try{
   const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
-  if(typeof out.image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(out.image))throw Error('Repair response did not contain a valid image. Please retry.');
+  if(typeof out.image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(out.image))throw Error('Repair response did not contain a valid image. Please retry.');state.imageResponded=true;updateMetaStatus();
   state.verified=null;state.runs=state.runs.filter(r=>r.stage==='initial');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Gambar baru sudah dibuat oleh Meta Muse Image. Periksa sebelum digunakan.');
  }finally{setBusy(false);}
 }
@@ -223,7 +300,22 @@ ui.browse.addEventListener('click',e=>{e.stopPropagation();ui.file.click();});ui
 ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)await upload(f);ui.file.value='';});
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));
-fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;state.demoGate=!!info.demoGate;ui.accessButton.hidden=!state.demoGate;setCode(getCode());ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONFIGURED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
+fetch('/api/health').then(r=>{if(!r.ok)throw Error('Health unavailable');return r.json();}).then(info=>{
+ state.configured=!!info.configured;state.demoGate=!!info.demoGate;
+ ui.accessButton.hidden=!state.demoGate;
+ updateMetaStatus();
+ if(state.demoGate) {
+  const saved=getCode();
+  if(saved){setCode('');void verifyCode(saved,{restoring:true});}
+  else setCode('');
+ }else{
+  setCode('');setAccessStatus('Private demo access unavailable','invalid');
+ }
+ if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);
+}).catch(()=>{
+ state.configured=false;updateMetaStatus();ui.connectionText.textContent='SERVER OFFLINE';
+ setAccessStatus('Verification unavailable','invalid');
+});
 // Report navigation reveals one meaningful group at a time.
 function selectReportView(view){
  for(const [key,id] of [['claims','reportClaims'],['findings','reportFindings'],['caption','reportCaption']])$('#'+id).hidden=key!==view;
