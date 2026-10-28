@@ -78,6 +78,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   await page.locator('#product').fill('TEST lamp');await page.locator('#facts').fill('Wood frame, 5 watts.');await page.locator('#caption').fill('Caption with unsupported promise');
   await page.locator('#auditButton').click();
   await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();assert.equal(audits,1);
+   assert.equal(await page.locator('#auditButton').isDisabled(),true,'completed initial audit must not expose a duplicate paid action');
   assert.equal(await page.locator('#judgeAccessDialog').isVisible(),false);
   assert.match(await page.locator('#metaProviderStatus').textContent(),/Muse Spark responded · Muse Image not tested/);
   assert.equal(await page.locator('.report-wireframe').isVisible(),false,'illustration must disappear once actual audit results arrive');
@@ -175,6 +176,11 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
    assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
    await page.route('**/api/audit',r=>r.fulfill({json:{audit:initial,model:'TEST MOCK Spark'}}));
    await page.locator('#auditButton').click();await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
+    assert.equal(await page.locator('#auditButton').isDisabled(),true,'successful audit must block accidental repeat billing');
+    await page.route('**/api/improve',r=>r.fulfill({json:{image:'data:image/png;base64,AAAA',model:'TEST MOCK Image'}}));
+    await page.locator('#refineButton').click();await page.locator('#toast').filter({hasText:'unreadable revised image'}).waitFor();
+    assert.equal(await page.locator('#verifyButton').isDisabled(),true,'unreadable candidate must not enable a second paid Meta call');
+    assert.equal(await page.locator('#reportContent').isVisible(),true,'source audit must survive invalid repaired image');
    await page.route('**/api/improve',r=>r.fulfill({status:502,json:{error:'TEST provider failed'}}));
    await page.locator('#refineButton').click();await page.locator('#toast').filter({hasText:'TEST provider failed'}).waitFor();
    assert.equal(await page.locator('#reportContent').isVisible(),true);assert.equal(await page.locator('#verifyButton').isDisabled(),true);assert.equal(await page.locator('#refineButton').isDisabled(),false);
@@ -204,6 +210,8 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
    await clean.locator('#auditButton').click();
    await clean.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
    assert.equal(await clean.locator('#refineButton').isDisabled(),true,'caption-only issues must not trigger destructive image edits');
+    assert.match(await clean.locator('#stickyAudit').textContent(),/Inspect findings/,'caption-only workflow must direct to inspection, not disabled repair');
+    await clean.locator('#stickyAudit').evaluate(el=>el.click());
    assert.equal(unnecessaryEdits,0);
    await clean.close();
   }

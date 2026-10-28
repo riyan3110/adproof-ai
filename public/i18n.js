@@ -4,6 +4,11 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'Audit complete ✓':'Audit selesai ✓',
+ 'Inspect findings ↗':'Periksa temuan ↗',
+ 'No grounded image repair required. Review findings or export the audit; do not force an edit.':'Tidak ada masalah gambar dengan bukti yang cukup untuk diperbaiki. Periksa temuan atau ekspor audit; jangan memaksa perbaikan.',
+ 'Meta returned an unreadable revised image. Original and audit are preserved; retry Repair only if needed.':'Meta mengirim gambar revisi yang tidak terbaca. Gambar asli dan audit tetap aman; ulangi Perbaikan hanya jika diperlukan.',
+ 'Meta returned an empty revised image. Original and audit are preserved.':'Meta mengirim gambar revisi kosong. Gambar asli dan audit tetap aman.',
  'START HERE / FOUR STEPS':'MULAI DI SINI / EMPAT LANGKAH',
  'How to use AdProof AI':'Cara menggunakan AdProof AI',
  'Hide guide ↑':'Sembunyikan panduan ↑',
