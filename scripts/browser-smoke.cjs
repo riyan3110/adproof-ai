@@ -105,7 +105,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   if(width<761){assert.match(await page.locator('#stickyAudit').textContent(),/Verify/);await page.locator('#stickyAudit').click();}else await page.locator('#verifyButton').click();
   await page.locator('#auditPhase').filter({hasText:'RE-CHECK COMPLETE'}).waitFor();assert.equal(audits,2);assert.match(await page.locator('#metaProviderStatus').textContent(),/Full audit → repair → re-audit responded/);assert.equal(requests[0].facts,requests[1].facts);assert.equal(requests[0].caption,requests[1].caption);assert.equal(requests[1].image,repaired);
    assert.equal(requests[0].referenceImage,undefined,'initial scan should not submit a second image');
-   assert.match(requests[1].referenceImage,/^data:image\\/jpeg;base64,/,'verify should send downsized original');
+   assert.match(requests[1].referenceImage,/^data:image\/jpeg;base64,/,'verify should send downsized original');
    assert.ok(requests[1].referenceImage.length<320000);
    assert.equal(audits,2,'comparison must be part of existing re-audit, not an extra paid call');
    assert.equal(await page.locator('#repairGuardNotice').isVisible(),true,'candidate warning stays visible');
