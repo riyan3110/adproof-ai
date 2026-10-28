@@ -4,6 +4,19 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'START HERE / FOUR STEPS':'MULAI DI SINI / EMPAT LANGKAH',
+ 'How to use AdProof AI':'Cara menggunakan AdProof AI',
+ 'Hide guide ↑':'Sembunyikan panduan ↑',
+ 'Show guide ↓':'Tampilkan panduan ↓',
+ 'AdProof usage steps':'Langkah penggunaan AdProof',
+ 'Choose an ad image, then enter the product name and factual details.':'Pilih gambar iklan, lalu isi nama produk dan fakta sebenarnya.',
+ 'Run an audit and review claims against the facts you supplied.':'Jalankan audit, lalu cocokkan klaim dengan fakta yang kamu berikan.',
+ 'Repair if needed':'Perbaiki jika perlu',
+ 'Only repair a grounded image issue. Keep the original for comparison.':'Perbaiki hanya masalah gambar yang didukung bukti. Simpan gambar asli untuk perbandingan.',
+ 'Verify + save':'Verifikasi + simpan',
+ 'Re-audit the revision, compare both images and export the report.':'Audit ulang gambar revisi, bandingkan keduanya, lalu ekspor laporan.',
+ 'Guide navigation is free. Live AI requests require private Judge Access and may use Meta API credit. AI repairs require human review.':'Navigasi panduan gratis. Permintaan AI nyata memerlukan Akses Juri privat dan dapat menggunakan kredit Meta API. Hasil perbaikan AI wajib diperiksa manusia.',
+ 'Swipe to view all steps →':'Geser untuk melihat semua langkah →',
  'Language':'Bahasa',
  'Auto (browser)':'Otomatis (browser)',
  'English':'English',
