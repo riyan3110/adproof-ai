@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHandler, VERCEL_MAX_BODY } from '../server.mjs';
 import health from '../api/health.mjs';
@@ -128,4 +129,17 @@ test('unknown path returns 404', async () => {
   const res = mockRes();
   await handler(getReq('/nope'), res);
   assert.equal(res.status, 404);
+});
+
+test('static Vercel pages receive production CSP and non-sniffing security headers', () => {
+ const config=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
+ const rules=config.headers?.find(x=>x.source==='/(.*)')?.headers||[];
+ const headers=Object.fromEntries(rules.map(x=>[x.key.toLowerCase(),x.value]));
+ assert.equal(headers['x-content-type-options'],'nosniff');
+ assert.equal(headers['referrer-policy'],'no-referrer');
+ assert.equal(headers['x-frame-options'],'DENY');
+ assert.match(headers['content-security-policy'],/script-src 'self'/);
+ assert.match(headers['content-security-policy'],/connect-src 'self'/);
+ assert.match(headers['content-security-policy'],/frame-ancestors 'none'/);
+ assert.doesNotMatch(headers['content-security-policy'],/unsafe-inline|unsafe-eval|https:\/\//);
 });

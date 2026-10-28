@@ -18,7 +18,7 @@ function mockFetcher(calls) {
   return async (url,opts={})=>{
     calls.push({url,opts});
     if(url.endsWith('chat/completions')) return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(SCAN)}}],usage:{total_tokens:123}}),{status:200,headers:{'content-type':'application/json'}});
-    if(url.endsWith('images/edits')) return new Response(JSON.stringify({data:[{b64_json:'AAAABBCC'}]}),{status:200,headers:{'content-type':'application/json'}});
+    if(url.endsWith('images/edits')) return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}),{status:200,headers:{'content-type':'application/json'}});
     throw Error(`Unexpected URL: ${url}`);
   };
 }

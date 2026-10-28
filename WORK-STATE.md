@@ -103,3 +103,13 @@ Final mobile visual correction: 320px header controls now remain inside the head
 - Added **Explore the evidence flow** action in Audit Dossier's empty state. It activates the existing Proof Constellation UI without invoking a provider or enabling paid anonymous requests. Other empty CTA uses the existing upload/facts focus action.
 - Validation: source check **87/87**; real Chromium mocked browser flow at **1920/1440/1280/768/390/320px**, no horizontal overflow, no unexpected JS/console errors, all legacy audit/repair/verify, X-Ray/evidence/DNA, export and invalidation checks passed. Browser fixtures do not establish real Meta API success.
 - Scope: `public/app.html`, `public/studio.css`, `public/app.js`, structural tests, browser smoke. No model/backend/secret/rate-limit changes. Deployment status to be checked separately before claiming production.
+
+
+## Meta live-readiness preflight (28 October 2026 — ChatGPT-authored)
+
+- **External production smoke:** From an independent Vercel sandbox, GET `/`, `/app`, `/docs`, `/api/health` returned **200**, while POST `/api/audit` and `/api/improve` without the private code returned **401** and one intentionally wrong-code POST returned **403**. These protected rejection paths did **not** invoke paid inference.
+- Production health reported `configured:true`, `demoGate:true`, `muse-spark-1.3`, `muse-image-1.0`. **This does not prove Meta credentials work or a genuine provider response.** No real Model API call was made; the owner's code/cost approval and rights-cleared creative were not available for this session.
+- Identified and fixed a readiness bug: model-supplied signed image URLs can use `application/octet-stream` even for valid PNG/JPEG/WebP. The backend now uses image signature bytes for MIME selection, rejects unsupported/HTML payloads, and preserves the explicit Vercel response-size error before format checks. Tests cover those cases.
+- Independent probe found Vercel CDN-served `/app` and `/docs` omitted the backend's baseline CSP while API routes had it. Added Vercel static headers (CSP, nosniff, frame deny, no-referrer) without unsafe inline scripts/styles; verify preview and production after merge.
+- Tests in isolated sandbox: `npm run check` **90/90 PASS**. Regression fixtures are mocked Model API responses and are not authentic hackathon demo evidence.
+- For **one** paid end-to-end owner test: enter the existing private Judge Access code in the browser (never send to GitHub/chat), upload a rights-cleared small ad with accurate seller facts, run Audit → Repair → Verify with a user-approved spend cap, save the genuine JSON report and screenshot of any failures (redact code). Do not publish fake results. 

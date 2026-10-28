@@ -17,6 +17,16 @@ export const VERCEL_MAX_RESPONSE = 4_400_000;
 const ALLOWED_IMAGE = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/;
 const limits = new Map();
 const hasKey = () => !!process.env.MODEL_API_KEY?.trim();
+// Signed Muse Image URLs may use application/octet-stream or an inaccurate
+// Content-Type. Derive the MIME from actual image bytes, never from a remote
+// response header, so browsers receive a displayable, validated data URL.
+function detectImageMime(bytes) {
+  if (!Buffer.isBuffer(bytes)) return null;
+  if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) return 'image/png';
+  if (bytes.length >= 3 && bytes.subarray(0, 3).equals(Buffer.from([255,216,255]))) return 'image/jpeg';
+  if (bytes.length >= 12 && bytes.toString('ascii',0,4)==='RIFF' && bytes.toString('ascii',8,12)==='WEBP') return 'image/webp';
+  return null;
+}
 
 // Optional demo access-code gate. The secret lives server-side only
 // (DEMO_ACCESS_CODE env). When set, paid Meta endpoints require the code
@@ -245,10 +255,14 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     const data = await metaCall('images/edits', {model:'muse-image-1.0',prompt,images:[{image_url:body.image}],n:1}, 110000);
     const item = data.data?.[0];
     if(item?.b64_json) {
+      // Preserve the explicit Vercel size-limit error before MIME checks.
+      // Oversize responses should never be misreported as corrupt images.
+      boundImage(`data:image/png;base64,${item.b64_json}`);
       const bytes=Buffer.from(item.b64_json,'base64');
-      const mime=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ? 'image/png' :
-        bytes.subarray(0,3).equals(Buffer.from([255,216,255])) ? 'image/jpeg' :
-        bytes.toString('ascii',0,4)==='RIFF' ? 'image/webp' : 'image/png';
+      const mime=detectImageMime(bytes);
+      if(!mime) {
+        const e=new Error('Meta mengembalikan berkas gambar dengan format yang tidak didukung. Ulangi setelah memeriksa layanan Meta.');e.status=502;throw e;
+      }
       return {image:boundImage(`data:${mime};base64,${item.b64_json}`), model:'muse-image-1.0'};
     }
     if(item?.url) { // Fetch the signed URL server-side so the browser receives data, not a temporary external token URL.
@@ -260,7 +274,11 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
       const byteLimit=vercelMode?Math.floor((VERCEL_MAX_RESPONSE-1024)*3/4):9*1024*1024;
       for await(const chunk of remote.body){received+=chunk.length;if(received>byteLimit)throw new Error('Gambar hasil Meta terlalu besar. Gunakan gambar yang lebih kecil.');chunks.push(chunk);}
       const raw=Buffer.concat(chunks);
-      return {image:boundImage(`data:${remote.headers.get('content-type')?.split(';')[0] || 'image/png'};base64,${raw.toString('base64')}`),model:'muse-image-1.0'};
+      const mime=detectImageMime(raw);
+      if(!mime) {
+        const e=new Error('Meta mengembalikan URL dengan berkas bukan PNG, JPEG, atau WebP. Coba ulangi.');e.status=502;throw e;
+      }
+      return {image:boundImage(`data:${mime};base64,${raw.toString('base64')}`),model:'muse-image-1.0'};
     }
     throw new Error('Meta tidak mengirimkan gambar hasil edit.');
   }

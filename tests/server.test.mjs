@@ -13,7 +13,7 @@ const calls=[];
 const fetcher=async (url,opts={})=>{
   calls.push({url,opts});
   if(url.endsWith('chat/completions')) return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(SCAN)}}],usage:{total_tokens:123}}),{status:200,headers:{'content-type':'application/json'}});
-  if(url.endsWith('images/edits')) return new Response(JSON.stringify({data:[{b64_json:'AAAABBCC'}]}),{status:200,headers:{'content-type':'application/json'}});
+  if(url.endsWith('images/edits')) return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}),{status:200,headers:{'content-type':'application/json'}});
   throw Error(`Unexpected URL: ${url}`);
 };
 let server,base;
@@ -34,7 +34,7 @@ test('audit invokes real Meta-compatible multimodal endpoint and parses structur
 });
 test('image editing uses documented Muse Image endpoint',async()=>{
  const res=await fetch(base+'/api/improve',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({image:IMAGE,product:'Lamp',facts:'Wood frame, 50 cm tall, 5W.',issues:SCAN.issues})});
- assert.equal(res.status,200);assert.equal((await res.json()).image,'data:image/png;base64,AAAABBCC');
+ assert.equal(res.status,200);assert.equal((await res.json()).image,'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg==');
  const sent=JSON.parse(calls.find(x=>x.url.endsWith('images/edits')).opts.body);assert.equal(sent.model,'muse-image-1.0');assert.equal(sent.images[0].image_url,IMAGE);
 });
 test('bad input rejected before API call',async()=>{

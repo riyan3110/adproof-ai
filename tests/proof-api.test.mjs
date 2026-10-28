@@ -20,7 +20,7 @@ test('audit snapshot digest binds facts/image/caption without including input or
 });
 test('repair prompt carries bounded claim actions even when generic issues are empty',async()=>{
  let sent;
- const r=await invoke(async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({data:[{b64_json:'AAAABBCC'}]}));},{...input,issues:[],claims:[{claim:'Cures fatigue',assessment:'unsupported_by_supplied_facts',recommended_action:'Remove unsupported benefit'}]},'/api/improve');
+ const r=await invoke(async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));},{...input,issues:[],claims:[{claim:'Cures fatigue',assessment:'unsupported_by_supplied_facts',recommended_action:'Remove unsupported benefit'}]},'/api/improve');
  assert.equal(r.status,200);assert.match(sent.prompt,/Remove unsupported benefit/);assert.equal(sent.model,'muse-image-1.0');
 });
 test('provider failures and aborts are explicit, never fake success',async()=>{
@@ -40,8 +40,36 @@ test('signed image downloads are timed and never followed to insecure URLs',asyn
  let downloads=0;
  const fetcher=async(url,opts)=>{
   if(url.endsWith('images/edits'))return new Response(JSON.stringify({data:[{url:'https://images.example.test/result.png'}]}));
-  downloads++;assert.ok(opts.signal);assert.equal(opts.redirect,'error');return new Response(new Uint8Array([137,80,78,71]),{headers:{'content-type':'image/png'}});
+  downloads++;assert.ok(opts.signal);assert.equal(opts.redirect,'error');return new Response(new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0]),{headers:{'content-type':'application/octet-stream'}});
  };
- const ok=await invoke(fetcher,{...input,issues:[]},'/api/improve');assert.equal(ok.status,200);assert.equal(downloads,1);
+ const ok=await invoke(fetcher,{...input,issues:[]},'/api/improve');assert.equal(ok.status,200);assert.equal(downloads,1);assert.ok(ok.data.image.startsWith('data:image/png;base64,'));
  const bad=await invoke(async()=>new Response(JSON.stringify({data:[{url:'http://localhost/private'}]})),{...input,issues:[]},'/api/improve');assert.equal(bad.status,500);
+});
+
+test('malformed base64 or signed image responses are rejected before browser delivery',async()=>{
+ const body={...input,issues:[]};
+ const invalid=await invoke(async()=>new Response(JSON.stringify({data:[{b64_json:Buffer.from('not a real image').toString('base64')}]})),body,'/api/improve');
+ assert.equal(invalid.status,502);
+ assert.match(invalid.data.error,/format yang tidak didukung/i);
+ let downloads=0;
+ const invalidURL=await invoke(async(url,opts)=>{
+  if(url.endsWith('images/edits'))return new Response(JSON.stringify({data:[{url:'https://images.example.test/signed'}]}));
+  downloads++;
+  assert.ok(opts.signal);
+  return new Response('<html>Not an image</html>',{headers:{'content-type':'image/png'}});
+ },body,'/api/improve');
+ assert.equal(invalidURL.status,502);
+ assert.equal(downloads,1);
+ assert.match(invalidURL.data.error,/bukan PNG, JPEG, atau WebP/i);
+});
+
+test('Muse Image JPEG and WebP base64 outputs use their actual MIME signatures',async()=>{
+ const body={...input,issues:[]};
+ const jpg=Buffer.from([255,216,255,224,0,12,74,70,73,70,0,0]);
+ const webp=Buffer.from('RIFF'+'xxxx'+'WEBP'+'VP8 ','ascii');
+ for(const [bytes,mime] of [[jpg,'jpeg'],[webp,'webp']]){
+  const result=await invoke(async()=>new Response(JSON.stringify({data:[{b64_json:bytes.toString('base64')}]})),body,'/api/improve');
+  assert.equal(result.status,200);
+  assert.ok(result.data.image.startsWith('data:image/'+mime+';base64,'),mime);
+ }
 });
