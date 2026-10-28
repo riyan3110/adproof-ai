@@ -47,3 +47,12 @@ Selecting an audit card, graph claim or trajectory loads the actual correspondin
 ## Inspection workspace follow-up
 
 `activateProofView` changes the visible inspection mode without inventing observations. Selection is shared by source inspection and graph, while DNA source links explicitly select an audit stage and ledger index. An index is only a reference within that specific stage; matching across stages still uses the conservative engine. Caption claims display the actual supplied caption with the creative for context. Resizing redraws the graph against its container width while preserving the selected evidence detail. Clearing inputs releases all source references in the workbench and restores truthful empty states.
+
+
+## Repair Must Not Degrade (existing workflow safeguard)
+
+Muse Image receives preservation-first repair instructions: keep all correct physical parts, geometry, silhouette, edges, connectors, materials, logos and text; only change grounded defects, never invent unsupported details. When the initial audit has no evidence-grounded issue with an image correction, a costly image edit should not run merely to regenerate the scene.
+
+The existing second Muse Spark audit compares **revised creative (image 1)** with a **downsampled original reference (image 2)** in one request; the original is included for comparison only and claim extraction still concerns the revised image and unchanged caption. A compact original is used to respect the Vercel payload limit. Image comparisons are model estimates, not high-resolution metrology or an external product authenticity check.
+
+A deterministic internal guard compares the two selected audit reports for new unsupported *image* claims, medium/high revised visual/structure/legibility issues, and estimated clarity/layout score decline. Its states are `regression_suspected` or `review_required`, **never an automatic pass**; the existing Audit Dossier and exported JSON explicitly warn when manual review is required. Importantly, a larger overall score does NOT prove quality improvement, and apparent absence from a limited claim ledger does NOT prove a defect was removed. Failed verification retains the original and candidate images for inspection.
