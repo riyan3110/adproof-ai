@@ -926,3 +926,28 @@ button:disabled{cursor:not-allowed;opacity:.42}
   .studio-body .export-actions{justify-content:stretch}
   .studio-body .export-actions .btn{flex:1 1 140px}
 }
+
+
+/* In-place continuation of an imported audit — explicit, never automatic. */
+.studio-body .archive-continue-actions{
+ margin:0 20px 16px;padding:17px 20px;border:1px solid #a2b48f;background:#e4eddb;color:#243b2c;
+}
+.studio-body .archive-continue-actions[hidden],
+.studio-body .archive-history-panel[hidden]{display:none!important}
+.studio-body .archive-continue-actions>strong{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;letter-spacing:.4px}
+.studio-body .archive-continue-actions p{max-width:760px;font-size:12px;line-height:1.65;margin:8px 0 15px;color:#476049}
+.studio-body .archive-continue-buttons{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.studio-body .archive-continue-buttons button{
+ min-height:45px;padding:10px 16px;border:1px solid #6c885b;background:#274635;color:#f1f5e9;font-size:12px;font-weight:750;cursor:pointer;max-width:100%;
+}
+.studio-body .archive-continue-buttons button:disabled{opacity:.45;cursor:not-allowed}
+.studio-body .archive-continue-buttons button:focus-visible{outline:3px solid #9fc462;outline-offset:3px}
+.studio-body .archive-history-panel{margin:0 20px 15px;padding:12px 16px;border:1px solid #c5c8bb;background:#f5f5ee;color:#293931}
+.studio-body .archive-history-panel summary{cursor:pointer;font-size:12px;font-weight:750;line-height:1.5}
+.studio-body .archive-history-panel ol{margin:12px 0 0 20px;padding:0;font-size:12px;line-height:1.75}
+.studio-body .archive-history-panel li{padding:3px 0;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .studio-body .archive-continue-actions,.studio-body .archive-history-panel{margin:0 10px 12px;padding:13px}
+ .studio-body .archive-continue-buttons{display:grid;grid-template-columns:minmax(0,1fr)}
+ .studio-body .archive-continue-buttons button{width:100%;text-align:left;white-space:normal}
+}
