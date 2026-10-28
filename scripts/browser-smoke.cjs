@@ -104,7 +104,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   let chooser=false;page.on('filechooser',()=>{chooser=true});await page.locator('#compareRange').focus();await page.keyboard.press('ArrowRight');assert.equal(chooser,false);
   if(width<761){assert.match(await page.locator('#stickyAudit').textContent(),/Verify/);await page.locator('#stickyAudit').click();}else await page.locator('#verifyButton').click();
   await page.locator('#auditPhase').filter({hasText:'RE-CHECK COMPLETE'}).waitFor();assert.equal(audits,2);assert.match(await page.locator('#metaProviderStatus').textContent(),/Full audit → repair → re-audit responded/);assert.equal(requests[0].facts,requests[1].facts);assert.equal(requests[0].caption,requests[1].caption);assert.equal(requests[1].image,repaired);
-  await page.locator('#deckDNA').click();assert.match(await page.locator('#evolutionList').textContent(),/Not re-detected/);assert.match(await page.locator('#evolutionList').textContent(),/Possible wording change/);
+  await page.locator('#deckDNA').click();assert.match(await page.locator('#evolutionList').textContent(),/Not in re-audit list/);assert.match(await page.locator('#evolutionList').textContent(),/Possible wording change/);
   await page.locator('.dna-row summary').first().click();await screenshot(page,`dna-${width}`);
   await page.locator('.dna-row[open] button').first().click();assert.equal(await page.locator('#proofStage').inputValue(),'initial');assert.notEqual(await page.locator('#xrayImage').getAttribute('src'),repaired);
   await page.locator('#deckDNA').click();await page.locator('.dna-row[open] button').nth(1).click();assert.equal(await page.locator('#proofStage').inputValue(),'revised');assert.equal(await page.locator('#xrayImage').getAttribute('src'),repaired);
@@ -112,6 +112,41 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   for(let i=0;i<4;i++){await page.locator('.proof-modebar [data-proof-view=constellation]').click();await page.locator('.proof-modebar [data-proof-view=xray]').click();}
   assert.equal(await page.locator('#xrayClaim').textContent(),'Wood frame');assert.equal(audits,2);assert.equal(edits,1);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#downloadReport').click()]);const report=JSON.parse(await fs.readFile(await download.path(),'utf8'));assert.equal(report.claim_evolution.entries.length,5);assert.ok(report.proof_constellation.initial.edges.length);assert.equal(JSON.stringify(report).includes('browser-test-only'),false);
+  // Test-only reproduction of owner-observed LumaDesk Mini cross-source case.
+  // These observations exist only in the browser test, never in production.
+  await page.evaluate(async()=>{
+    const {renderProofStudio,activateProofView}=await import('/proof-studio.js');
+    const claim=(text,origin)=>({claim:text,origin,assessment:'unsupported_by_supplied_facts',fact_quote:'',reason:'Test-only fixture',recommended_action:'Inspect'});
+    const before=[
+      claim('Save up to 90% Electricity','creative'),
+      claim('Protect Your Eyes','creative'),
+      claim('LumaDesk Mini','creative'),
+      claim('LED DESK LAMP','creative'),
+      claim('Better Sleep in 7 Days','creative'),
+      claim('A Smarter Light for a Healthier You','creative'),
+      claim('The ultimate desk lamp with revolutionary LED technology','caption'),
+      claim('Guaranteed better sleep in just 7 days','caption')
+    ];
+    const after=[
+      claim('save up to 90% electricity','caption'),
+      claim('protect your eyes','caption'),
+      claim('5W Power Consumption','creative'),
+      claim('USB-C Powered','creative'),
+      claim('USB 5V Power','creative'),
+      claim('3000K Warm White Light','creative'),
+      claim('Adjustable Lamp Head','creative'),
+      claim('Guaranteed better sleep in just 7 days','caption')
+    ];
+    renderProofStudio({before:{claim_ledger:before},after:{claim_ledger:after},facts:'5W lamp; USB 5V',caption:'Save up to 90% electricity and protect your eyes'});
+    activateProofView('evolution');
+  });
+  assert.equal(await page.locator('.status-cross_source_observed').count(),2);
+  assert.match(await page.locator('.status-cross_source_observed').first().textContent(),/Also in caption/);
+  assert.match(await page.locator('.status-cross_source_observed').first().textContent(),/IMAGE → CAPTION/);
+  assert.match(await page.locator('#evolutionNote').textContent(),/at most 8 selected claims/);
+  assert.match(await page.locator('#evolutionNote').textContent(),/Image repair does not edit the caption/);
+  assert.match(await page.locator('.dna-row').filter({hasText:'LumaDesk Mini'}).textContent(),/Not in re-audit list/);
+  assert.equal(await overflow(),false,`DNA cross-source state overflow ${width}`);
   assert.equal(await overflow(),false,`result overflow ${width}`);
   const memory=await page.evaluate(()=>({heapBytesApprox:performance.memory?.usedJSHeapSize??null,domElements:document.querySelectorAll('*').length}));assert.ok(memory.domElements<1500);
   await page.locator('#facts').fill('Changed wood frame facts');assert.equal(await page.locator('#xrayEmpty').isVisible(),true);assert.equal(await page.locator('#xrayImage').getAttribute('src'),null);assert.equal(await page.locator('#compareAfter').getAttribute('src'),null);assert.equal(await page.locator('.proof-node').count(),0);assert.equal(await page.locator('.dna-row').count(),0);assert.equal(await page.locator('#reportContent').isVisible(),false);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
