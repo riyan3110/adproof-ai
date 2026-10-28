@@ -65,3 +65,7 @@ Record only an authentic run. If the API fails, repair the fault and run again w
 ## Deferred
 
 AI Red Team Arena, What-If Lab, complex Proof Passport, paid infrastructure and image-coordinate highlighting. None is needed to run the core claim trace/repair/re-audit workflow.
+
+## Editorial Proofroom design review (28 October 2026)
+
+The user requested a professional, visually distinctive Studio rather than the prior generic dark dashboard. A follow-up UI-only branch replaces uniform dark cards with a graphite-and-ivory editorial investigation environment, strengthens creative-canvas prominence and the evidence document hierarchy, while retaining the same source-backed claim functions. Independent browser mocked-flow checks at six desktop/mobile widths and source tests passed; these do **not** constitute an authentic Meta API demo. Final production readiness and video/submission status remain governed by the unresolved items above.

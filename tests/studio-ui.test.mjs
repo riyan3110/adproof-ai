@@ -125,3 +125,17 @@ test('graph and source navigation share an explicit selection; stale source is c
  assert.ok(proof.includes('detailNode=node.id'));
  assert.ok(!proof.includes('innerHTML'));
 });
+
+
+test('Proofroom identity is deliberate editorial visual language, not generic dashboard cards',()=>{
+ const studioCSS=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
+ for(const phrase of ['Proof<span>room.','proofroom-overline','source-form-intro','canvas-field-note','THE INVESTIGATION','AUDIT DOSSIER']){
+  assert.ok(html.includes(phrase)||studioCSS.includes(phrase),'Missing Proofroom identity element: '+phrase);
+ }
+ assert.ok(studioCSS.includes('--proof-paper:#ecebe4'),'paper palette must differ from old dark template');
+ assert.ok(studioCSS.includes('background:var(--proof-ink-soft)'),'canvas must have distinct dark visual surface');
+ assert.ok(studioCSS.includes('.studio-body .proof-workspace'),'proof inspection must be styled independently');
+ assert.ok(studioCSS.includes('.studio-body .audit-card'),'audit dossier must have editorial hierarchy');
+ assert.ok(studioCSS.includes('@media(max-width:540px)'),'mobile-specific typography and hierarchy required');
+ assert.ok(studioCSS.includes('prefers-reduced-motion:reduce'),'motion preferences must remain supported');
+});
