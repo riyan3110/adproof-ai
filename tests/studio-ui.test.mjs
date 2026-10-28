@@ -90,7 +90,7 @@ test('distinct proof modules remain visible before the first paid AI request', (
     assert.ok(html.includes('id="'+id+'"'), 'proof module or truthful idle-state missing: '+id);
   }
   assert.match(html, /id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution">/);
-  assert.ok(html.includes('Illustrations show the process, not audit results'), 'schematic must be clearly labeled non-results');
+  assert.ok(html.includes('No simulated results'), 'idle states must not claim model output');
   assert.ok(html.includes('id="constellationResults" class="proof-live" hidden'));
   assert.ok(html.includes('id="evolutionResults" class="proof-live" hidden'));
   assert.ok(css.includes('.proof-live[hidden],.proof-pending[hidden]{display:none!important}'));
@@ -99,8 +99,29 @@ test('distinct proof modules remain visible before the first paid AI request', (
 test('navigation and feature states follow the real audit lifecycle', () => {
   assert.ok(js.includes('function syncDeck()'));
   assert.ok(js.includes('state.initialAudit?.claim_ledger'));
-  assert.ok(js.includes("inspectLink.href=current>0&&count?'#xrayPanel':'#dropzone'"));
+  assert.ok(html.includes('data-proof-view="xray"'));
+  assert.ok(js.includes("activateProofView('evolution',true)"));
   assert.ok(!html.includes('FAKE SCORE'));
   assert.ok(css.includes('.deck-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'));
   assert.ok(css.includes('@media(max-width:700px)'));
+});
+
+// Structural checks supplement (not replace) the real-browser regression.
+test('redesign has unique IDs and non-nested forms',()=>{
+ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);
+ assert.equal(new Set(ids).size,ids.length,'duplicate DOM ids break state bindings');
+ assert.equal((html.match(/<form\b/g)||[]).length,2);
+ for(const id of ['xrayClaimSelect','xrayImage','xrayCaption','xrayToGraph','proofToXray','pipelineHint','exportState','reportClaims','reportFindings','reportCaption'])assert.ok(ids.includes(id));
+});
+test('studio stylesheet is scoped and new modes have actual buttons',()=>{
+ assert.ok(html.includes('href="/studio.css"'));
+ for(const id of ['deckDetect','deckProof','deckDNA'])assert.match(html,new RegExp('<button[^>]+id="'+id+'"[^>]+data-proof-view='));
+});
+test('graph and source navigation share an explicit selection; stale source is cleared',()=>{
+ const proof=readFileSync(new URL('../public/proof-studio.js',import.meta.url),'utf8');
+ assert.ok(proof.includes('export function activateProofView'));
+ assert.ok(proof.includes("removeAttribute('src')"));
+ assert.ok(proof.includes('context.caption'));
+ assert.ok(proof.includes('detailNode=node.id'));
+ assert.ok(!proof.includes('innerHTML'));
 });

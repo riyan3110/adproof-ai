@@ -1,0 +1,33 @@
+{
+  "test": "MOCKED browser flow, not live Meta",
+  "summary": [
+    {
+      "width": 390,
+      "canvasY": 539.375,
+      "audits": 2,
+      "edits": 1,
+      "overflow": false,
+      "selection_linked": true,
+      "export": true,
+      "input_invalidation": true,
+      "error_recovery": false,
+      "heapBytesApprox": 10000000,
+      "domElements": 506
+    },
+    {
+      "width": 320,
+      "canvasY": 545.59375,
+      "audits": 2,
+      "edits": 1,
+      "overflow": false,
+      "selection_linked": true,
+      "export": true,
+      "input_invalidation": true,
+      "error_recovery": false,
+      "heapBytesApprox": 10000000,
+      "domElements": 506
+    }
+  ],
+  "consoleErrors": [],
+  "expectedGateRejections": 2
+}

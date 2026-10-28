@@ -59,3 +59,7 @@ No author metadata was rewritten. ChatGPT integration/review changes remain attr
 ## Source API review and live-test boundary
 
 `muse-spark-1.3`, `muse-image-1.0`, `https://api.meta.ai/v1/chat/completions`, strict `response_format.json_schema`, multimodal `image_url`, and JSON `images` for `/images/edits` match D. Mock tests demonstrate contracts and failure handling, not provider availability. Private Judge Access and production fail-closed behavior remain required. No decrypted production key or judge code was retrieved. A health response saying configured is not proof of a paid call. No live paid E2E is claimed.
+
+## Focused follow-up — 28 October 2026 (WIB)
+
+Rechecked the official Meta event page and organizer event/submission URL during the final Studio upgrade. The public deadline remains 4 November 21:00 ET (5 November 09:00 WIB); no new public video-duration requirement was exposed by the submission page. Authenticated form details, personal eligibility and registered track remain NEEDS VERIFICATION. Existing source-integration and genuine Muse history evidence is unchanged. New browser screenshots are explicitly mocked regression evidence, not an authentic provider demo. No final submission or social post was made.

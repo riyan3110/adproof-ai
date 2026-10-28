@@ -58,3 +58,31 @@ Coordinate highlights, Red Team Arena, What-If Lab and complex Proof Passport. P
 - The real Proof Constellation and Claim DNA panels are now visible on first load, with explicit empty states. Results containers remain hidden until Meta AI returns observations; changing inputs clears stale nodes and restores the empty state.
 - Reused existing backend/engine and private Judge Access, without synthetic claim data, model calls, third-party JS packages, or a large refactor.
 - Browser smoke assertions updated for persistent modules, live result swaps, and context invalidation. PR validation and production merge must still be checked; do not present this note as an already-deployed release.
+
+## Final Studio inspection workspace (28 October 2026 WIB; ChatGPT-authored)
+
+Baseline main `558d6e9b571b1d62ebd454a811634c4bd30b5f48` includes merged PR #16. Checked remote main before starting; no AGENTS.md. Baseline 81/81 tests. Genuine Muse commits remain unmodified ancestors.
+
+### Changes
+
+- Desktop composition now has a sticky verification rail, large canvas with source-context form, separate repair/verify controls, a three-mode inspection workbench, and a distinct results/export area. On mobile the rail becomes three compact selectors. At desktop 1920/1440/1280, canvas starts at y=298 in a 1000px-high browser, versus the previous large cards pushing it below the fold.
+- Modules actually switch workbench modes; selected claim is preserved between X-Ray and Constellation. X-Ray has a real source-image preview, explicit original/revised stage, claim selector, actual caption context, evidence status and repair advice. DNA source buttons select the exact stage/claim, not just a page anchor.
+- Graph layout responds to its own available width; selected evidence survives resize; two-line labels and full detail panel prevent unreadable long labels. Keyboard Enter/Space selects nodes and updates aria-pressed. No synthetic coordinates/relationships.
+- Claims, Findings and Suggested copy are separate report tabs. Export controls show availability and report scope. Mobile primary action now advances Audit → Repair → Verify → Inspect changes instead of always auditing the original again.
+- Invalidation releases X-Ray and comparison image references and clears selections/nodes/trajectories. Malformed successful API responses do not advance workflow state. Failed repair/re-audit retains the last usable stage for retry. Toasts no longer intercept the mobile action.
+- Scope: HTML/CSS and browser modules, local CSS route, regression scripts/tests, docs. Shared backend model/auth/billing behavior unchanged. No new runtime package, workflow, account, infrastructure or paid service.
+
+### Verification
+
+- `npm run check`: 84/84 passed, with mocked upstream.
+- Real Chromium 131 + Playwright passed at 1920, 1440, 1280, 768, 390 and 320 × 1000. Full mocked workflow, real uploads, private-code dialog, graph keyboard/resize, caption inspection, both image stages, report tabs, comparison slider, DNA, exports, repeated mode switching, empty/incomplete ledgers, injection fixture and context invalidation tested. No JS/unexpected console errors or horizontal overflow.
+- Additional 1440 browser checks: malformed audit response, repair HTTP 502, re-audit HTTP 504, and actual browser AbortController deadline advanced using Playwright's clock. Recovery kept correct stage and controls.
+- DOM after workflow: 506 elements at each viewport. Chromium reported approximately 10 MB JS heap (coarse bucket, not total tab/GPU/process memory or a peak measurement). No heavy graph dependency.
+- Screenshots and machine-readable results: `docs/qa/studio-2026-10-28/`. These contain explicitly labelled test fixtures and are **not proof of live Meta output**.
+- PR/Preview/production checks and final release SHA will be recorded in the release PR conversation after deployment, preserving an exact checked-commit trail.
+
+### Remaining boundaries
+
+Official event deadline rechecked 28 October: still 4 November 21:00 ET / 5 November 09:00 WIB. Public submission page does not expose authenticated final fields/video limits. No personal eligibility/registered track/waiver fact was newly verified. No secret was retrieved/decrypted; no authorized cost cap and usable private-code/real-ad combination was available, so no paid Meta E2E or video is claimed. See readiness for remaining owner steps.
+
+Final mobile visual correction: 320px header controls now remain inside the header; the empty-canvas headline wraps within its container. Full 390px/320px mocked browser flows were rerun successfully with an explicit header-containment assertion, no overflow and no JS errors. See QA `empty-320.png` and `mobile-final-results.json`.

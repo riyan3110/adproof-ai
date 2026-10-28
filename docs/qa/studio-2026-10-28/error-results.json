@@ -1,0 +1,20 @@
+{
+  "test": "MOCKED browser flow, not live Meta",
+  "summary": [
+    {
+      "width": 1440,
+      "canvasY": 298,
+      "audits": 2,
+      "edits": 1,
+      "overflow": false,
+      "selection_linked": true,
+      "export": true,
+      "input_invalidation": true,
+      "error_recovery": true,
+      "heapBytesApprox": 10000000,
+      "domElements": 506
+    }
+  ],
+  "consoleErrors": [],
+  "expectedGateRejections": 3
+}

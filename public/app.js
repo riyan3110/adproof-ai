@@ -1,4 +1,4 @@
-import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector} from './proof-studio.js';
+import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView} from './proof-studio.js';
 const $ = (selector) => document.querySelector(selector);
 const ui = {
   file:$('#fileInput'),drop:$('#dropzone'),browse:$('#browseButton'),replace:$('#newCreative'),empty:$('#emptyCanvas'),image:$('#creativeImage'),name:$('#fileName'),
@@ -47,22 +47,26 @@ ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'))
 function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function syncDeck(){
  const current=state.phase, ready=!!state.original;
- const ledger=state.initialAudit?.claim_ledger;
+ const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
  const count=Array.isArray(ledger)?ledger.length:0;
  const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
  put('deckPhase',state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
  put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
- const inspectLink=document.getElementById('deckDetect');
- if(inspectLink)inspectLink.href=current>0&&count?'#xrayPanel':'#dropzone';
+ ui.refine.disabled=state.busy||!state.initialAudit||!!state.verified;
+ ui.verify.disabled=state.busy||!state.revised||!!state.verified;
+ ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;
+ put('pipelineHint',state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete. Review the claim trajectories.');
+ put('exportState',current===3?'Both audits, evidence links and claim trajectories.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
+
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
   const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
  }
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit(){resetProofStudio();state.context=null;state.runs=[];state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=true;ui.downloadImage.hidden=true;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;phase(0);}
+function resetAudit(){resetProofStudio();state.context=null;state.runs=[];state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -113,7 +117,7 @@ async function prepareImage(file){
 async function upload(file){if(state.busy)return;try{const data=await prepareImage(file);state.original=data;state.originalFilename=file.name;resetAudit();ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
- state.view=view;
+ state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
  for(const [key,el] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]]){el.classList.toggle('selected',key===view);el.setAttribute('aria-selected',String(key===view));}
  ui.empty.hidden=!!state.original;
  ui.compare.hidden=view!=='compare';
@@ -130,6 +134,7 @@ function renderClaimEvidence(a, verified=false){
  const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
  ui.claimPanel.hidden=ledger.length===0;
  ui.claimList.replaceChildren();
+ $('#noClaimNotice').hidden=ledger.length>0;
  if(!ledger.length)return;
  const labels={
   supported_by_supplied_facts:['SUPPORTED BY INPUT','supported'],
@@ -171,10 +176,10 @@ function render(a,verified=false){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
  }
  renderClaimEvidence(a,verified);
- ui.count.textContent=`${String(a.issues.length).padStart(2,'0')} ISSUES`;
+ const issues=Array.isArray(a.issues)?a.issues:[];ui.count.textContent=`${String(issues.length).padStart(2,'0')} ISSUES`;
  ui.issues.replaceChildren();
- if(!a.issues.length)ui.issues.append(el('p','no-issues','No clear issues detected. Review manually before publishing.'));
- for(const issue of a.issues){
+ if(!issues.length)ui.issues.append(el('p','no-issues','No clear issues detected. Review manually before publishing.'));
+ for(const issue of issues){
   const wrapper=el('div','issue');const button=el('button','issue-top');button.type='button';button.setAttribute('aria-expanded','false');
   const dot=el('span',`severity-dot ${issue.severity}`);const title=el('span','issue-title',issue.title);const cat=el('span','issue-cat',issue.category);const arrow=el('span','issue-chevron','+');button.append(dot,title,cat,arrow);
   const details=el('div','issue-details');details.hidden=true;const evidence=el('p','',issue.evidence);const suggestion=el('p');suggestion.append(el('strong','','Fix: '),document.createTextNode(issue.suggestion));details.append(evidence,suggestion);
@@ -183,18 +188,18 @@ function render(a,verified=false){
  }
  ui.suggested.textContent=a.recommended_caption||'Belum ada saran caption.';
  if(verified && state.initialAudit) ui.scoreSummary.textContent=`${a.summary || ''} · Score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original.`;
- ui.refine.hidden=verified;
- ui.verify.hidden=!state.revised || verified;
- ui.downloadImage.hidden=!state.revised;
+ ui.refine.hidden=false;
+ ui.verify.hidden=false;
+ ui.downloadImage.hidden=false;
 }
 async function performAudit(image,verify=false){
  if(!state.configured)throw Error('Hubungkan MODEL_API_KEY di server terlebih dahulu.');
  setBusy(true,verify?'Verifying…':'Analyzing…');
  try{
   if(!verify){resetAudit();switchView('original');state.context=inputContext();}
-  const out=await api('/api/audit',payload(image));state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
+  const out=await api('/api/audit',payload(image));if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){state.verified=out.audit;phase(3);}else{state.initialAudit=out.audit;state.verified=null;phase(1);}
-  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?'Re-audit complete. Review claim changes and uncertainty.':'AI audit completed.');
  }finally{setBusy(false);}
 }
 async function performImprove(){
@@ -202,7 +207,8 @@ async function performImprove(){
  setBusy(true,'Refining…');
  try{
   const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
-  state.verified=null;state.runs=state.runs.filter(r=>r.stage==='initial');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Gambar baru sudah dibuat oleh Meta Muse Image. Periksa sebelum digunakan.');
+  if(typeof out.image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(out.image))throw Error('Repair response did not contain a valid image. Please retry.');
+  state.verified=null;state.runs=state.runs.filter(r=>r.stage==='initial');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Gambar baru sudah dibuat oleh Meta Muse Image. Periksa sebelum digunakan.');
  }finally{setBusy(false);}
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
@@ -218,14 +224,24 @@ ui.file.addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)awa
 for(const evt of ['dragenter','dragover'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.add('dragging');});for(const evt of ['dragleave','drop'])ui.drop.addEventListener(evt,e=>{e.preventDefault();ui.drop.classList.remove('dragging');});ui.drop.addEventListener('drop',e=>{if(e.dataTransfer?.files?.[0])upload(e.dataTransfer.files[0]);});
 ui.originalTab.addEventListener('click',()=>switchView('original'));ui.revisedTab.addEventListener('click',()=>switchView('revised'));ui.compareTab.addEventListener('click',()=>switchView('compare'));ui.range.addEventListener('input',e=>setCompare(Number(e.target.value)));
 fetch('/api/health').then(r=>r.json()).then(info=>{state.configured=!!info.configured;state.demoGate=!!info.demoGate;ui.accessButton.hidden=!state.demoGate;setCode(getCode());ui.connection.classList.add(state.configured?'ready':'missing');ui.connectionText.textContent=state.configured?'META CONFIGURED':'API NOT SET';if(!state.configured)notify('Untuk audit real-time, konfigurasi MODEL_API_KEY di server.',true);}).catch(()=>{ui.connection.classList.add('missing');ui.connectionText.textContent='SERVER OFFLINE';});
-// Sticky mobile CTA: mirrors the main audit submit without duplicating logic.
-const stickyAudit=$('#stickyAudit');const stickyLabel=$('#stickyLabel');
-if(stickyAudit){stickyAudit.addEventListener('click',()=>{ui.form.requestSubmit();});
- const syncSticky=()=>{stickyAudit.disabled=ui.auditButton.disabled;if(stickyLabel)stickyLabel.textContent=state.busy?'Working…':!state.original?'Add a creative to begin':state.audit?'Audit ready — refine or verify below':'Ready when your creative + facts are set';};
- new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
- ui.form.addEventListener('input',syncSticky);syncSticky();
-// Keep tab semantics in sync for assistive tech.
-for(const [key,tab] of [['original',ui.originalTab],['revised',ui.revisedTab],['compare',ui.compareTab]])tab.addEventListener('click',()=>{for(const t of [ui.originalTab,ui.revisedTab,ui.compareTab])t.setAttribute('aria-selected',String(t===tab));});}
-
-// Establish accurate idle states before any Meta response exists.
-syncDeck();
+// Report navigation reveals one meaningful group at a time.
+function selectReportView(view){
+ for(const [key,id] of [['claims','reportClaims'],['findings','reportFindings'],['caption','reportCaption']])$('#'+id).hidden=key!==view;
+ for(const b of document.querySelectorAll('[data-report-view]'))b.setAttribute('aria-pressed',String(b.dataset.reportView===view));
+}
+for(const b of document.querySelectorAll('[data-report-view]'))b.addEventListener('click',()=>selectReportView(b.dataset.reportView));
+for(const b of document.querySelectorAll('[data-focus-input]'))b.addEventListener('click',()=>{
+ const target=!state.original?ui.browse:!ui.product.value.trim()?ui.product:ui.facts;
+ target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});
+});
+const stickyAudit=$('#stickyAudit'),stickyLabel=$('#stickyLabel');
+function syncSticky(){
+ const done=state.phase===3;
+ stickyAudit.disabled=state.busy;
+ stickyAudit.textContent=state.busy?'Processing…':done?'Inspect changes →':state.phase===2?'Verify revision ↗':state.phase===1?'Repair creative ↗':'Run audit ↗';
+ stickyLabel.textContent=state.busy?'Meta model request':done?'Re-audit complete':state.phase===2?'Review the repaired image':state.phase===1?'Initial audit complete':!state.original?'Add a creative to begin':'Add facts to begin';
+}
+stickyAudit.addEventListener('click',()=>{if(state.busy)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1)ui.refine.click();else ui.form.requestSubmit();});
+new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
+ui.form.addEventListener('input',syncSticky);
+syncDeck();syncSticky();

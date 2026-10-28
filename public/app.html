@@ -7,6 +7,7 @@
 <meta name="description" content="AdProof AI Studio — audit, refine and verify ad creatives with Meta AI.">
 <title>Studio — AdProof AI</title>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/studio.css">
 </head>
 <body class="studio-body">
 <a class="skip-link" href="#studioMain">Skip to studio</a>
@@ -16,61 +17,26 @@
   <div class="studio-actions">
     <span class="connection" id="connection" role="status"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText">Checking API</span></span>
     <button type="button" id="judgeAccessButton" class="judge-access-button" hidden aria-haspopup="dialog">Judge access</button>
-    <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">?</a>
+    <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">Docs ↗</a>
   </div>
 </header>
 <main class="workspace" id="studioMain">
-  <section class="workspace-head">
-    <div class="workspace-title">
-      <div class="eyebrow"><span class="eyebrow-symbol" aria-hidden="true">✳</span> YOUR CREATIVE DESERVES PROOF</div>
-      <h1>Proof <span>Studio</span><sup> / 01</sup></h1>
-    </div>
-    <ol class="workflow-steps" aria-label="Progress: upload, audit, refine, verify">
-      <li class="stage active" data-stage="0"><b aria-hidden="true">01</b> UPLOAD</li>
-      <li class="step-sep" aria-hidden="true"></li>
-      <li class="stage" data-stage="1"><b aria-hidden="true">02</b> AUDIT</li>
-      <li class="step-sep" aria-hidden="true"></li>
-      <li class="stage" data-stage="2"><b aria-hidden="true">03</b> REFINE</li>
-      <li class="step-sep" aria-hidden="true"></li>
-      <li class="stage" data-stage="3"><b aria-hidden="true">04</b> VERIFY</li>
-    </ol>
+  <section class="workspace-head"><div class="workspace-title"><div class="eyebrow">ADVERTISING CLAIM VERIFICATION & REPAIR</div><h1>Proof <span>Studio</span><sup> / 02</sup></h1></div>
+    <ol class="workflow-steps" aria-label="Workflow progress"><li class="stage active" data-stage="0"><b>01</b> DETECT</li><li class="stage" data-stage="1"><b>02</b> VERIFY</li><li class="stage" data-stage="2"><b>03</b> REPAIR</li><li class="stage" data-stage="3"><b>04</b> PROVE</li></ol>
   </section>
-  <section class="intelligence-deck" aria-labelledby="deckTitle">
-    <div class="deck-heading"><span id="deckTitle">ADPROOF / VERIFICATION ENGINE</span><span id="deckPhase" role="status">AWAITING CREATIVE</span></div>
+  <div class="studio-shell">
+  <aside class="engine-rail" aria-label="Verification engine">
+    <section class="intelligence-deck" aria-labelledby="deckTitle"><div class="deck-heading"><span id="deckTitle">VERIFICATION ENGINE</span></div>
     <div class="deck-grid">
-      <a class="deck-module deck-xray" id="deckDetect" href="#dropzone">
-        <span class="deck-id">01 / DETECT</span>
-        <strong>Claim <em>X-Ray</em></strong>
-        <span class="deck-graphic" aria-hidden="true"><span class="deck-scan"><i></i><i></i><i></i><i></i><b>+</b></span><span class="deck-scan-sweep"></span></span>
-        <span class="deck-bottom"><span id="deckDetectState">Inspect source after audit</span><span>↗</span></span>
-      </a>
-      <a class="deck-module deck-map" id="deckProof" href="#constellationTitle">
-        <span class="deck-id">02 / VERIFY</span>
-        <strong>Proof <em>Constellation</em></strong>
-        <span class="deck-graphic deck-orbit" aria-hidden="true"><svg viewBox="0 0 240 98" preserveAspectRatio="xMidYMid meet"><path d="M32 51 L112 26 L202 58 M112 26 L151 82 M32 51 L151 82" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 7" opacity=".55"/><circle cx="32" cy="51" r="9"/><circle cx="112" cy="26" r="12"/><circle cx="202" cy="58" r="9"/><circle cx="151" cy="82" r="7"/></svg></span>
-        <span class="deck-bottom"><span id="deckProofState">Evidence links await audit</span><span>↗</span></span>
-      </a>
-      <a class="deck-module deck-dna" id="deckDNA" href="#evolutionTitle">
-        <span class="deck-id">03 / PROVE</span>
-        <strong>Claim DNA <em>Evolution</em></strong>
-        <span class="deck-graphic deck-track" aria-hidden="true"><span class="deck-track-line"></span><span class="deck-track-node">A</span><span class="deck-track-arrow">→</span><span class="deck-track-node">B</span><span class="deck-track-line"></span></span>
-        <span class="deck-bottom"><span id="deckDNAState">Compare after re-audit</span><span>↗</span></span>
-      </a>
-    </div>
-    <p class="deck-disclaimer">Illustrations show the process, not audit results. Live findings appear only after Meta AI returns an analysis.</p>
-  </section>
-  <details class="public-tour" id="publicTour">
-    <summary><span>✦ EXPLORE THE WORKFLOW</span><span class="public-tour-hint">4 STEPS · NO LOGIN TO BROWSE</span></summary>
-    <div class="public-tour-content">
-      <ol>
-        <li><strong>01 / Upload</strong><span>Choose your advertising creative and provide factual product details.</span></li>
-        <li><strong>02 / Audit</strong><span>Meta Muse Spark examines claims, readability and evidence.</span></li>
-        <li><strong>03 / Refine</strong><span>Meta Muse Image edits the uploaded creative.</span></li>
-        <li><strong>04 / Verify</strong><span>Meta Muse Spark checks the actual revised image again.</span></li>
-      </ol>
-      <p>Public walkthrough only. Live AI requests require the private Judge access code; no example scores or edited images are fabricated.</p>
-    </div>
-  </details>
+      <button type="button" class="deck-module deck-xray" id="deckDetect" data-proof-view="xray" aria-controls="xrayWorkspace" aria-pressed="true"><span class="deck-id">01 / SOURCE INSPECTION <span>↗</span></span><strong>Claim <em>X-Ray</em></strong><span class="module-purpose">Inspect a claim in its original context.</span><span class="deck-bottom" id="deckDetectState">Upload creative to start</span></button>
+      <button type="button" class="deck-module deck-map" id="deckProof" data-proof-view="constellation" aria-controls="constellationWorkspace" aria-pressed="false"><span class="deck-id">02 / EVIDENCE MAPPING <span>↗</span></span><strong>Proof <em>Constellation</em></strong><span class="module-purpose">Follow the claim to its recorded evidence.</span><span class="deck-bottom" id="deckProofState">Awaiting observed claims</span></button>
+      <button type="button" class="deck-module deck-dna" id="deckDNA" data-proof-view="evolution" aria-controls="evolutionWorkspace" aria-pressed="false"><span class="deck-id">03 / CHANGE TRACKING <span>↗</span></span><strong>Claim DNA <em>Evolution</em></strong><span class="module-purpose">Compare observations across both audits.</span><span class="deck-bottom" id="deckDNAState">Awaiting comparison</span></button>
+    </div></section>
+    <div class="rail-session"><span class="tiny-meta">CURRENT SESSION</span><strong id="deckPhase" role="status">AWAITING CREATIVE</strong><p>Private model access.<br>Public evidence workspace.</p></div>
+    <details class="public-tour" id="publicTour"><summary>How it works <span>+</span></summary><div class="public-tour-content"><ol><li><strong>Upload + facts</strong><span>Add a creative you have permission to use.</span></li><li><strong>Audit + inspect</strong><span>Compare observed claims with supplied facts.</span></li><li><strong>Repair + re-audit</strong><span>Check the actual revised image and its changes.</span></li></ol><p>Live AI requests require the private Judge access code. No simulated results.</p></div></details>
+  </aside>
+  <div class="studio-content">
+  <div class="section-label"><span>01 / CREATIVE WORKSPACE</span><span id="canvasSourceLabel">ORIGINAL SOURCE</span></div>
   <div class="workspace-grid">
     <section class="preview-pane glass-panel" aria-label="Creative canvas">
       <div class="panel-heading">
@@ -85,7 +51,7 @@
         <span class="corner tl" aria-hidden="true"></span><span class="corner tr" aria-hidden="true"></span><span class="corner bl" aria-hidden="true"></span><span class="corner br" aria-hidden="true"></span>
         <div id="emptyCanvas" class="empty-canvas">
           <div class="canvas-art" aria-hidden="true"><span class="canvas-plus">+</span><span class="canvas-orbit-dot"></span><span class="canvas-orbit-dot two"></span></div>
-          <span class="empty-title">Drop your creative here</span>
+          <span class="empty-title">Your creative. Under review.</span>
           <span class="empty-specs"><i>PNG · JPG · WEBP</i><i class="max">MAX 6 MB</i></span>
           <button type="button" id="browseButton" class="btn btn-upload">Choose creative <span aria-hidden="true">↗</span></button>
           <span class="empty-hint">or tap the frame to browse</span>
@@ -99,36 +65,59 @@
         </div>
         <div class="scan-overlay" id="scanOverlay" hidden><span>INSPECTING PIXELS</span></div>
       </div>
-      <section id="xrayPanel" class="xray-panel" aria-label="Claim X-Ray inspector" hidden>
-        <div class="panel-title">CLAIM X-RAY <span id="xrayTitle"></span></div>
-        <strong id="xrayClaim"></strong><span id="xrayStatus" class="xray-status"></span>
-        <p id="xrayReason"></p><p id="xrayEvidence"></p><p id="xrayAction"></p>
-        <small>Source inspection · exact pixel location unavailable. No bounding box inferred.</small>
-      </section>
       <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
       <div class="canvas-footer">
         <span class="file-chip"><span class="mini-square" aria-hidden="true">↗</span><span id="fileName">NO CREATIVE SELECTED</span></span>
         <button id="newCreative" class="text-button" type="button" disabled>Replace ↗</button>
       </div>
     </section>
-    <aside class="right-pane">
-      <section class="details-card glass-panel" aria-label="Project details">
-        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lime" aria-hidden="true"></span> PROJECT DETAILS</span><span class="tiny-meta">01 / 02</span></div>
+<aside class="right-pane">      <section class="details-card glass-panel" aria-label="Project details">
+        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lime" aria-hidden="true"></span> SOURCE CONTEXT</span><span class="tiny-meta">INPUT</span></div>
         <form id="projectForm">
           <label for="product">Product name <span class="required" aria-hidden="true">*</span></label>
           <input type="text" id="product" name="product" maxlength="130" placeholder="e.g. Aurora Wireless Lamp" required autocomplete="off">
           <label for="facts">Supplied product facts <span class="required" aria-hidden="true">*</span></label>
-          <textarea id="facts" maxlength="2500" rows="3" placeholder="Material, size, price, features…" required></textarea>
+          <textarea id="facts" maxlength="2500" rows="5" placeholder="Material, size, price, features…" required></textarea>
           <label for="caption">Ad caption <span class="optional">OPTIONAL</span></label>
           <textarea id="caption" maxlength="1000" rows="2" placeholder="Existing ad copy (if any)"></textarea>
           <div class="form-bottom">
-            <span>Compared with your input, not independently verified.</span>
+            <span>Seller-supplied facts. Not independently verified.</span>
             <button id="auditButton" type="submit" class="btn btn-analyze"><span id="auditButtonText">Run audit</span><span aria-hidden="true">↗</span></button>
           </div>
         </form>
       </section>
-      <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" aria-live="polite">
-        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> AUDIT REPORT</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
+<div class="context-note"><span>i</span><p>Supplied facts are the evidence basis, not independently verified truth.</p></div></aside></div>
+  <div class="pipeline-bar"><div><span class="tiny-meta">NEXT STEP</span><p id="pipelineHint">Upload your creative and add product facts.</p></div><div class="pipeline-actions"><button type="button" id="refineButton" class="btn btn-primary" disabled>Repair creative ↗</button><button type="button" id="verifyButton" class="btn btn-outline" disabled>Verify revision ↗</button></div></div>
+  <section id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution">
+    <div class="proof-heading"><div><span class="eyebrow">02 / PROOF INTELLIGENCE</span><h2 id="proofHeading" tabindex="-1">Inspect the source.</h2></div><label class="proof-stage-label">Observation <select id="proofStage" disabled><option value="initial">Initial audit</option><option value="revised" disabled>Re-audit</option></select></label></div>
+    <nav class="proof-modebar" aria-label="Inspection mode"><button type="button" data-proof-view="xray" aria-controls="xrayWorkspace" aria-pressed="true">Claim X-Ray</button><button type="button" data-proof-view="constellation" aria-controls="constellationWorkspace" aria-pressed="false">Proof Constellation</button><button type="button" data-proof-view="evolution" aria-controls="evolutionWorkspace" aria-pressed="false">Claim DNA</button></nav>
+    <div class="proof-layout">
+      <section id="xrayWorkspace" class="inspection-pane" aria-label="Claim X-Ray">
+        <div id="xrayEmpty" class="proof-pending"><span class="empty-index">01 / CLAIM X-RAY</span><strong>A claim needs context.</strong><p>Run an audit, then select a claim to inspect its source, evidence status and repair recommendation.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        <div id="xrayResults" class="xray-workspace" hidden><div class="xray-source"><div class="source-heading"><span id="xrayImageLabel">ORIGINAL SOURCE</span><span>LOCATION NOT INFERRED</span></div><img id="xrayImage" alt="Selected claim's source creative"><p id="xrayCaption" hidden></p></div><div class="xray-inspection"><label for="xrayClaimSelect">Select an observed claim</label><select id="xrayClaimSelect"></select>      <section id="xrayPanel" class="xray-panel" aria-label="Claim X-Ray inspector" hidden>
+        <div class="panel-title">CLAIM X-RAY <span id="xrayTitle"></span></div>
+        <strong id="xrayClaim"></strong><span id="xrayStatus" class="xray-status"></span>
+        <p id="xrayReason"></p><p id="xrayEvidence"></p><p id="xrayAction"></p>
+        <button type="button" id="xrayToGraph" class="text-button">Trace this claim in Constellation →</button><small>Source inspection · exact pixel location unavailable. No bounding box inferred.</small>
+      </section>
+</div></div>
+      </section>
+      <section id="constellationWorkspace" class="constellation-panel inspection-pane" aria-labelledby="constellationTitle" hidden>
+        <div class="inspection-title"><h3 id="constellationTitle">Proof Constellation</h3><p id="proofCount" class="tiny-meta">NO OBSERVATIONS</p></div>
+        <div id="constellationEmpty" class="proof-pending"><span class="empty-index">02 / PROOF CONSTELLATION</span><strong>Evidence, connected to its source.</strong><p>Recorded claims, fact excerpts and recommendations will appear here after an audit.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        <div id="constellationResults" class="proof-live" hidden><div id="proofNodeList" class="proof-node-list" aria-label="Select a claim or finding"></div><div class="network-inspector"><svg id="constellation" class="constellation" role="group" aria-label="Evidence relationships"></svg><div class="proof-node-detail" aria-live="polite"><span class="tiny-meta">SELECTED EVIDENCE</span><strong id="proofNodeTitle"></strong><p id="proofNodeDetail"></p><small id="proofNodeSource"></small><button type="button" id="proofToXray" class="text-button" disabled>Inspect claim source →</button></div></div><p class="claim-proof-note">Lines trace recorded relationships. A matching quote is not independent proof of truth.</p></div>
+      </section>
+      <section id="evolutionWorkspace" class="evolution-panel inspection-pane" aria-labelledby="evolutionTitle" hidden>
+        <div class="inspection-title"><h3 id="evolutionTitle">Claim DNA Evolution</h3><span id="evolutionCount" class="tiny-meta">AWAITING COMPARISON</span></div>
+        <div id="evolutionEmpty" class="proof-pending"><span class="empty-index">03 / CLAIM DNA EVOLUTION</span><strong>Every revision leaves a trail.</strong><p>Audit the original, repair the image, then re-audit to compare observations. Missing does not mean repaired.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        <div id="evolutionResults" class="proof-live" hidden><p id="evolutionNote" class="claim-proof-note"></p><div id="evolutionList" class="evolution-list"></div></div>
+      </section>
+    </div>
+    <div class="proof-boundary">EVIDENCE BASIS <span>Seller-supplied facts · human review required</span></div>
+  </section>
+  <div class="section-label result-label"><span>03 / RESULTS & EXPORT</span><span>OBSERVATIONS, NOT CERTIFICATION</span></div>
+      <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" >
+        <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> RESULTS & EXPORT</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
         <div id="reportEmpty" class="report-empty">
           <div class="report-empty-graphic" aria-hidden="true">⌁<span>✺</span></div>
           <strong>No audit yet</strong>
@@ -141,65 +130,22 @@
             <div class="score-info"><span class="score-caption">CREATIVE HEALTH</span><h3 id="scoreHeadline"></h3><p id="scoreSummary"></p></div>
           </div>
           <div class="breakdown" id="breakdown"></div>
-<section id="claimEvidencePanel" class="claim-evidence" aria-label="Claim evidence trace" hidden>
+<nav class="report-tabs" aria-label="Report sections"><button type="button" data-report-view="claims" aria-pressed="true">Claims</button><button type="button" data-report-view="findings" aria-pressed="false">Findings</button><button type="button" data-report-view="caption" aria-pressed="false">Suggested copy</button></nav>
+<div id="reportClaims"><p id="noClaimNotice" hidden>No readable claims returned. This is not proof that the creative has no claims.</p><section id="claimEvidencePanel" class="claim-evidence" aria-label="Claim evidence trace" hidden>
             <div class="issues-heading"><span>CLAIM EVIDENCE TRACE</span><span id="claimEvidenceCount">0 CLAIMS</span></div>
             <p class="claim-proof-note">Compared with seller-supplied facts. Not independently verified.</p>
             <div id="claimEvidenceList" class="claim-evidence-list"></div>
-          </section>
-          <div class="issues-heading"><span>FINDINGS</span><span id="issueCount">00 ISSUES</span></div>
+
+      </section>
+          </div><div id="reportFindings" hidden><div class="issues-heading"><span>FINDINGS</span><span id="issueCount">00 ISSUES</span></div>
           <div id="issuesList" class="issues-list"></div>
-          <div class="recommendation"><div><span>✧ SUGGESTED CAPTION</span><button id="copyCaption" title="Copy caption" class="copy-icon" type="button" aria-label="Copy suggested caption">⧉</button></div><p id="suggestedCaption"></p></div>
-          <div class="report-actions">
-            <button type="button" id="refineButton" class="btn btn-primary full">✳ Improve creative <span aria-hidden="true">↗</span></button>
-            <button type="button" id="verifyButton" class="btn btn-outline full" hidden>◎ Verify revision <span aria-hidden="true">↗</span></button>
-            <button type="button" id="downloadReport" class="btn btn-subtle full">↓ Export audit (JSON)</button>
-            <button type="button" id="downloadImage" class="btn btn-subtle full" hidden>↓ Download revised image</button>
-          </div>
+          </div><div id="reportCaption" hidden><div class="recommendation"><div><span>✧ SUGGESTED CAPTION</span><button id="copyCaption" title="Copy caption" class="copy-icon" type="button" aria-label="Copy suggested caption">⧉</button></div><p id="suggestedCaption"></p></div></div>
         </div>
+        <div class="export-strip"><div><strong>Take the evidence with you</strong><p id="exportState">Run an audit to create a report.</p></div><div class="export-actions"><button type="button" id="downloadReport" class="btn btn-subtle" disabled>↓ Export report</button><button type="button" id="downloadImage" class="btn btn-subtle" disabled>↓ Revised image</button></div></div>
       </section>
-    </aside>
-  </div>
-  <section id="proofWorkspace" class="proof-workspace" aria-label="Claim verification and evolution">
-    <div class="proof-heading"><div><span class="eyebrow">DETECT → VERIFY → REPAIR → PROVE</span><h2>Follow the claim. <span>Inspect the proof.</span></h2></div><span class="proof-basis">Seller-supplied facts · not independent verification</span></div>
-    <div class="proof-layout">
-      <section class="constellation-panel glass-panel" aria-labelledby="constellationTitle">
-        <div class="panel-heading"><h3 id="constellationTitle">Proof Constellation</h3><label class="proof-stage-label">Audit <select id="proofStage" disabled><option value="initial">Initial</option><option value="revised" disabled>Re-audit</option></select></label></div>
-        <div id="constellationEmpty" class="proof-pending" role="status">
-          <span class="pending-symbol pending-network" aria-hidden="true">◇──◇<span>│</span>◇</span>
-          <strong>Evidence network is ready</strong>
-          <p>Run an audit to connect observed claims with your supplied facts.</p>
-          <small>AWAITING VERIFIED INPUT RELATIONSHIPS</small>
-        </div>
-        <div id="constellationResults" class="proof-live" hidden>
-        <p id="proofCount" class="tiny-meta"></p>
-        <div id="proofNodeList" class="proof-node-list" aria-label="Select a claim or finding"></div>
-        <svg id="constellation" class="constellation" role="group" aria-label="Evidence relationships"></svg>
-        <div class="proof-node-detail" aria-live="polite"><strong id="proofNodeTitle"></strong><p id="proofNodeDetail"></p><small id="proofNodeSource"></small></div>
-        <p class="claim-proof-note">Lines trace recorded relationships. A matching quote is not independent proof of truth.</p>
-        </div>
-      </section>
-      <section class="evolution-panel glass-panel" aria-labelledby="evolutionTitle">
-        <div class="panel-heading"><h3 id="evolutionTitle">Claim DNA Evolution</h3><span class="dna-icon" aria-hidden="true">⌁</span></div>
-        <div id="evolutionEmpty" class="proof-pending" role="status">
-          <span class="pending-symbol pending-lineage" aria-hidden="true">○ <span>→</span> ○</span>
-          <strong>Claim lineage starts here</strong>
-          <p>Run Audit, Repair and Re-audit to examine changes and uncertainty.</p>
-          <small>NO BEFORE / AFTER CLAIMS YET</small>
-        </div>
-        <div id="evolutionResults" class="proof-live" hidden>
-        <p id="evolutionCount" class="tiny-meta"></p><p id="evolutionNote" class="claim-proof-note"></p>
-        <div id="evolutionList" class="evolution-list"></div>
-        </div>
-      </section>
-    </div>
-  </section>
-  <div class="sticky-cta" id="stickyCta">
-    <div class="sticky-cta-inner">
-      <span class="sticky-cta-label" id="stickyLabel">Ready when your creative + facts are set</span>
-      <button type="button" class="btn btn-analyze" id="stickyAudit">Run audit <span aria-hidden="true">↗</span></button>
-    </div>
-  </div>
-  <div class="bottom-rail"><span>✦ POWERED BY META MUSE SPARK + MUSE IMAGE</span><span>CREATIVE QUALITY ESTIMATE · NOT LEGAL CERTIFICATION</span></div>
+<div class="sticky-cta" id="stickyCta"><div class="sticky-cta-inner"><span class="sticky-cta-label" id="stickyLabel">Add creative + facts</span><button type="button" class="btn btn-analyze" id="stickyAudit">Run audit ↗</button></div></div>
+  </div></div>
+  <div class="bottom-rail"><span>✦ META MUSE SPARK + MUSE IMAGE</span><span>CREATIVE QUALITY ESTIMATE · NOT LEGAL CERTIFICATION</span></div>
 </main>
 <dialog id="judgeAccessDialog" class="judge-access-dialog" aria-labelledby="judgeAccessTitle" aria-describedby="judgeAccessHint">
   <form id="judgeAccessForm">
