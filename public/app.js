@@ -234,6 +234,9 @@ for(const b of document.querySelectorAll('[data-focus-input]'))b.addEventListene
  const target=!state.original?ui.browse:!ui.product.value.trim()?ui.product:ui.facts;
  target.scrollIntoView({block:'center',behavior:'auto'});target.focus({preventScroll:true});
 });
+/* Public, no-cost exploration of the proof workspace. This switches real UI
+   sections with explicitly labelled wireframes; it never calls a model. */
+$('#exploreProofButton').addEventListener('click',()=>activateProofView('constellation',true));
 const stickyAudit=$('#stickyAudit'),stickyLabel=$('#stickyLabel');
 function syncSticky(){
  const done=state.phase===3;
