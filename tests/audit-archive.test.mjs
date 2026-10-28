@@ -118,12 +118,84 @@ test('ZIP package never includes access codes or model credential fields from ma
 });
 
 test('file upload has a finite size cap before expensive parsing',async()=>{
- const huge=new File([new Uint8Array(18*1024*1024+1)],'bad.zip');
- await assert.rejects(()=>openAuditFile(huge),/18 MB/);
+ const huge={size:48*1024*1024+1,arrayBuffer:async()=>new ArrayBuffer(0)};
+ await assert.rejects(()=>openAuditFile(huge),/48 MB/);
 });
 
 test('read JSON-only reports with a single initial audit, where verified is absent',()=>{
  const data=readAuditJson(JSON.stringify({...oldReport,verified:null,runs:[]}));
  assert.equal(data.original.score,35);
  assert.equal(data.verified,null);
+});
+
+
+test('continued repair round keeps prior original + revision + report in exported ZIP',async()=>{
+ const previous={from:'revised',report:oldReport,original,revised};
+ const current={...oldReport,original:verified,verified:{...verified,score:72}};
+ const {blob,filenames}=createAuditPackage(current,revised,original,[previous]);
+ assert.deepEqual(filenames,['audit.json','original.jpg','revised.png','history/round01-original.png','history/round01-revised.jpg']);
+ const data=readAuditPackage(new Uint8Array(await blob.arrayBuffer()));
+ assert.equal(data.report.original.score,58);
+ assert.equal(data.report.verified.score,72);
+ assert.equal(data.history.length,1);
+ assert.equal(data.history[0].from,'revised');
+ assert.equal(data.history[0].report.original.score,35);
+ assert.equal(data.history[0].report.verified.score,58);
+ assert.equal(data.history[0].original,original);
+ assert.equal(fromImageDataUrl(data.history[0].revised).mime,'image/jpeg');
+ assert.equal(data.original,toImageDataUrl(jpg).dataUrl);
+ assert.equal(data.revised,original);
+});
+
+test('second continuation preserves all earlier rounds without overwriting previous images or audits',async()=>{
+ const first={from:'revised',report:oldReport,original,revised};
+ const second={from:'original',report:{...oldReport,original:verified,verified:{...verified,score:73}},original:revised,revised:original};
+ const current={...oldReport,original:verified,verified:{...verified,score:81}};
+ const {blob}=createAuditPackage(current,original,revised,[first,second]);
+ const imported=readAuditPackage(new Uint8Array(await blob.arrayBuffer()));
+ assert.equal(imported.history.length,2);
+ assert.deepEqual(imported.history.map(x=>x.from),['revised','original']);
+ assert.deepEqual(imported.history.map(x=>x.report.verified.score),[58,73]);
+ assert.equal(imported.report.verified.score,81);
+ const {blob:again}=createAuditPackage(imported.report,imported.original,imported.revised,imported.history);
+ const roundTrip=readAuditPackage(new Uint8Array(await again.arrayBuffer()));
+ assert.deepEqual(roundTrip.history.map(x=>x.report.verified.score),[58,73]);
+ assert.equal(roundTrip.history[1].original,imported.history[1].original);
+});
+
+test('JSON-only import preserves readable history records but does not invent missing historic images',()=>{
+ const report=readAuditJson(JSON.stringify({...oldReport,archive_history:[
+  {from:'revised',report:oldReport},
+  {from:'original',report:{...oldReport,verified:null}}
+ ]}));
+ assert.equal(report.archive_history.length,2);
+ assert.equal(report.archive_history[0].report.original.score,35);
+ assert.equal(report.archive_history[0].assets,null);
+ assert.equal(report.archive_history[1].report.verified,null);
+});
+
+test('reject corrupt or missing historic image manifest without trusting JSON references',async()=>{
+ const history=[{from:'revised',report:oldReport,original,revised}];
+ const {blob}=createAuditPackage(oldReport,original,revised,history);
+ const bytes=new Uint8Array(await blob.arrayBuffer());
+ const source=new TextDecoder().decode(bytes);
+ const oldName='history/round01-original.png';
+ const malicious='history/round02-original.png';
+ assert.equal(oldName.length,malicious.length);
+ const jsonPart=source.indexOf(oldName);
+ assert.ok(jsonPart>0);
+ // Change only the manifest reference, keeping ZIP entries and CRC untouched.
+ bytes.set(new TextEncoder().encode(malicious),jsonPart);
+ assert.throws(()=>readAuditPackage(bytes),/integritas|tidak ditemukan|tidak cocok/i);
+});
+
+test('do not discard history silently when too many rounds are requested',()=>{
+ const round={from:'revised',report:oldReport,original,revised};
+ assert.throws(()=>createAuditPackage(oldReport,original,revised,Array(9).fill(round)),/Batas riwayat/);
+});
+
+test('saved older audit metadata does not leak unknown credentials from historic reports',async()=>{
+ const historical={...oldReport,api_key:'NOT_IN_ZIP',DEMO_ACCESS_CODE:'NOT_IN_ZIP'};
+ const {blob}=createAuditPackage(oldReport,original,revised,[{from:'revised',report:historical,original,revised}]);
+ assert.equal(Buffer.from(await blob.arrayBuffer()).includes(Buffer.from('NOT_IN_ZIP')),false);
 });
