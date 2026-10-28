@@ -73,3 +73,56 @@ test('Muse Image JPEG and WebP base64 outputs use their actual MIME signatures',
   assert.ok(result.data.image.startsWith('data:image/'+mime+';base64,'),mime);
  }
 });
+
+test('Verify re-audit sends original reference as second image in SAME Muse Spark request',async()=>{
+ const seen=[];
+ const mock=async(url,opts)=>{
+  seen.push({url,payload:JSON.parse(opts.body)});
+  return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(audit)}}]}));
+ };
+ const reference='data:image/jpeg;base64,'+'A'.repeat(128);
+ const body={...input,referenceImage:reference};
+ const out=await invoke(mock,body);
+ assert.equal(out.status,200);
+ assert.equal(out.data.original_reference_sent,true);
+ assert.equal(seen.length,1,'do not add another paid inference');
+ const blocks=seen[0].payload.messages[1].content;
+ assert.equal(blocks[1].image_url.url,input.image);
+ assert.equal(blocks[2].image_url.url,reference);
+ assert.match(blocks[0].text,/REVISED creative/);
+ assert.match(blocks[0].text,/DOWNSAMPLED REFERENCE/);
+ assert.match(blocks[0].text,/material observed regressions/);
+ assert.ok(!JSON.stringify(out.data).includes(reference),'comparison reference must not be returned');
+});
+
+test('initial audit has one image and never claims a visual before/after comparison',async()=>{
+ let sent;
+ const result=await invoke(async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(audit)}}]}));});
+ assert.equal(result.status,200);
+ assert.equal(result.data.original_reference_sent,false);
+ assert.equal(sent.messages[1].content.length,2);
+ assert.match(sent.messages[1].content[0].text,/No original reference is provided/);
+});
+
+test('invalid comparison reference is rejected before any paid Meta call',async()=>{
+ let called=0;
+ for(const reference of ['data:image/gif;base64,'+'A'.repeat(128),'https://other.host/image.jpg','data:image/jpeg;base64,'+'A'.repeat(520000)]){
+  const result=await invoke(async()=>{called++;throw Error('paid call must be blocked')},{...input,referenceImage:reference});
+  assert.equal(result.status,400);
+  assert.match(result.data.error,/Referensi gambar asli/);
+ }
+ assert.equal(called,0);
+});
+
+test('repair instruction preserves geometry and rejects invented USB-C connections',async()=>{
+ let sent;
+ const out=await invoke(async(url,opts)=>{
+  sent=JSON.parse(opts.body);
+  return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));
+ },{...input,issues:[{title:'Unverified claim',suggestion:'Remove it'}],claims:[]},'/api/improve');
+ assert.equal(out.status,200);
+ assert.match(sent.prompt,/PRESERVE FIRST/);
+ assert.match(sent.prompt,/USB 5V does NOT prove USB-C/);
+ assert.match(sent.prompt,/retain that part instead of forcing a repair/i);
+ assert.match(sent.prompt,/CANDIDATE, not an approved result/);
+});
