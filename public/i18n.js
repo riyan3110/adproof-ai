@@ -252,7 +252,29 @@ const id={
  'IMAGE':'GAMBAR',
  'Upload creative':'Unggah gambar',
  'Initial observations available. Re-audit completes the comparison.':'Pengamatan awal tersedia. Audit ulang melengkapi perbandingan.',
- 'Run an audit, then select a claim to inspect.':'Jalankan audit lalu pilih klaim untuk diperiksa.'
+ 'Run an audit, then select a claim to inspect.':'Jalankan audit lalu pilih klaim untuk diperiksa.',
+ 'No readable claim selected.':'Tidak ada klaim terbaca yang dipilih.',
+ 'This audit has no selected claim to inspect. An empty or incomplete ledger does not prove that claims are absent.':'Audit ini tidak memiliki klaim terpilih. Daftar kosong atau tidak lengkap bukan bukti bahwa tidak ada klaim.',
+ 'Follow the evidence.':'Ikuti jejak bukti.',
+ 'No explanation returned.':'Tidak ada penjelasan yang diberikan.',
+ 'Input excerpt':'Kutipan input',
+ 'No validated input excerpt.':'Tidak ada kutipan fakta input yang tervalidasi.',
+ 'Review the source manually.':'Periksa sumber secara manual.',
+ 'FINDING':'TEMUAN',
+ 'No claim relationships available':'Tidak ada hubungan klaim yang tersedia',
+ 'An empty ledger is not proof that the creative contains no claims.':'Daftar kosong bukan bukti bahwa gambar tidak memiliki klaim.',
+ 'No additional detail.':'Tidak ada detail tambahan.',
+ 'Source':'Sumber',
+ 'Awaiting revised-image audit':'Menunggu audit gambar revisi',
+ 'Run Repair, then re-audit the actual revised image.':'Jalankan perbaikan, lalu audit ulang gambar revisi yang sebenarnya.',
+ 'Incomplete claim data. Matching is provisional; inspect both audits.':'Data klaim tidak lengkap. Pencocokan bersifat sementara; periksa kedua audit.',
+ 'Limited view: each audit supplies at most 8 selected claims. Missing from the list does NOT mean missing from the image or caption. Same wording may appear across both sources.':'Tampilan terbatas: tiap audit hanya memuat maksimal 8 klaim terpilih. Tidak tercantum BUKAN berarti hilang dari gambar atau caption. Teks yang sama bisa muncul di dua sumber.',
+ 'This compares selected audit observations, not exhaustive image text. Missing from a list does not prove removal; inspect both image and caption.':'Ini membandingkan pengamatan audit terpilih, bukan semua teks gambar. Hilang dari daftar bukan bukti penghapusan; periksa gambar dan caption.',
+ 'Image repair does not edit the caption. Its unsupported claims still need manual revision.':'Perbaikan gambar tidak mengubah caption. Klaim yang tidak didukung di caption masih perlu diedit manual.',
+ 'No claims returned for comparison. This does not prove the absence of claims.':'Tidak ada klaim untuk dibandingkan. Ini bukan bukti bahwa tidak ada klaim.',
+ 'Unreadable claim':'Klaim tidak terbaca',
+ 'Not evidence of removal':'Bukan bukti penghapusan',
+ 'Inspect source ↗':'Periksa sumber ↗'
 };
 const textOriginal=new WeakMap();
 const attributeOriginal=new WeakMap();
