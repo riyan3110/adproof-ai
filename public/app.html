@@ -100,7 +100,24 @@
     <nav class="proof-modebar" aria-label="Inspection mode"><button type="button" data-proof-view="xray" aria-controls="xrayWorkspace" aria-pressed="true">Claim X-Ray</button><button type="button" data-proof-view="constellation" aria-controls="constellationWorkspace" aria-pressed="false">Proof Constellation</button><button type="button" data-proof-view="evolution" aria-controls="evolutionWorkspace" aria-pressed="false">Claim DNA</button></nav>
     <div class="proof-layout">
       <section id="xrayWorkspace" class="inspection-pane" aria-label="Claim X-Ray">
-        <div id="xrayEmpty" class="proof-pending"><span class="empty-index">01 / CLAIM X-RAY</span><strong>A claim needs context.</strong><p>Run an audit, then select a claim to inspect its source, evidence status and repair recommendation.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        
+        <div id="xrayEmpty" class="proof-pending proof-pending-rich">
+          <div class="pending-copy">
+            <span class="empty-index">01 / CLAIM X-RAY</span>
+            <strong>A claim needs context.</strong>
+            <p>Run an audit, then select a claim to inspect its source, evidence status and repair recommendation.</p>
+            <button type="button" class="text-button" data-focus-input>Go to creative &amp; facts ↑</button>
+            <span class="pending-demo-disclaimer">SCHEMATIC ONLY · NO DETECTED CLAIMS</span>
+          </div>
+          <div class="pending-visual xray-wire" aria-hidden="true">
+            <div class="wire-header"><span>VISUAL RECORD</span><span>UNSCANNED</span></div>
+            <div class="wire-xray-body">
+              <div class="wire-sheet"><span class="wire-thumb"></span><i></i><i></i><i></i><span class="wire-cross">+</span></div>
+              <div class="wire-pointers"><span>CLAIM</span><i></i><span>FACT</span><i></i><span>REVIEW</span><i></i></div>
+            </div>
+            <div class="wire-footer"><span>IMAGE → OBSERVATION → INSPECTION</span><span>↗</span></div>
+          </div>
+        </div>
         <div id="xrayResults" class="xray-workspace" hidden><div class="xray-source"><div class="source-heading"><span id="xrayImageLabel">ORIGINAL SOURCE</span><span>LOCATION NOT INFERRED</span></div><img id="xrayImage" alt="Selected claim's source creative"><p id="xrayCaption" hidden></p></div><div class="xray-inspection"><label for="xrayClaimSelect">Select an observed claim</label><select id="xrayClaimSelect"></select>      <section id="xrayPanel" class="xray-panel" aria-label="Claim X-Ray inspector" hidden>
         <div class="panel-title">CLAIM X-RAY <span id="xrayTitle"></span></div>
         <strong id="xrayClaim"></strong><span id="xrayStatus" class="xray-status"></span>
@@ -111,12 +128,56 @@
       </section>
       <section id="constellationWorkspace" class="constellation-panel inspection-pane" aria-labelledby="constellationTitle" hidden>
         <div class="inspection-title"><h3 id="constellationTitle">Proof Constellation</h3><p id="proofCount" class="tiny-meta">NO OBSERVATIONS</p></div>
-        <div id="constellationEmpty" class="proof-pending"><span class="empty-index">02 / PROOF CONSTELLATION</span><strong>Evidence, connected to its source.</strong><p>Recorded claims, fact excerpts and recommendations will appear here after an audit.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        
+        <div id="constellationEmpty" class="proof-pending proof-pending-rich">
+          <div class="pending-copy">
+            <span class="empty-index">02 / PROOF CONSTELLATION</span>
+            <strong>Evidence, connected to its source.</strong>
+            <p>Recorded claims, fact excerpts and recommendations will appear here after an audit.</p>
+            <button type="button" class="text-button" data-focus-input>Go to creative &amp; facts ↑</button>
+            <span class="pending-demo-disclaimer">SCHEMATIC ONLY · NO EVIDENCE CONNECTED</span>
+          </div>
+          <div class="pending-visual graph-wire" aria-hidden="true">
+            <div class="wire-header"><span>RELATIONSHIP VIEW</span><span>AWAITING AUDIT</span></div>
+            <svg viewBox="0 0 440 236" preserveAspectRatio="xMidYMid meet">
+              <path d="M110 112 L240 49 M110 112 L260 175 M240 49 L363 112 M260 175 L363 112" fill="none" stroke="#8BA796" stroke-width="1.8" stroke-dasharray="5 8"/>
+              <rect x="24" y="85" width="132" height="54" rx="2" fill="#e5ece1" stroke="#789581" stroke-width="1.5"/>
+              <rect x="174" y="22" width="132" height="54" rx="2" fill="#f5f1de" stroke="#b0aa89" stroke-width="1.5"/>
+              <rect x="194" y="149" width="132" height="54" rx="2" fill="#e5e4ee" stroke="#a3a0b6" stroke-width="1.5"/>
+              <circle cx="362" cy="112" r="31" fill="#202d27" stroke="#9cc38d" stroke-width="2"/>
+              <g font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1.5" font-family="Arial,sans-serif">
+                <text x="90" y="115" fill="#405846">CLAIM</text>
+                <text x="240" y="54" fill="#665f43">FACTS</text>
+                <text x="260" y="181" fill="#5c5676">REVIEW</text>
+                <text x="362" y="116" fill="#c5f18d">?</text>
+              </g>
+            </svg>
+            <div class="wire-footer"><span>CLAIMS / FACTS / REVIEW</span><span>◇</span></div>
+          </div>
+        </div>
         <div id="constellationResults" class="proof-live" hidden><div id="proofNodeList" class="proof-node-list" aria-label="Select a claim or finding"></div><div class="network-inspector"><svg id="constellation" class="constellation" role="group" aria-label="Evidence relationships"></svg><div class="proof-node-detail" aria-live="polite"><span class="tiny-meta">SELECTED EVIDENCE</span><strong id="proofNodeTitle"></strong><p id="proofNodeDetail"></p><small id="proofNodeSource"></small><button type="button" id="proofToXray" class="text-button" disabled>Inspect claim source →</button></div></div><p class="claim-proof-note">Lines trace recorded relationships. A matching quote is not independent proof of truth.</p></div>
       </section>
       <section id="evolutionWorkspace" class="evolution-panel inspection-pane" aria-labelledby="evolutionTitle" hidden>
         <div class="inspection-title"><h3 id="evolutionTitle">Claim DNA Evolution</h3><span id="evolutionCount" class="tiny-meta">AWAITING COMPARISON</span></div>
-        <div id="evolutionEmpty" class="proof-pending"><span class="empty-index">03 / CLAIM DNA EVOLUTION</span><strong>Every revision leaves a trail.</strong><p>Audit the original, repair the image, then re-audit to compare observations. Missing does not mean repaired.</p><button type="button" class="text-button" data-focus-input>Go to creative & facts ↑</button></div>
+        
+        <div id="evolutionEmpty" class="proof-pending proof-pending-rich">
+          <div class="pending-copy">
+            <span class="empty-index">03 / CLAIM DNA EVOLUTION</span>
+            <strong>Every revision leaves a trail.</strong>
+            <p>Audit the original, repair the image, then re-audit to compare observations. Missing does not mean repaired.</p>
+            <button type="button" class="text-button" data-focus-input>Go to creative &amp; facts ↑</button>
+            <span class="pending-demo-disclaimer">SCHEMATIC ONLY · NO REVISIONS COMPARED</span>
+          </div>
+          <div class="pending-visual dna-wire" aria-hidden="true">
+            <div class="wire-header"><span>VERSION LINEAGE</span><span>NO COMPARISON</span></div>
+            <div class="wire-dna-body">
+              <div class="wire-version"><span>01</span><b>INITIAL AUDIT</b><i></i><i></i><i></i></div>
+              <div class="wire-version-path"><span>→</span></div>
+              <div class="wire-version"><span>02</span><b>RE-AUDIT</b><i></i><i></i><i></i></div>
+            </div>
+            <div class="wire-footer"><span>STATUS UNKNOWN UNTIL VERIFIED</span><span>↗</span></div>
+          </div>
+        </div>
         <div id="evolutionResults" class="proof-live" hidden><p id="evolutionNote" class="claim-proof-note"></p><div id="evolutionList" class="evolution-list"></div></div>
       </section>
     </div>
@@ -125,11 +186,26 @@
   <div class="section-label result-label"><span>03 / AUDIT DOSSIER</span><span>OBSERVATIONS, NOT CERTIFICATION</span></div>
       <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" >
         <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> THE AUDIT RECORD</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
-        <div id="reportEmpty" class="report-empty">
-          <div class="report-empty-graphic" aria-hidden="true">⌁<span>✺</span></div>
-          <strong>No audit yet</strong>
-          <p>Upload a creative, add facts, run the audit.</p>
-          <a class="empty-docs-link" href="/docs">How scoring works →</a>
+        <div id="reportEmpty" class="report-empty report-empty-rich">
+          <div class="report-idle-copy">
+            <span class="empty-index">THE INSPECTION RECORD / PENDING</span>
+            <strong>No audit yet.</strong>
+            <p>Upload a creative and factual product details to begin your evidence trail.</p>
+            <div class="report-empty-actions">
+              <button type="button" id="exploreProofButton" class="report-explore" aria-controls="constellationWorkspace">Explore the evidence flow ↗</button>
+              <button type="button" class="report-upload-link" data-focus-input>Start with a creative ↑</button>
+            </div>
+            <span class="pending-demo-disclaimer">LAYOUT PREVIEW · NO MODEL OUTPUT · NO SCORES</span>
+          </div>
+          <div class="report-wireframe" aria-hidden="true">
+            <div class="wire-header"><span>REPORT STRUCTURE</span><span>AWAITING INPUT</span></div>
+            <div class="report-wire-content">
+              <div class="report-wire-graphic"><span>—</span><span>UNSCORED</span></div>
+              <div class="report-wire-lines"><i></i><i></i><i></i><i></i></div>
+              <div class="report-wire-steps"><span>DETECT</span><span>VERIFY</span><span>REPAIR</span><span>PROVE</span></div>
+            </div>
+            <div class="wire-footer"><span>REAL OBSERVATIONS WILL APPEAR HERE</span><span>✳</span></div>
+          </div>
         </div>
         <div id="reportContent" hidden>
           <div class="score-row">
