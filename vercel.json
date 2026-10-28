@@ -20,6 +20,9 @@
     "server.mjs": {
       "includeFiles": "public/**",
       "maxDuration": 150
+    },
+    "api/access.mjs": {
+      "maxDuration": 10
     }
   },
   "headers": [
