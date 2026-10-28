@@ -116,3 +116,12 @@ Imports are explicitly READ ONLY with no Meta API call, and old model observatio
 A full saved LumaDesk ZIP containing original and revised images can now be resumed in the existing Proofroom without repeating the first paid audit. Choosing original uses saved score 35; choosing revised uses saved score 58, then a new **user-initiated** Repair and Verify can produce the next generation. Previous reports/images are archived in version-2 ZIP under distinct history filenames. Old ZIPs remain importable. User must press Repair/Verify explicitly, so merely importing/resuming costs no Meta API credits.
 
 No actual live Meta call was performed to validate the new flow. Automated tests use clear mock data; do not present fixture responses as new Meta results. The repaired candidate remains unapproved and subject to manual quality review.
+
+
+## Automatic language readiness (28 October 2026)
+
+The existing Proofroom app has zero-cost local English/Indonesian UI localization with Auto browser detection and manual override. New live Meta audits use the selected report language; image editing preserves the original ad-copy language and never treats the selected report locale as a request to translate the product.
+
+This is primarily for judge-facing **English browser experience** and the owner's Indonesian browser. Stored screenshots/JSON from the historical LumaDesk 35→58 session remain authentic Indonesian source observations after import; the app marks their language status instead of falsifying a new English-language audit. To demonstrate a genuine English-language Meta report, a *new user-initiated* audit in English is needed and potentially billable.
+
+Release verification uses Node unit/integration and Chromium mocked requests only. No actual new Meta paid calls have been made for multilingual validation.
