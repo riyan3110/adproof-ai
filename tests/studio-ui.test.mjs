@@ -69,7 +69,7 @@ test('judge-only code dialog is accessible and never exposed in public markup', 
   assert.ok(html.includes('type="password"'), 'judge code input must be masked');
   assert.ok(html.includes('aria-labelledby="judgeAccessTitle"'), 'judge dialog must have accessible title');
   assert.ok(js.includes("ui.accessDialog.showModal()"));
-  assert.ok(js.includes("sessionStorage.setItem(demoKey,v)"), 'code should be session-only');
+  assert.ok(js.includes("sessionStorage.setItem(demoKey,code)"), 'code should be session-only');
   assert.ok(js.includes("headers['x-demo-code']=code"), 'private code must stay in request header');
   assert.ok(!js.includes("prompt("), 'browser prompt must not be used for judge access');
 });
@@ -166,4 +166,17 @@ test('public workflow explainer switches existing UI without a fake Meta request
  assert.ok(html.includes('aria-controls="constellationWorkspace"'));
  assert.ok(js.includes("$('#exploreProofButton').addEventListener('click',()=>activateProofView('constellation',true))"));
  assert.ok(html.includes('data-focus-input'),'empty screen must offer real upload starting point');
+});
+
+test('Judge access UI distinguishes code verification from successful Meta model responses',()=>{
+ for(const id of ['judgeAccessStatus','metaProviderStatus','judgeAccessError'])assert.ok(html.includes('id="'+id+'"'));
+ assert.ok(html.includes('Code verification is free. Model connectivity needs an actual audit.'));
+ assert.ok(html.includes('Verified against this server without a paid Meta request.'));
+ assert.ok(js.includes("fetch('/api/access'"),'code check must be a dedicated nonbillable request');
+ assert.ok(js.includes("reply.access==='verified'"),'code may only be stored after successful server verification');
+ assert.ok(js.includes("state.sparkResponded=true"),'Meta connection status depends on actual successful Spark response');
+ assert.ok(js.includes("state.imageResponded=true"),'Meta Image status depends on actual successful edit');
+ assert.ok(js.includes("state.reauditResponded=true"),'complete status must follow a real second audit');
+ assert.ok(js.includes("verifyCode(saved,{restoring:true})"),'saved session codes must be checked again');
+ assert.ok(!html.includes('Code entered'),'UI must not present unverified input as authenticated');
 });

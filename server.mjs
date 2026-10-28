@@ -159,6 +159,9 @@ function normalizeAudit(a, suppliedFacts = '') {
 
 export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY, demoCode = process.env.DEMO_ACCESS_CODE, maxBody = MAX_BODY, requireDemoGate = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production'} = {}) {
   const gate = String(demoCode || '').trim();
+  // Best-effort per-instance throttling for non-billable code checks.
+  // Vercel's serverless instances do not provide a global rate limit.
+  const accessAttempts = new Map();
   const BODY_LIMIT = Number(maxBody) || MAX_BODY;
   const vercelMode = BODY_LIMIT <= VERCEL_MAX_BODY;
   const sizeLabel = vercelMode ? '4 MB (batas Vercel Hobby)' : '6 MB';
@@ -299,6 +302,23 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     for(const [k,v] of Object.entries(headers)) res.setHeader(k,v);
     try {
       if(req.method==='GET' && url.pathname==='/api/health') return json(res,200,{ok:true,configured:!!key?.trim(),demoGate:!!gate,textModel:MODEL,imageModel:'muse-image-1.0'});
+      if(req.method==='POST' && url.pathname==='/api/access') {
+        // A code can be verified without running an expensive Meta inference.
+        // Never return the configured code, its fingerprint or model credentials.
+        if(!gate) return json(res,503,{error:'Verifikasi kode belum tersedia di server.'});
+        const address=req.socket?.remoteAddress || 'unknown';
+        const now=Date.now();
+        const attempts=accessAttempts.get(address) || {start:now,count:0};
+        if(now-attempts.start>=60_000){attempts.start=now;attempts.count=0;}
+        attempts.count++;
+        accessAttempts.set(address,attempts);
+        if(accessAttempts.size>500)for(const [ip,item] of accessAttempts)if(now-item.start>120_000)accessAttempts.delete(ip);
+        if(attempts.count>12)return json(res,429,{error:'Terlalu banyak pemeriksaan kode. Coba lagi sebentar.'});
+        const submitted=req.headers?.['x-demo-code'];
+        if(typeof submitted!=='string' || !submitted) return json(res,401,{error:'Kode akses belum dimasukkan.'});
+        if(submitted.length>128 || !codeMatches(submitted,gate)) return json(res,403,{error:'Kode akses tidak cocok.'});
+        return json(res,200,{ok:true,access:'verified',modelConfigured:!!key?.trim(),providerTested:false});
+      }
       if(req.method==='POST' && ['/api/audit','/api/improve'].includes(url.pathname)) {
         // Never expose billable Meta API calls when a production demo gate is missing.
         // The in-memory IP counter below is NOT a reliable global quota on Vercel.

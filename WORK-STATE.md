@@ -113,3 +113,12 @@ Final mobile visual correction: 320px header controls now remain inside the head
 - Independent probe found Vercel CDN-served `/app` and `/docs` omitted the backend's baseline CSP while API routes had it. Added Vercel static headers (CSP, nosniff, frame deny, no-referrer) without unsafe inline scripts/styles; verify preview and production after merge.
 - Tests in isolated sandbox: `npm run check` **90/90 PASS**. Regression fixtures are mocked Model API responses and are not authentic hackathon demo evidence.
 - For **one** paid end-to-end owner test: enter the existing private Judge Access code in the browser (never send to GitHub/chat), upload a rights-cleared small ad with accurate seller facts, run Audit → Repair → Verify with a user-approved spend cap, save the genuine JSON report and screenshot of any failures (redact code). Do not publish fake results. 
+
+
+## Judge Access connection status — 28 October 2026 (ChatGPT-authored)
+
+- User observed that entering a code showed only **"Code entered"** alongside **"META CONFIGURED"**, without confirming the submitted code matched the server secret. This was a genuine UI trust/status error: saving to sessionStorage was wrongly presented as access confirmation.
+- Added `POST /api/access` through the existing Vercel handler, with constant-time matching against server-side `DEMO_ACCESS_CODE` and per-instance best-effort request throttling. It returns minimal success or 401/403/429/503, **never calls paid Meta** and never returns any secret. Serverless throttling is **not** a distributed global quota.
+- Frontend now verifies before persisting a submitted code, presents inline rejection, and rechecks codes after browser reload. A persistent two-part Studio strip distinguishes **verified Judge Access** from **Meta provider configured but NOT TESTED**; the latter advances only after actual responses from first audit, image edit, and re-audit during that browser session.
+- Client tests, smoke tests and documentation were updated to keep these semantics. Independent isolated Chromium full mocked workflow passed at 1920, 1440, 1280, 768, 390 and 320px without overflow or JS console errors; **94/94 source tests passed** prior to final docs changes. The full Meta Model API with real credentials is still **not yet called**.
+- Existing gated paid routes, secret handling, Muse Code contribution history, image responses and verification engine remain intact.

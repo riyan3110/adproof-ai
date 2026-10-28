@@ -99,3 +99,34 @@ test('production mode fails closed with no demo code before Meta is called', asy
     assert.equal(calls.length,0,'no billable calls allowed without production gate');
   }finally{await new Promise(resolve=>locked.close(resolve));}
 });
+
+test('Judge Access validation distinguishes accepted code from Meta API connectivity without paid calls',async()=>{
+ const before=gatedCalls.length;
+ const missing=await post(gatedBase,'/api/access',{});
+ assert.equal(missing.status,401);
+ const invalid=await post(gatedBase,'/api/access',{},'not-the-private-code');
+ assert.equal(invalid.status,403);
+ const accepted=await post(gatedBase,'/api/access',{},CODE);
+ assert.equal(accepted.status,200);
+ const json=await accepted.json();
+ assert.deepEqual(json,{ok:true,access:'verified',modelConfigured:true,providerTested:false});
+ assert.equal(gatedCalls.length,before,'private code checks must never call Meta');
+ assert.ok(!JSON.stringify(json).includes(CODE),'no secret in access response');
+});
+
+test('Judge Access validation refuses absent server code and limits guessing in an instance',async()=>{
+ const fake=http.createServer(createHandler({key:'test-key',demoCode:'',requireDemoGate:true}));
+ await new Promise(r=>fake.listen(0,'127.0.0.1',r));
+ try {
+  const url='http://127.0.0.1:'+fake.address().port;
+  const resp=await post(url,'/api/access',{},CODE);
+  assert.equal(resp.status,503);
+ } finally{await new Promise(r=>fake.close(r));}
+ const guarded=http.createServer(createHandler({key:'test-key',demoCode:'private-high-entropy-code',requireDemoGate:true}));
+ await new Promise(r=>guarded.listen(0,'127.0.0.1',r));
+ try {
+  const url='http://127.0.0.1:'+guarded.address().port;
+  for(let i=0;i<12;i++)assert.equal((await post(url,'/api/access',{},'wrong')).status,403);
+  assert.equal((await post(url,'/api/access',{},'wrong')).status,429);
+ }finally{await new Promise(r=>guarded.close(r));}
+});

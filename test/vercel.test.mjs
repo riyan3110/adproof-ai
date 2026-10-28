@@ -5,6 +5,7 @@ import { createHandler, VERCEL_MAX_BODY } from '../server.mjs';
 import health from '../api/health.mjs';
 import auditRoute from '../api/audit.mjs';
 import improveRoute from '../api/improve.mjs';
+import accessRoute from '../api/access.mjs';
 
 // All external Meta calls are mocked; no paid live calls in tests.
 let ipCounter = 0;
@@ -49,7 +50,7 @@ test('serverless health export answers 200 without secrets', async () => {
 });
 
 test('serverless api exports delegate to the shared handler', async () => {
-  for (const route of [auditRoute, improveRoute]) {
+  for (const route of [auditRoute, improveRoute, accessRoute]) {
     const res = mockRes();
     await route(getReq('/whatever'), res); // forced to its POST-only path
     assert.equal(res.status, 404);
@@ -142,4 +143,13 @@ test('static Vercel pages receive production CSP and non-sniffing security heade
  assert.match(headers['content-security-policy'],/connect-src 'self'/);
  assert.match(headers['content-security-policy'],/frame-ancestors 'none'/);
  assert.doesNotMatch(headers['content-security-policy'],/unsafe-inline|unsafe-eval|https:\/\//);
+});
+
+test('serverless access validation shares demo protection but never performs paid inference',async()=>{
+ const response=mockRes();
+ await accessRoute(postReq('/not-the-access-path',{},{}),response);
+ assert.ok([401,503].includes(response.status),'serverless route must remain private or closed');
+ const config=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
+ assert.ok(config.functions['api/access.mjs']);
+ assert.ok(config.functions['api/access.mjs'].maxDuration<=10);
 });
