@@ -189,6 +189,23 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
    await page.locator('#verifyButton').click();await page.clock.fastForward(81000);
    await page.locator('#toast').filter({hasText:'kedaluwarsa'}).waitFor();assert.equal(await page.locator('#verifyButton').isDisabled(),false);
    failureChecks=false;
+   // A caption-only concern must never trigger an unnecessary image edit.
+   const clean=await context.newPage();
+   let unnecessaryEdits=0;
+   await clean.route('**/api/health',r=>r.fulfill({json:{configured:true,demoGate:false}}));
+   await clean.route('**/api/audit',r=>r.fulfill({json:{audit:{...initial,issues:[{title:'Caption wording',category:'Claim',severity:'high',evidence:'Caption: claim',suggestion:'Edit caption'}],claim_ledger:[claim('Claim in caption','unsupported_by_supplied_facts','','caption')]},model:'TEST MOCK Spark'}}));
+   await clean.route('**/api/improve',r=>{unnecessaryEdits++;return r.fulfill({status:500,json:{error:'No image edit expected'}})});
+   await clean.goto(base+'/app');
+   await clean.locator('#connectionText').filter({hasText:'META CONFIGURED'}).waitFor();
+   await clean.locator('#fileInput').setInputFiles({name:'caption-only.png',mimeType:'image/png',buffer:Buffer.from(png.split(',')[1],'base64')});
+   await clean.locator('#product').fill('TEST lamp');
+   await clean.locator('#facts').fill('Wood frame, 5 watts.');
+   await clean.locator('#caption').fill('Unverified claim');
+   await clean.locator('#auditButton').click();
+   await clean.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
+   assert.equal(await clean.locator('#refineButton').isDisabled(),true,'caption-only issues must not trigger destructive image edits');
+   assert.equal(unnecessaryEdits,0);
+   await clean.close();
   }
   summary.push({width,canvasY,audits,edits,overflow:false,selection_linked:true,export:true,input_invalidation:true,error_recovery:width===1440,...memory});await context.close();
  }
