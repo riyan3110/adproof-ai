@@ -33,6 +33,13 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   const overflow=()=>page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   assert.equal(await overflow(),false,`empty overflow ${width}`);
   assert.equal(await page.locator('.deck-module').count(),3);
+  for(const id of ['xrayEmpty','constellationEmpty','evolutionEmpty','reportEmpty']){
+    assert.equal(await page.locator('#'+id+' .pending-demo-disclaimer').count(),1,'all explanatory empty states must be labelled as non-model visuals');
+  }
+  assert.equal(await page.locator('.report-wireframe').isVisible(),true);
+  await page.locator('#exploreProofButton').click();
+  assert.equal(await page.locator('#constellationEmpty').isVisible(),true);
+  assert.equal(await page.locator('#deckProof').getAttribute('aria-pressed'),'true');
   for(const [module,panel] of [['deckProof','constellationEmpty'],['deckDNA','evolutionEmpty'],['deckDetect','xrayEmpty']]){await page.locator('#'+module).click();assert.equal(await page.locator('#'+panel).isVisible(),true);assert.equal(await page.locator('#'+module).getAttribute('aria-pressed'),'true');}
   assert.equal(await page.locator('#refineButton').isDisabled(),true);assert.equal(await page.locator('#downloadReport').isDisabled(),true);
   await page.evaluate(()=>scrollTo(0,0));await screenshot(page,`empty-${width}`);
@@ -46,6 +53,7 @@ async function screenshot(page,name,fullPage=false){if(process.env.ADPROOF_SCREE
   await page.locator('#product').fill('TEST lamp');await page.locator('#facts').fill('Wood frame, 5 watts.');await page.locator('#caption').fill('Caption with unsupported promise');
   await page.locator('#auditButton').click();await page.locator('#judgeAccessDialog').waitFor({state:'visible'});await page.locator('#judgeAccessCode').fill('browser-test-only');await page.locator('#judgeAccessForm button[type=submit]').click();
   await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();assert.equal(audits,1);
+  assert.equal(await page.locator('.report-wireframe').isVisible(),false,'illustration must disappear once actual audit results arrive');
   assert.equal(await page.locator('.dna-row').count(),4);
   await page.locator('#claimEvidenceList button').nth(1).click();assert.match(await page.locator('#xrayClaim').textContent(),/Guaranteed/);assert.equal(await page.locator('#xrayClaimSelect').inputValue(),'1');
   // Select caption in X-Ray, then navigate to the same graph claim and back.
