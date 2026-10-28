@@ -1,21 +1,43 @@
-import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView} from './proof-studio.js';
+import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
+import {loadPreference,setPreference,getPreference,getLanguage,t,applyLanguage,observeDynamicLabels,onBrowserLanguageChange} from './i18n.js';
 const $ = (selector) => document.querySelector(selector);
 const ui = {
-  file:$('#fileInput'),drop:$('#dropzone'),browse:$('#browseButton'),replace:$('#newCreative'),empty:$('#emptyCanvas'),image:$('#creativeImage'),name:$('#fileName'),
+  language:$('#languageSelect'),file:$('#fileInput'),drop:$('#dropzone'),browse:$('#browseButton'),replace:$('#newCreative'),empty:$('#emptyCanvas'),image:$('#creativeImage'),name:$('#fileName'),
   originalTab:$('#viewOriginal'), revisedTab:$('#viewRevised'), compareTab:$('#viewCompare'),
   compare:$('#compareView'),before:$('#compareBefore'),after:$('#compareAfter'), beforeWrap:$('#compareBeforeWrap'),bar:$('#compareBar'),range:$('#compareRange'),
   form:$('#projectForm'),product:$('#product'),facts:$('#facts'),caption:$('#caption'),auditButton:$('#auditButton'),auditText:$('#auditButtonText'),
   auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
-  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
+  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
-const state={original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+loadPreference();
+const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 let toastTimer=null;
+function renderSavedLanguageNotice(){
+ if(!state.imported){ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';return;}
+ const saved=state.reportLanguage;
+ const current=getLanguage();
+ const name=saved==='id'?'Bahasa Indonesia':saved==='en'?'English':null;
+ const first=name
+  ?(current==='id'?'Bahasa laporan tersimpan: ':'Saved report language: ')+name+'. '
+  :(current==='id'?'Bahasa laporan lama tidak dicatat. ':'This legacy report did not record its language. ');
+ const detail=current==='id'
+  ?'Mengganti bahasa antarmuka tidak menerjemahkan atau mengaudit ulang laporan lama. Audit AI baru mengikuti bahasa yang kamu pilih.'
+  :'Switching interface language does not translate or rerun historical model output. New AI audits follow your selected language.';
+ ui.archiveLanguageNote.hidden=false;
+ ui.archiveLanguageNote.textContent=first+detail;
+}
+function applySelectedLanguage(){
+ refreshProofLanguage();
+ syncDeck();syncSticky();
+ applyLanguage();
+ renderSavedLanguageNotice();
+}
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
 // Avoid costly, potentially destructive regeneration when the audit has no
 // evidence-grounded image issue. Caption-only fixes belong to the caption.
@@ -133,14 +155,14 @@ ui.accessForm.addEventListener('submit',async event=>{
  }
 });
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
-function notify(message,error=false){ui.toast.textContent=message;ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
+function notify(message,error=false){ui.toast.textContent=t(message);ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function syncDeck(){
- const current=state.phase, ready=!!state.original;
+ const current=state.phase, ready=!!state.original, indonesian=getLanguage()==='id';
  const ledger=state.verified?.claim_ledger??state.initialAudit?.claim_ledger;
  const count=Array.isArray(ledger)?ledger.length:0;
- const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=text;};
+ const put=(id,text)=>{const node=document.getElementById(id);if(node)node.textContent=t(text);};
  put('deckPhase',state.imported?'IMPORTED ARCHIVE · READ ONLY':state.continuedFrom?'CONTINUED FROM ARCHIVE · LIVE REPAIR':state.busy?'META AI PROCESSING':!ready?'AWAITING CREATIVE':['READY TO AUDIT','INITIAL AUDIT COMPLETE','REPAIR GENERATED','RE-AUDIT COMPLETE'][current]);
- put('deckDetectState',current>0?(count?count+' observed claim'+(count===1?'':'s')+' · inspect':'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
+ put('deckDetectState',current>0?(count?(indonesian?count+' klaim teramati · periksa':count+' observed claim'+(count===1?'':'s')+' · inspect'):'No readable claims reported'):ready?'Image loaded · start audit':'Upload creative to start');
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
@@ -160,14 +182,14 @@ function syncDeck(){
 function renderArchiveHistory(){
  const rounds=state.history||[];
  ui.historyPanel.hidden=rounds.length===0;
- ui.historySummary.textContent='Previous audit rounds · '+rounds.length+' saved';
+ ui.historySummary.textContent=getLanguage()==='id'?'Putaran audit sebelumnya · '+rounds.length+' tersimpan':'Previous audit rounds · '+rounds.length+' saved';
  ui.historyList.replaceChildren();
  for(const [i,round] of rounds.entries()){
   const entry=document.createElement('li');
   const initial=round.report?.original?.score;
   const verified=round.report?.verified?.score;
   const choice=round.from==='revised'?'revised image':'original image';
-  entry.textContent='Round '+(i+1)+': '+(Number.isFinite(initial)?initial+'/100':'unscored')+
+  entry.textContent=getLanguage()==='id'?`Putaran ${i+1}: ${Number.isFinite(initial)?initial+'/100':'belum dinilai'}${Number.isFinite(verified)?' → '+verified+'/100':''} · dari ${round.from==='revised'?'gambar revisi':'gambar asli'}${round.original?' · gambar tersimpan':' · hanya laporan'}`:'Round '+(i+1)+': '+(Number.isFinite(initial)?initial+'/100':'unscored')+
     (Number.isFinite(verified)?' → '+verified+'/100':'')+
     ' · continued from '+choice+
     (round.original?' · images retained':' · report only');
@@ -176,7 +198,7 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit({preserveHistory=false}={}){resetProofStudio();if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -257,7 +279,7 @@ function switchView(view){
 }
 function setCompare(value){ui.beforeWrap.style.clipPath=`inset(0 ${100-value}% 0 0)`;ui.bar.style.left=`${value}%`;}
 function inputContext(){return {product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
-function payload(image){return {image,...(state.context||inputContext())};}
+function payload(image){return {image,language:getLanguage(),...(state.context||inputContext())};}
 function el(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
 function renderClaimEvidence(a, verified=false){
  const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
@@ -272,7 +294,7 @@ function renderClaimEvidence(a, verified=false){
   unreadable:['UNREADABLE','uncertain'],
   needs_human_review:['REVIEW NEEDED','uncertain']
  };
- ui.claimCount.textContent=`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
+ ui.claimCount.textContent=getLanguage()==='id'?`${ledger.length} KLAIM · ${verified?'AUDIT ULANG':'AWAL'}`:`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
  for(const [index,item] of ledger.entries()){
   const mapped=labels[item.assessment]||labels.needs_human_review;
   const card=el('article','claim-evidence-item');
@@ -305,9 +327,9 @@ function render(a,verified=false){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
  }
  renderClaimEvidence(a,verified);
- const issues=Array.isArray(a.issues)?a.issues:[];ui.count.textContent=`${String(issues.length).padStart(2,'0')} ISSUES`;
+ const issues=Array.isArray(a.issues)?a.issues:[];ui.count.textContent=getLanguage()==='id'?`${String(issues.length).padStart(2,'0')} TEMUAN`:`${String(issues.length).padStart(2,'0')} ISSUES`;
  ui.issues.replaceChildren();
- if(!issues.length)ui.issues.append(el('p','no-issues','No clear issues detected. Review manually before publishing.'));
+ if(!issues.length)ui.issues.append(el('p','no-issues',t('No clear issues detected. Review manually before publishing.')));
  for(const issue of issues){
   const wrapper=el('div','issue');const button=el('button','issue-top');button.type='button';button.setAttribute('aria-expanded','false');
   const dot=el('span',`severity-dot ${issue.severity}`);const title=el('span','issue-title',issue.title);const cat=el('span','issue-cat',issue.category);const arrow=el('span','issue-chevron','+');button.append(dot,title,cat,arrow);
@@ -315,15 +337,15 @@ function render(a,verified=false){
   button.addEventListener('click',()=>{details.hidden=!details.hidden;button.setAttribute('aria-expanded',String(!details.hidden));arrow.textContent=details.hidden?'+':'−';});
   wrapper.append(button,details);ui.issues.append(wrapper);
  }
- ui.suggested.textContent=a.recommended_caption||'Belum ada saran caption.';
- if(verified && state.initialAudit) ui.scoreSummary.textContent=`${a.summary || ''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
+ ui.suggested.textContent=a.recommended_caption||t('No caption suggestion available.');
+ if(verified && state.initialAudit) ui.scoreSummary.textContent=getLanguage()==='id'?`${a.summary||''} · Perkiraan skor ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} dibanding sebelumnya. Skor lebih tinggi BUKAN bukti gambar membaik.`:`${a.summary||''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
   ui.repairNotice.hidden=!verified;
   if(verified){
     const risk=state.repairReview;
     ui.repairNotice.dataset.level=risk?.status==='regression_suspected'?'warning':'review';
     const heading=risk?.status==='regression_suspected'
-      ? '⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE'
-      : '⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED';
+      ? (getLanguage()==='id'?'⚠️ KEMUNGKINAN KUALITAS REVISI MEMBURUK · JANGAN SETUJUI OTOMATIS':'⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE')
+      : (getLanguage()==='id'?'⚠️ HANYA KANDIDAT · PERLU PEMERIKSAAN MANUSIA':'⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED');
     ui.repairNotice.textContent=heading+' — '+(risk?.reasons||['Compare original and revised before using.']).join(' ');
   }
  ui.refine.hidden=false;
@@ -340,10 +362,10 @@ async function performAudit(image,verify=false){
    if(verify)auditPayload.referenceImage=await compactOriginalReference(state.original);
    const out=await api('/api/audit',auditPayload);
    if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');
-   state.sparkResponded=true;if(verify)state.reauditResponded=true;updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
+   state.sparkResponded=true;if(verify)state.reauditResponded=true;state.reportLanguage=out.report_language||getLanguage();updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){
      state.verified=out.audit;
-     state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true});
+     state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage});
      phase(3);
    }else{state.initialAudit=out.audit;state.verified=null;state.repairReview=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
@@ -371,7 +393,7 @@ ui.copyCaption.addEventListener('click',async()=>{try{await navigator.clipboard.
 function reportSnapshot(){
  const report=state.imported&&state.archivedReport?
   {...state.archivedReport,...proofReport()}:
-  {app:'AdProof AI',date:new Date().toISOString(),product:state.context?.product,context:state.context,
+  {app:'AdProof AI',date:new Date().toISOString(),report_language:state.reportLanguage||'und',product:state.context?.product,context:state.context,
    caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',
    runs:state.runs,repair_review:state.repairReview,...proofReport(),
    original:state.initialAudit,verified:state.verified,
@@ -394,6 +416,7 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  state.repairReview=report.repair_review||null;
  state.runs=report.runs||[];
  state.archivedReport=report;
+ state.reportLanguage=report.report_language||'und';
  state.imported=true;
  state.continuedFrom=null;
  state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
@@ -408,6 +431,7 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  ui.replace.disabled=false;
  ui.name.textContent=hasImages?'ORIGINAL IMAGE · SAVED ARCHIVE':'AUDIT JSON · IMAGES NOT INCLUDED';
  ui.archiveNotice.hidden=false;
+ renderSavedLanguageNotice();
  ui.archiveNotice.textContent=hasImages
    ? 'IMPORTED ARCHIVE · READ ONLY UNTIL YOU CHOOSE A SOURCE. Select Repair original or Repair revised below to continue using the saved audit (no repeat initial audit). No Meta AI call was made on import. Saved report is not independently authenticated.'
    : 'IMPORTED JSON · READ ONLY. Claim DNA and proof records restored, but the old JSON contains NO original/revised pixels. Continue editing requires ZIP with images; cannot invent missing pixels. No Meta AI call was made.';
@@ -437,6 +461,7 @@ function continueArchivedAudit(from){
  const priorModel=state.runs.filter(x=>x.stage===(from==='revised'?'reaudit':'initial')).at(-1);
  state.history=[...state.history,preserved];
  state.imported=false;state.archivedReport=null;state.continuedFrom=from;
+ ui.archiveLanguageNote.hidden=true;
  state.original=image;
  state.originalFilename='saved '+from+' · repair baseline';
  state.initialAudit=baseline;
@@ -537,4 +562,13 @@ function syncSticky(){
 stickyAudit.addEventListener('click',()=>{if(state.busy||state.imported)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1)ui.refine.click();else ui.form.requestSubmit();});
 new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
 ui.form.addEventListener('input',syncSticky);
+ui.language.value=getPreference();
+ui.language.addEventListener('change',()=>{
+ setPreference(ui.language.value);
+ applySelectedLanguage();
+ notify(getLanguage()==='id'?'Bahasa antarmuka diperbarui. Laporan tersimpan tidak diubah.':'Interface language updated. Historical model text is unchanged.');
+});
+onBrowserLanguageChange(()=>applySelectedLanguage());
+applySelectedLanguage();
+observeDynamicLabels();
 syncDeck();syncSticky();

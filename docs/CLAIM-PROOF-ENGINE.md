@@ -78,3 +78,14 @@ On import of a **full ZIP** the report starts read-only for safe review. In the 
 - A saved baseline is an archived report, not a fresh Meta execution. Runtime provider labels do not imply that a new Spark call occurred when only Muse Image was invoked after continuation.
 - Reports are **not** independently authenticated; modifying facts or caption invalidates the reused evidence and requires a new audit. No auto-approval occurs even when the repair score increases.
 - Archive history has an explicit maximum of eight prior rounds and the ZIP format has a 48MB size cap. If exceeded, the system refuses the next continuation/export instead of silently discarding older rounds.
+
+
+## Language behavior and audit provenance
+
+The existing Studio UI is bilingual: **Auto (browser)**, **English**, or **Bahasa Indonesia**. Auto resolves navigator.languages in browser priority order for supported languages and falls back to English otherwise. Users can override selection manually without refreshing or requesting a Meta model call.
+
+New Muse Spark audit requests carry the selected language. Model-generated **interpretation** (headline, summary, issue evidence and actions, strengths and claim reasons) uses that report language. Verbatim observed ad claims and exact seller-fact quotations must preserve original wording and language. Muse Image repairs keep *original image advertising copy language*, labels, brand and technical units rather than translating pixels when the UI language changes. The recommended ad caption follows the advertisement's source language where discernible.
+
+Saved JSON/ZIP archives retain the model's original language metadata. Older reports without a language field are marked `und` (unrecorded) rather than guessed. UI language switching never edits original saved model statements or makes a translation API call; a plain browser UI language selector is **not** a historical report translator. Localized Claim DNA helper text is a new deterministic UI explanation, not new model output. No background AI or credential storage changes.
+
+Only **English and Indonesian** are fully supported in this release; other browser locales fall back to English. Public marketing pages/docs are still English. Tests use mock provider responses, not real paid Meta inference.

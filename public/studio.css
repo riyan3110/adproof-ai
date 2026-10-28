@@ -951,3 +951,59 @@ button:disabled{cursor:not-allowed;opacity:.42}
  .studio-body .archive-continue-buttons{display:grid;grid-template-columns:minmax(0,1fr)}
  .studio-body .archive-continue-buttons button{width:100%;text-align:left;white-space:normal}
 }
+
+
+/* Language choice belongs to the real Studio chrome, not to claim evidence. */
+.studio-body .studio-actions .language-picker{
+ display:inline-flex;align-items:center;gap:8px;min-width:0;margin-right:3px;
+ color:#d6e2d1;font-size:10px;font-weight:650;letter-spacing:.2px;white-space:nowrap;
+}
+.studio-body .studio-actions .language-picker>span{opacity:.85}
+.studio-body .studio-actions .language-picker select{
+ color:#edf4ea;background:#243329;border:1px solid #677d66;border-radius:5px;
+ min-height:36px;min-width:114px;max-width:158px;padding:7px 22px 7px 9px;
+ font:600 11px/1.2 system-ui,sans-serif;cursor:pointer;
+}
+.studio-body .studio-actions .language-picker select:focus-visible{
+ outline:3px solid #bcdb87;outline-offset:2px;
+}
+.studio-body .studio-actions .language-picker option{color:#17271b;background:#f3f6e9}
+@media(max-width:760px){
+ .studio-body .studio-actions .language-picker{gap:4px;margin-right:0}
+ .studio-body .studio-actions .language-picker>span{display:none}
+ .studio-body .studio-actions .language-picker select{min-width:99px;max-width:125px;min-height:34px;font-size:10px;padding:6px 18px 6px 6px}
+}
+@media(max-width:380px){
+ .studio-body .studio-actions .language-picker select{min-width:92px;max-width:108px;font-size:9px}
+}
+
+
+/* Historical evidence remains in its source language after changing UI locale. */
+.studio-body .archive-language-note{
+ display:block;margin:0 20px 15px;padding:11px 16px;
+ border:1px solid #b9c5b0;border-left:4px solid #6e8667;
+ background:#f0f4e9;color:#38513d;font-size:12px;line-height:1.65;
+}
+.studio-body .archive-language-note[hidden]{display:none!important}
+@media(max-width:760px){
+ .studio-body .archive-language-note{margin:0 10px 12px;padding:11px 12px;font-size:11px}
+}
+
+
+/* Mobile header must grow naturally when Language + private Judge Access wrap. */
+@media(max-width:600px){
+ .studio-body .studio-nav{
+  display:flex;flex-direction:column;align-items:stretch;
+  height:auto!important;min-height:0!important;
+  padding:11px 13px 12px;gap:8px;
+ }
+ .studio-body .studio-nav .brand{align-self:flex-start;flex:0 0 auto}
+ .studio-body .studio-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;width:100%;min-width:0;gap:6px 8px;
+ }
+ .studio-body .studio-actions .language-picker{flex:0 1 auto;order:0}
+ .studio-body .studio-actions .connection{flex:1 1 100px;order:1;min-width:0}
+ .studio-body .studio-actions .judge-access-button{flex:0 1 auto;order:2;min-width:0}
+ .studio-body .studio-actions .icon-link{flex:0 0 auto;order:3}
+}

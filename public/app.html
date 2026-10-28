@@ -15,6 +15,13 @@
   <a class="brand" href="/" aria-label="AdProof AI home"><span class="brandmark" aria-hidden="true"><span></span><span></span><span></span></span><span>adproof<span class="brand-dot">.</span></span><small>AI</small></a>
   <div class="nav-mid" aria-hidden="true"><span class="nav-spark">✦</span> THE PROOFROOM <span class="nav-divider">/</span> <strong>VISUAL FORENSICS</strong></div>
   <div class="studio-actions">
+    <label class="language-picker" for="languageSelect"><span>Language</span>
+      <select id="languageSelect" aria-label="Language">
+        <option value="auto">Auto (browser)</option>
+        <option value="en">English</option>
+        <option value="id">Bahasa Indonesia</option>
+      </select>
+    </label>
     <span class="connection" id="connection" role="status"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText">Checking API</span></span>
     <button type="button" id="judgeAccessButton" class="judge-access-button" hidden aria-haspopup="dialog">Judge access</button>
     <a href="/docs" class="icon-link" aria-label="Documentation" title="Documentation">Docs ↗</a>
@@ -198,6 +205,7 @@
       <section class="audit-card glass-panel" id="auditCard" aria-label="Audit report" >
         <div class="panel-heading"><span class="panel-title"><span class="disc disc-lilac" aria-hidden="true"></span> THE AUDIT RECORD</span><span id="auditPhase" class="tiny-meta">AWAITING INPUT</span></div>
         <div id="archiveRestoreNotice" class="archive-restore-notice" role="status" aria-live="polite" hidden></div>
+        <p id="archiveLanguageNote" class="archive-language-note" role="status" hidden></p>
         <section id="archiveContinueActions" class="archive-continue-actions" aria-label="Continue editing from saved audit" hidden>
           <strong>Continue from saved audit</strong>
           <p>Choose your starting image and its saved audit. No Meta API request occurs until you deliberately press Repair or Verify. The previous audit and both images remain in the next ZIP package.</p>

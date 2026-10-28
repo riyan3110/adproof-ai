@@ -199,3 +199,15 @@ test('saved older audit metadata does not leak unknown credentials from historic
  const {blob}=createAuditPackage(oldReport,original,revised,[{from:'revised',report:historical,original,revised}]);
  assert.equal(Buffer.from(await blob.arrayBuffer()).includes(Buffer.from('NOT_IN_ZIP')),false);
 });
+
+test('new and historic audit languages survive ZIP and JSON without rewriting old claim reasons',async()=>{
+ const report={...oldReport,report_language:'en'};
+ const historical={...oldReport,report_language:'id'};
+ const {blob}=createAuditPackage(report,original,revised,[{from:'revised',report:historical,original,revised}]);
+ const unpacked=readAuditPackage(new Uint8Array(await blob.arrayBuffer()));
+ assert.equal(unpacked.report.report_language,'en');
+ assert.equal(unpacked.history[0].report.report_language,'id');
+ assert.equal(unpacked.history[0].report.original.summary,historical.original.summary);
+ assert.equal(unpacked.report.original.claim_ledger[0].claim,report.original.claim_ledger[0].claim);
+ assert.equal(readAuditJson(JSON.stringify(oldReport)).report_language,'und','older reports must not pretend an inferred source language');
+});

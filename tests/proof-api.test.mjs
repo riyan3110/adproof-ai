@@ -126,3 +126,52 @@ test('repair instruction preserves geometry and rejects invented USB-C connectio
  assert.match(sent.prompt,/retain that part instead of forcing a repair/i);
  assert.match(sent.prompt,/CANDIDATE, not an approved result/);
 });
+
+
+test('English Meta report uses the selected output language but keeps original quotes untouched',async()=>{
+ let sent=null,calls=0;
+ const source=async(url,opts)=>{calls++;sent=JSON.parse(opts.body);return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(audit)}}]}));};
+ const output=await invoke(source,{...input,language:'en',caption:'Lampu 5W · hemat listrik'});
+ assert.equal(output.status,200);
+ assert.equal(output.data.report_language,'en');
+ assert.equal(output.data.provenance.report_language,'en');
+ assert.equal(calls,1,'language selection must reuse the existing model request');
+ const prompt=sent.messages[1].content[0].text;
+ assert.match(prompt,/strictly in English/);
+ assert.match(prompt,/Do NOT translate quoted ad claims/);
+ assert.match(prompt,/Recommended caption must match the original advertisement\/caption language/);
+ assert.match(prompt,/Lampu 5W/,'input copy should not be rewritten before model inference');
+ assert.equal(sent.messages[1].content.length,2);
+});
+test('Indonesian Meta report has explicit Indonesian language while old clients keep legacy Indonesian',async()=>{
+ for(const body of [{...input,language:'id'},input]){
+  let sent;
+  const response=await invoke(async(url,opts)=>{
+   sent=JSON.parse(opts.body);
+   return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(audit)}}]}));
+  },body);
+  assert.equal(response.status,200);
+  assert.equal(response.data.report_language,'id');
+  assert.match(sent.messages[1].content[0].text,/strictly in Bahasa Indonesia/);
+ }
+});
+test('unrecognized language is rejected before paid upstream',async()=>{
+ let upstream=0;
+ for(const language of ['es',null,24,{},'EN','id-ID','anything<script>']){
+  const result=await invoke(async()=>{upstream++;throw Error('Unexpected model call');},{...input,language});
+  assert.equal(result.status,400);
+  assert.match(result.data.error,/Bahasa laporan tidak didukung/);
+ }
+ assert.equal(upstream,0);
+});
+test('repair retains original advertising language regardless of locale',async()=>{
+ let prompt=null;
+ const response=await invoke(async(url,opts)=>{
+  prompt=JSON.parse(opts.body).prompt;
+  return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));
+ },{...input,language:'en',issues:[],claims:[]},'/api/improve');
+ assert.equal(response.status,200);
+ assert.match(prompt,/Preserve the ORIGINAL LANGUAGE/);
+ assert.match(prompt,/do not translate the advertisement/);
+ assert.match(prompt,/PRESERVE FIRST/);
+});
