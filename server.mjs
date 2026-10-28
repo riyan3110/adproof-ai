@@ -255,6 +255,9 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     const data = await metaCall('images/edits', {model:'muse-image-1.0',prompt,images:[{image_url:body.image}],n:1}, 110000);
     const item = data.data?.[0];
     if(item?.b64_json) {
+      // Preserve the explicit Vercel size-limit error before MIME checks.
+      // Oversize responses should never be misreported as corrupt images.
+      boundImage(`data:image/png;base64,${item.b64_json}`);
       const bytes=Buffer.from(item.b64_json,'base64');
       const mime=detectImageMime(bytes);
       if(!mime) {
