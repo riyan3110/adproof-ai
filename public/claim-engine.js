@@ -170,6 +170,9 @@ export function buildEvolution(beforeAudit, afterAudit) {
     return { entry, index, norm, origin: originOf(entry), feat: featuresOf(norm), readable: norm.length > 0 && !!originOf(entry) };
   });
   const afterByIndex = new Map(after.map((r) => [r.index, r]));
+  // Ledgers are model-selected observations, capped at eight. Even well-formed
+  // lists are NOT exhaustive OCR or proof that an omitted claim vanished.
+  const sample_limited = beforeList.length >= MAX_CLAIMS || afterList.length >= MAX_CLAIMS;
   const complete = before.every((r) => r.readable) && after.every((r) => r.readable);
 
   // Exact stage: normalized text + same origin, unique one-to-one only.
@@ -189,7 +192,7 @@ export function buildEvolution(beforeAudit, afterAudit) {
   }
   const pairBefore = new Map(); // before index -> after index
   const pairAfter = new Map(); // after index -> before index
-  const pairKind = new Map(); // before index -> 'exact' | 'candidate'
+  const pairKind = new Map(); // before index -> 'exact' | 'cross_source_exact' | 'candidate'
   const ambBefore = new Set();
   const ambAfter = new Set();
   for (const [key, bArr] of beforeByKey) {
@@ -208,6 +211,32 @@ export function buildEvolution(beforeAudit, afterAudit) {
   for (const [key, aArr] of afterByKey) {
     if (beforeByKey.has(key)) continue;
     void aArr;
+  }
+
+  // Exact cross-source stage: the same text may be found on an image in
+  // one audit and in an unchanged caption in the other. This is NOT evidence
+  // that the claim migrated or that image editing removed it from the ad.
+  // Only pair unique one-to-one, equal-wording entries; never infer a
+  // cross-source relationship from fuzzy semantic overlap.
+  const unmatchedB = before.filter(r => r.readable && !pairBefore.has(r.index) && !ambBefore.has(r.index));
+  const unmatchedA = after.filter(r => r.readable && !pairAfter.has(r.index) && !ambAfter.has(r.index));
+  for (const b of unmatchedB) {
+    const options = unmatchedA.filter(a => a.norm===b.norm && a.origin!==b.origin && sameFeatures(a.feat,b.feat));
+    if (!options.length) continue;
+    const uniquelyReversed = options.length===1 &&
+      unmatchedB.filter(candidate=>candidate.norm===options[0].norm &&
+        candidate.origin!==options[0].origin &&
+        sameFeatures(candidate.feat,options[0].feat)).length===1;
+    if (uniquelyReversed) {
+      const a=options[0];
+      pairBefore.set(b.index,a.index);
+      pairAfter.set(a.index,b.index);
+      pairKind.set(b.index,'cross_source_exact');
+    } else {
+      // Repeated wording across sources cannot be paired deterministically.
+      ambBefore.add(b.index);
+      for (const a of options) ambAfter.add(a.index);
+    }
   }
 
   // Candidate stage: lexical overlap, same origin, reciprocal unique best.
@@ -266,6 +295,12 @@ export function buildEvolution(beforeAudit, afterAudit) {
           status: exactStatus(a.entry), match: 'exact',
           explanation: exactExplanation(b.entry, a.entry),
         });
+      } else if (pairKind.get(b.index) === 'cross_source_exact') {
+        entries.push({
+          before: b.entry, after: a.entry, before_index: b.index, after_index: a.index,
+          status: 'cross_source_observed', match: 'cross_source_exact',
+          explanation: `Identical wording is recorded as ${b.origin} in the earlier audit and ${a.origin} in the later audit. This does not establish that the wording moved between sources or disappeared from the original source. Image repair does not change the supplied caption; inspect both surfaces and the later assessment.`,
+        });
       } else {
         entries.push({
           before: b.entry, after: a.entry, before_index: b.index, after_index: a.index,
@@ -286,7 +321,7 @@ export function buildEvolution(beforeAudit, afterAudit) {
     entries.push({
       before: b.entry, after: null, before_index: b.index, after_index: null,
       status: 'not_redetected', match: 'none',
-      explanation: 'Present in the earlier ledger but not redetected in the later ledger. Absence from a later ledger is not evidence that the underlying point is settled.',
+      explanation: 'Not listed in the later model-selected claim ledger. The text may still be visible in the image or caption; absence from a capped or non-exhaustive ledger is not evidence that it disappeared or that the underlying point is settled.',
     });
   }
   for (const a of after) {
@@ -310,11 +345,11 @@ export function buildEvolution(beforeAudit, afterAudit) {
     entries.push({
       before: null, after: a.entry, before_index: null, after_index: a.index,
       status: 'newly_detected', match: 'none',
-      explanation: 'Present in the later ledger with no matching earlier entry.',
+      explanation: 'First listed in the later model-selected ledger with no matched earlier entry. It may have existed in the original image or caption but been omitted from the earlier sample; this is not proof it was newly added.',
     });
   }
 
-  return { basis, entries, summary: summarize(entries), complete };
+  return { basis, entries, summary: summarize(entries), complete, sample_limited };
 }
 
 export function buildConstellation(audit, suppliedFacts) {
