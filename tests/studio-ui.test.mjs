@@ -129,7 +129,7 @@ test('graph and source navigation share an explicit selection; stale source is c
 
 test('Proofroom identity is deliberate editorial visual language, not generic dashboard cards',()=>{
  const studioCSS=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
- for(const phrase of ['Proofroom.','proofroom-overline','source-form-intro','canvas-field-note','THE INVESTIGATION','AUDIT DOSSIER']){
+ for(const phrase of ['Proof<span>room.','proofroom-overline','source-form-intro','canvas-field-note','THE INVESTIGATION','AUDIT DOSSIER']){
   assert.ok(html.includes(phrase)||studioCSS.includes(phrase),'Missing Proofroom identity element: '+phrase);
  }
  assert.ok(studioCSS.includes('--proof-paper:#ecebe4'),'paper palette must differ from old dark template');
