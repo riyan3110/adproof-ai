@@ -180,3 +180,18 @@ test('Judge access UI distinguishes code verification from successful Meta model
  assert.ok(js.includes("verifyCode(saved,{restoring:true})"),'saved session codes must be checked again');
  assert.ok(!html.includes('Code entered'),'UI must not present unverified input as authenticated');
 });
+
+test('Claim DNA explicitly differentiates capped samples and claims seen across caption and image',()=>{
+  const proof=readFileSync(new URL('../public/proof-studio.js',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../public/studio.css',import.meta.url),'utf8');
+  assert.ok(proof.includes('cross_source_observed'));
+  assert.ok(proof.includes('cross_source_exact')===false,'match logic belongs in claim engine');
+  assert.ok(proof.includes('sample_limited'));
+  assert.ok(proof.includes('Not in re-audit list'));
+  assert.ok(proof.includes('First seen in re-audit'));
+  assert.ok(proof.includes("item.after?.origin==='caption'"));
+  assert.ok(proof.includes('No matched observation'));
+  assert.ok(css.includes('.dna-origin-shift'));
+  assert.ok(css.includes('#evolutionNote'));
+  assert.ok(!proof.includes('Not re-detected'), 'misleading old label must not appear');
+});
