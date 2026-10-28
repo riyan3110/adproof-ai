@@ -167,12 +167,13 @@ function syncDeck(){
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
  ui.verify.disabled=state.busy||state.imported||!state.revised||!!state.verified;
- ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported;
+ ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported||!!state.initialAudit;
+  if(!state.busy)ui.auditText.textContent=t(state.initialAudit?'Audit complete ✓':'Run audit');
  ui.continueActions.hidden=!state.imported||!state.original;
  ui.continueOriginal.disabled=state.busy||state.importing||!state.imported||!state.original||state.history.length>=8;
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
  renderArchiveHistory();
- put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?'Inspect the evidence, then repair the creative.':current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
+ put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
  put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
@@ -371,6 +372,12 @@ async function performAudit(image,verify=false){
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
  }finally{setBusy(false);}
 }
+async function validateCandidateImage(data){
+  if(typeof data!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(data))throw Error('Repair response did not contain a valid image. Please retry.');
+  const candidate=new Image();candidate.decoding='async';candidate.src=data;
+  try{await candidate.decode();}catch{throw Error('Meta returned an unreadable revised image. Original and audit are preserved; retry Repair only if needed.');}
+  if(candidate.naturalWidth<1||candidate.naturalHeight<1)throw Error('Meta returned an empty revised image. Original and audit are preserved.');
+}
 async function performImprove(){
  if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
@@ -378,7 +385,7 @@ async function performImprove(){
  setBusy(true,'Refining…');
  try{
   const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
-  if(typeof out.image!=='string'||!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(out.image))throw Error('Repair response did not contain a valid image. Please retry.');state.imageResponded=true;updateMetaStatus();
+   await validateCandidateImage(out.image);state.imageResponded=true;updateMetaStatus();
   state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
  }finally{setBusy(false);}
 }
@@ -556,10 +563,11 @@ const stickyAudit=$('#stickyAudit'),stickyLabel=$('#stickyLabel');
 function syncSticky(){
  const done=state.phase===3;
  stickyAudit.disabled=state.busy||state.imported;
- stickyAudit.textContent=state.imported?'Archive · read only':state.busy?'Processing…':done?'Inspect changes →':state.phase===2?'Verify revision ↗':state.phase===1?'Repair creative ↗':'Run audit ↗';
+ const needsRepair=state.phase===1&&hasImageRepairTarget(state.initialAudit);
+ stickyAudit.textContent=state.imported?'Archive · read only':state.busy?'Processing…':done?'Inspect changes →':state.phase===2?'Verify revision ↗':state.phase===1?(needsRepair?'Repair creative ↗':'Inspect findings ↗'):'Run audit ↗';
  stickyLabel.textContent=state.imported?'Saved report · no Meta API used':state.busy?'Meta model request':done?'Candidate NOT approved · Review images':state.phase===2?'Review candidate image':state.phase===1?'Initial audit complete':!state.original?'Add a creative to begin':'Add facts to begin';
 }
-stickyAudit.addEventListener('click',()=>{if(state.busy||state.imported)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1)ui.refine.click();else ui.form.requestSubmit();});
+stickyAudit.addEventListener('click',()=>{if(state.busy||state.imported)return;if(state.phase===3)activateProofView('evolution',true);else if(state.phase===2)ui.verify.click();else if(state.phase===1){if(hasImageRepairTarget(state.initialAudit))ui.refine.click();else activateProofView('xray',true);}else ui.form.requestSubmit();});
 new MutationObserver(syncSticky).observe(ui.auditButton,{attributes:true,attributeFilter:['disabled']});
 ui.form.addEventListener('input',syncSticky);
 ui.language.value=getPreference();
