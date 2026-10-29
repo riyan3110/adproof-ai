@@ -211,3 +211,13 @@ test('new and historic audit languages survive ZIP and JSON without rewriting ol
  assert.equal(unpacked.report.original.claim_ledger[0].claim,report.original.claim_ledger[0].claim);
  assert.equal(readAuditJson(JSON.stringify(oldReport)).report_language,'und','older reports must not pretend an inferred source language');
 });
+
+test('ZIP roundtrip retains audit and repair provenance without inventing missing provider IDs',async()=>{
+ const provenance={provider:'Meta Model API',model:'muse-image-1.0',requested_model:'muse-image-1.0',returned_model:null,response_id:null,stage:'repair',completed_at:'2026-10-29T15:00:00Z',input_sha256:'a'.repeat(64),output_sha256:'b'.repeat(64)};
+ const report={...oldReport,runs:[...oldReport.runs,{stage:'repair',model:'muse-image-1.0',provenance}]};
+ const {blob}=createAuditPackage(report,original,revised);
+ const roundtrip=readAuditPackage(new Uint8Array(await blob.arrayBuffer()));
+ assert.deepEqual(roundtrip.report.runs[1].provenance,{...provenance,report_language:'und'});
+ assert.equal(roundtrip.report.runs[0].provenance.returned_model,null);
+ assert.equal(roundtrip.report.runs[0].provenance.response_id,null);
+});

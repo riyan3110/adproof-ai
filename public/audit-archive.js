@@ -87,6 +87,10 @@ function safeReportData(source,{withHistory=true}={}){
    origin:r?.origin==='saved_archive'?'saved_archive':null,
    provenance:r?.provenance&&typeof r.provenance==='object'?{
     provider:String(r.provenance.provider||'').slice(0,90),model:String(r.provenance.model||'').slice(0,90),
+    requested_model:typeof r.provenance.requested_model==='string'?r.provenance.requested_model.slice(0,160):null,
+    returned_model:typeof r.provenance.returned_model==='string'?r.provenance.returned_model.slice(0,160):null,
+    response_id:typeof r.provenance.response_id==='string'?r.provenance.response_id.slice(0,160):null,
+    output_sha256:/^[a-f0-9]{64}$/.test(r.provenance.output_sha256||'')?r.provenance.output_sha256:null,
     stage:String(r.provenance.stage||'').slice(0,24),completed_at:String(r.provenance.completed_at||'').slice(0,60),
     input_sha256:String(r.provenance.input_sha256||'').slice(0,64),report_language:r.provenance.report_language==='en'||r.provenance.report_language==='id'?r.provenance.report_language:'und'
    }:null
