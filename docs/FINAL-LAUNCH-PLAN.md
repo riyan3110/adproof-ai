@@ -6,12 +6,12 @@ All external claims below are conditional on verifying the live production build
 
 ## Release gate — no new features before this passes
 
-- [x] PR #27 tutorial banner committed to main. At writing, the production alias **still points to an older commit**. Do not advertise the banner until the production SHA includes the change.
+- [x] PR #27 tutorial banner committed to main. Rechecked 29 October: production `dpl_9tUgmuvedf6aYY6uE6HBBhXTN54N` resolves to `aeaab5f`, which includes the banner and PR #28.
 - [x] Current Node regression suite passes with an explicitly **mocked Meta provider**. This proves local code paths, not model reliability.
 - [x] Browser/API input guard designed to reject corrupt returned image bytes before Verify; test results need checking in the release CI/browser run.
-- [ ] Verify latest production alias SHA contains both the tutorial and paid-request safety changes. A 200 health response alone is **not** deployment parity.
+- [x] Verified baseline production alias SHA `aeaab5f` includes tutorial and paid-request guards; 11 asset byte hashes also match. Final patch deployment evidence belongs in the release PR.
 - [ ] Test public `/`, `/app`, `/docs`, `/styles.css`, `/studio.css`, `/app.js`, `/i18n.js`, `/api/health` via an unauthenticated browser.
-- [ ] Confirm the judge access code through `/api/access` **without exposing code, API key, or screenshots of secrets**.
+- [x] Confirm the judge access code through `/api/access` **without exposing code, API key, or screenshots of secrets**.
 - [ ] With the owner's authorization and a bounded provider budget, run one true `Meta Muse Spark → Muse Image → Muse Spark` sequence using a rights-cleared real creative. Save screenshots or local ZIP of actual result and provenance. Before a real paid run, confirm provider key, account credit, timeouts and service permissions; do not claim success from configuration alone.
 - [ ] Review source and revised image side by side: brand, packaging, silhouette, parts/connectors, geometry, font legibility, ad copy, added or missing claims. A higher audit score **does not** mean repaired or approved.
 - [ ] Confirm a caption-only issue does not invoke Muse Image; test export ZIP, new-session ZIP import, and deliberate continue-editing separately from live paid tests.

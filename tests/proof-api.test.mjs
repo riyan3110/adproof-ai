@@ -175,3 +175,38 @@ test('repair retains original advertising language regardless of locale',async()
  assert.match(prompt,/do not translate the advertisement/);
  assert.match(prompt,/PRESERVE FIRST/);
 });
+
+test('audit records returned model separately from request and leaves absent IDs unknown',async()=>{
+ const result=await invoke(async()=>Response.json({model:'muse-spark-1.3-202610',id:'chatcmpl-provider-123',choices:[{message:{content:JSON.stringify(audit)}}]}));
+ assert.equal(result.data.model,'muse-spark-1.3-202610');
+ assert.equal(result.data.provenance.requested_model,'muse-spark-1.3');
+ assert.equal(result.data.provenance.returned_model,result.data.model);
+ assert.equal(result.data.provenance.response_id,'chatcmpl-provider-123');
+ const missing=await invoke(async()=>Response.json({choices:[{message:{content:JSON.stringify(audit)}}]}));
+ assert.equal(missing.data.provenance.returned_model,null);
+ assert.equal(missing.data.provenance.response_id,null);
+});
+
+test('repair provenance binds output bytes and inputs for base64 and downloaded images',async()=>{
+ const image=Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]);
+ const {createHash}=await import('node:crypto');
+ const expected=createHash('sha256').update(image).digest('hex');
+ for(const signed of [false,true]){
+  const fetcher=async url=>url.endsWith('images/edits')?Response.json({id:'image-provider-123',model:'muse-image-1.0',data:[signed?{url:'https://images.example.test/result.png'}:{b64_json:image.toString('base64')}]}):new Response(image);
+  const before=await invoke(fetcher,{...input,issues:[]},'/api/improve');
+  const after=await invoke(fetcher,{...input,facts:'Different factual product context',issues:[]},'/api/improve');
+  assert.equal(before.status,200);
+  assert.equal(before.data.provenance.stage,'repair');
+  assert.equal(before.data.provenance.response_id,'image-provider-123');
+  assert.equal(before.data.provenance.output_sha256,expected);
+  assert.notEqual(before.data.provenance.input_sha256,after.data.provenance.input_sha256);
+  assert.equal(JSON.stringify(before.data.provenance).includes(input.facts),false);
+ }
+});
+
+test('provenance does not echo credentials inserted in provider identity fields',async()=>{
+ const result=await invoke(async()=>Response.json({id:'unit-test-only',model:'test-only',choices:[{message:{content:JSON.stringify(audit)}}]}));
+ assert.equal(result.data.provenance.response_id,null);
+ assert.equal(result.data.provenance.returned_model,null);
+ assert.equal(JSON.stringify(result.data.provenance).includes('test-only'),false);
+});

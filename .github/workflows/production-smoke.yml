@@ -14,40 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Verify production pages and API health
         id: verify
         shell: bash
         run: |
           set -euo pipefail
-          origin="https://adproof-ai.vercel.app"
-          paths=("/" "/app" "/docs" "/styles.css" "/app.js" "/api/health")
-          for path in "${paths[@]}"; do
-            echo "::group::GET $path"
-            ok=0
-            for attempt in $(seq 1 12); do
-              code=$(curl -sS --max-time 15 -L -o /tmp/adproof-response -w '%{http_code}' "$origin$path" || true)
-              if [ "$code" = "200" ]; then ok=1; break; fi
-              echo "Attempt $attempt: HTTP $code"
-              sleep 4
-            done
-            if [ "$ok" -ne 1 ]; then
-              echo "::error::GET $path returned $code instead of 200"
-              head -c 300 /tmp/adproof-response || true
-              exit 1
-            fi
-            if [ "$path" = "/" ] || [ "$path" = "/app" ] || [ "$path" = "/docs" ]; then
-              if ! grep -qi 'AdProof' /tmp/adproof-response; then
-                echo "::error::GET $path returned 200 but missing AdProof HTML content"
-                exit 1
-              fi
-            fi
-            if [ "$path" = "/api/health" ]; then
-              python3 -c 'import json; p=json.load(open("/tmp/adproof-response")); assert p.get("ok") is True, p; print("API health OK (key state not printed)")'
-            fi
-            echo "GET $path returned 200 with expected content"
-            echo "::endgroup::"
+          # Wait for the existing deployment; never create one here.
+          # A stale build returning 200 must not pass for a newer checkout.
+          ok=0
+          for attempt in $(seq 1 6); do
+            if node scripts/production-smoke.mjs; then ok=1; break; fi
+            if [ "$attempt" -lt 6 ]; then sleep 10; fi
           done
-          echo "✅ Public pages and non-billable API health succeeded." >> "$GITHUB_STEP_SUMMARY"
+          if [ "$ok" -ne 1 ]; then exit 1; fi
+          echo "Asset hashes match this checkout; health and missing/invalid-code rejection passed. No live Meta calls." >> "$GITHUB_STEP_SUMMARY"
       - name: Publish smoke result as GitHub commit status
         if: always()
         env:
@@ -57,5 +41,5 @@ jobs:
           SHA: ${{ github.sha }}
         shell: bash
         run: |
-          if [ "$CHECK_OUTCOME" = "success" ]; then state="success"; description="AdProof production pages and health returned HTTP 200"; else state="failure"; description="Production smoke failed; inspect GitHub Actions"; fi
+          if [ "$CHECK_OUTCOME" = "success" ]; then state="success"; description="Production assets match checkout; access gate verified"; else state="failure"; description="Production smoke failed; inspect GitHub Actions"; fi
           gh api --method POST "repos/$REPOSITORY/statuses/$SHA" -f state="$state" -f context="adproof-production-smoke" -f description="$description"
