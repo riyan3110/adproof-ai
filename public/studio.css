@@ -1126,3 +1126,11 @@ button:disabled{cursor:not-allowed;opacity:.42}
 .output-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.output-fields[hidden]{display:none}#printFields{grid-template-columns:repeat(5,minmax(0,1fr))}.output-preview{max-width:100%;max-height:420px;object-fit:contain;margin-top:12px;background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0/20px 20px}.output-controls h3,.consistency-result h3{font-size:18px;margin:0 0 12px}.lock-results{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px 20px;font-size:13px;max-width:700px}.lock-results dt{font-weight:600}.lock-results dd{margin:0}.consistency-result details p{font-size:12px;line-height:1.6;margin:10px 0}
 @media(max-width:700px){.consistency-controls{grid-template-columns:minmax(0,1fr)}.output-fields,#printFields{grid-template-columns:repeat(2,minmax(0,1fr))}.consistency-controls,.output-controls,.consistency-result{padding:15px}.region-fields{gap:7px}.lock-list{gap:6px}.consistency-controls .lock-toggle{font-size:12px;padding:7px}.lock-results{gap:8px;font-size:12px}}
 .output-controls .btn-outline{color:#263527;border-color:#7a836e;background:transparent}.output-controls .btn-outline:disabled{opacity:.5}
+
+/* The format preview is a real pair of images, never a marketing mockup. */
+.format-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;margin:12px 0}
+.format-preview[hidden]{display:none}
+.format-preview img{display:block;width:100%;max-height:360px;object-fit:contain;border:1px solid #b4b8ab;background:#ddd}
+.output-controls #adaptOutput{margin:5px 0 0;min-height:44px;border:1px solid #7a836e;background:#e6ebd9;color:#263527}
+.output-controls #adaptOutput:disabled{opacity:.5}
+@media(max-width:520px){.format-preview{grid-template-columns:minmax(0,1fr)}}
