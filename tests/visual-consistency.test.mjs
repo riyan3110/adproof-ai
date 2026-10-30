@@ -10,7 +10,8 @@ const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA
 const issues=[{title:'Unsupported claim',category:'Claim',severity:'high',evidence:'Image says 90% savings',suggestion:'Remove savings claim'}];
 const inventory=lines=>({lines,coverage:'complete',limitations:''});
 const observation=(extra={})=>normalizeInspection({original_text:inventory(['Lamp','5 W']),revised_text:inventory(['Lamp','5 W']),new_claims:[],changed_text:[],visual:Object.fromEntries(Object.keys(LOCKS).map(k=>[k,{status:'preserved',evidence:'Model sees matching '+k}])),...extra},'Lamp uses 5 W');
-async function invoke(body,fetcher){let status,data;await createHandler({key:'mock-only',fetcher})({method:'POST',url:'/api/improve',body,headers:{},socket:{remoteAddress:'test'}},{setHeader(){},writeHead(s){status=s;},end(x){data=JSON.parse(x);}});return {status,data};}
+let testRemoteId=0;
+async function invoke(body,fetcher){let status,data;await createHandler({key:'mock-only',fetcher})({method:'POST',url:'/api/improve',body,headers:{},socket:{remoteAddress:'unit-'+(++testRemoteId)}},{setHeader(){},writeHead(s){status=s;},end(x){data=JSON.parse(x);}});return {status,data};}
 const input={image,product:'Lamp',facts:'Lamp uses 5 W',issues};
 test('12 style contracts are distinct with all five explicit dimensions; stable versioned digest',()=>{
  assert.equal(Object.keys(STYLES).length,12);const prompts=Object.keys(STYLES).map(style=>policyPrompt({style}));assert.equal(new Set(prompts).size,12);
