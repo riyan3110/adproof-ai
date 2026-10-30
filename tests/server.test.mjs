@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {createHandler} from '../server.mjs';
 
-const IMAGE = 'data:image/png;base64,'+'A'.repeat(128);
+const IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC';
 const SCAN = {
   score:71,headline:'Can be improved',summary:'Clear image with one unsupported claim',recommended_caption:'A desk lamp made from wood.',
   issues:[{id:'i1',title:'Unsupported claim',category:'Claim',severity:'medium',evidence:'Best ever is visible',suggestion:'Remove the superlative.'}],

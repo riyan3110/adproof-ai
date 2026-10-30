@@ -125,3 +125,8 @@ The existing Proofroom app has zero-cost local English/Indonesian UI localizatio
 This is primarily for judge-facing **English browser experience** and the owner's Indonesian browser. Stored screenshots/JSON from the historical LumaDesk 35→58 session remain authentic Indonesian source observations after import; the app marks their language status instead of falsifying a new English-language audit. To demonstrate a genuine English-language Meta report, a *new user-initiated* audit in English is needed and potentially billable.
 
 Release verification uses Node unit/integration and Chromium mocked requests only. No actual new Meta paid calls have been made for multilingual validation.
+
+
+## Visual consistency release — 30 October 2026
+
+[Visual consistency evidence and demo plan](VISUAL-CONSISTENCY.md) records the expanded Repair/Verify and checked output implementation. Automated and browser synthetic tests pass; they do not establish successful real Meta editing. A fresh bounded authentic ad/correct-ad evaluation remains required before recording promotional claims. Official public deadline rechecked: 5 November 2026, 09:00 WIB. No final submission or X post authorized or sent.

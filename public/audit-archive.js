@@ -1,3 +1,4 @@
+import {LOCKS,normalizeSettings} from './visual-consistency.js';
 // Local, dependency-free AdProof audit archive. ZIP files use STORED entries
 // (no compression); only our known archive entries are accepted on import.
 // No server, model request, credentials or persistent browser storage.
@@ -51,6 +52,36 @@ export function toImageDataUrl(bytes){
  for(let i=0;i<bytes.length;i+=16384)encoded+=String.fromCharCode(...bytes.subarray(i,i+16384));
  return {dataUrl:'data:'+mime+';base64,'+btoa(encoded),mime,extension:FORMATS[mime]};
 }
+function safeVisualMetadata(value){
+ if(!value||typeof value!=='object')return null;
+ // Only known, bounded metadata subtrees; never restore executable code or auth.
+ const clean=(v,depth=0)=>{
+  if(depth>8)return null;
+  if(typeof v==='string')return v.slice(0,1200);
+  if(typeof v==='number')return Number.isFinite(v)?v:null;
+  if(v===null||typeof v==='boolean')return v;
+  if(Array.isArray(v))return v.slice(0,128).map(x=>clean(x,depth+1));
+  if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,40).filter(([k])=>!/(?:__proto__|constructor|prototype|token|secret|password|api.?key|demo.?code)/i.test(k)).map(([k,x])=>[k.slice(0,80),clean(x,depth+1)]));
+  return null;
+ };
+ const result={upload_dimensions:clean(value.upload_dimensions),source_dimensions:clean(value.source_dimensions),settings:normalizeSettings(value.settings),repair:clean(value.repair),verification:clean(value.verification),output_requested:clean(value.output_requested),output_actual:clean(value.output_actual)};
+ if(result.verification){
+  result.verification.status=result.verification.status==='failed'?'failed':'review_required';
+  result.verification.auto_approved=false;
+  if(!result.verification.locks||!result.verification.text||!Array.isArray(result.verification.risks)||!Array.isArray(result.verification.text.added)||!Array.isArray(result.verification.text.removed))result.verification=null;
+  else {
+   const r=result.verification;
+   r.locks=Object.fromEntries(Object.keys(LOCKS).map(k=>{const v=r.locks[k];return [k,{locked:result.settings.locks[k],status:['changed','possible_change'].includes(v?.status)?v.status:'unable_to_verify',evidence:typeof v?.evidence==='string'?v.evidence:''}];}));
+   r.text.added=r.text.added.filter(x=>typeof x==='string');r.text.removed=r.text.removed.filter(x=>typeof x==='string');
+   r.text.changed=Array.isArray(r.text.changed)?r.text.changed.filter(x=>x&&typeof x.before==='string'&&typeof x.after==='string'):[];
+   r.text.limitations=Array.isArray(r.text.limitations)?r.text.limitations.filter(x=>typeof x==='string'):[];
+   r.risks=r.risks.filter(x=>x&&typeof x.evidence==='string');
+   if(!Number.isFinite(r.measurements?.changed_sample_fraction)||![r.measurements?.original,r.measurements?.revised].every(d=>Number.isFinite(d?.width)&&Number.isFinite(d?.height)))r.measurements=null;
+  }
+ }
+ assert(encoder.encode(JSON.stringify(result)).length<100000,'Consistency metadata too large.');
+ return result;
+}
 function safeReportData(source,{withHistory=true}={}){
  assert(source&&typeof source==='object'&&!Array.isArray(source),'Laporan audit harus berupa objek JSON.');
  assert(source.app==='AdProof AI','Ini bukan laporan AdProof AI yang dapat dipulihkan.');
@@ -96,6 +127,7 @@ function safeReportData(source,{withHistory=true}={}){
    }:null
   })):[],
   original,verified:verified||null,
+  visual_consistency:safeVisualMetadata(source.visual_consistency),
   repair_review:repair_review&&typeof repair_review==='object'?{
    status:repair_review.status==='regression_suspected'?'regression_suspected':'review_required',
    reasons:Array.isArray(repair_review.reasons)?repair_review.reasons.slice(0,8).map(x=>String(x).slice(0,400)):[],

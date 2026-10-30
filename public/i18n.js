@@ -4,6 +4,8 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'Verify consistency ↗':'Verifikasi konsistensi ↗',
+ '↓ Export image':'↓ Ekspor gambar',
  'Audit complete ✓':'Audit selesai ✓',
  'Inspect findings ↗':'Periksa temuan ↗',
  'No grounded image repair required. Review findings or export the audit; do not force an edit.':'Tidak ada masalah gambar dengan bukti yang cukup untuk diperbaiki. Periksa temuan atau ekspor audit; jangan memaksa perbaikan.',

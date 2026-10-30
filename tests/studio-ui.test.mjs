@@ -225,7 +225,7 @@ test('audit archive import/export controls preserve prior Studio elements and re
  assert.ok(js.includes('state.imported?' ), 'archive state must be explicit');
  assert.ok(js.includes('if(state.imported)throw Error'), 'guard paid operations from loaded archives');
  assert.ok(js.includes('repair_review:state.repairReview'), 'new report exports preserve risk records');
- assert.ok(js.includes('fromImageDataUrl(state.revised)'), 'real signature controls download MIME/extension');
+ assert.ok(js.includes('visualUI.export()'), 'image export uses checked PNG output pipeline');
  assert.ok(archive.includes('sniffImageMime(bytes)'));
  assert.ok(archive.includes('zipCrc(bytes)'));
  assert.ok(!archive.includes('fetch('), 'archive processing must never call remote services');

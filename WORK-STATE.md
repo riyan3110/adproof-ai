@@ -184,3 +184,12 @@ The existing read-only import had blocked all Repair/Verify actions, preventing 
 - 153/153 tests pass with MOCKED upstream, including stale-build rejection and repair provenance. Live Judge Access was securely verified in the browser; no code or key was read/copied to repo. The final paid sequence and new production SHA are recorded in the release PR verification evidence after deployment; do not infer them from this pre-release checkpoint.
 - Production UI at the available 1363×936 browser viewport shows the four-step banner, English/Indonesian/Auto and private access gate. The requested five-size rerun remains separate: this runtime's downloaded Chromium package was invalid and the available cloud-browser interface does not expose viewport resizing. Historical six-size QA is not a fresh run.
 - Official deadline rechecked: 5 November 2026 09:00 WIB. Public rules retain 30/25/20/25 judging weights. Anonymous submission URL returns event page, not authenticated field schema; video duration, mandatory hashtag and registered track remain unconfirmed. No X publication, final submission, payment change, or provider switch.
+
+
+## Visual consistency and checked output (30 October 2026 — ChatGPT-authored)
+
+Continued PR #29 baseline `0409fb6ceaa6e173089ec8e4ebc7827acb024672` on `feat/visual-consistency-output`. Twelve deterministic style contracts, seven persisted locks, target rectangle compositing, expanded text inventory and conservative consistency verification, physically sized checked PNG output, and backwards-compatible archive metadata are implemented. Existing claim modules, four-step guide, locales, Judge Access and genuine Meta integration remain.
+
+`npm run check`: 163/163 MOCKED-upstream tests. Real Chrome tested the synthetic 42→72 score regression: added Energy-efficient LED failed consistency and retained original. Browser canvas checks passed exact outside-region pixels, all six export presets and 5906×2953 print sizing/density. Six empty layouts have no overflow. These are not live Meta results. UI archive import works; browser ZIP download event capture was inconclusive, while binary roundtrip tests pass.
+
+Full capability evidence, limits and reproducible QA: [VISUAL-CONSISTENCY.md](docs/VISUAL-CONSISTENCY.md). No new paid model call or authentic demo video claimed. Release SHA, CI and deployment must be checked against GitHub/Vercel after merge. No X publication/final submission. Public deadline remains 5 November 2026, 09:00 WIB; authenticated rules/submission details still require owner review.

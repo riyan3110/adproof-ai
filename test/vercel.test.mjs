@@ -9,7 +9,7 @@ import accessRoute from '../api/access.mjs';
 
 // All external Meta calls are mocked; no paid live calls in tests.
 let ipCounter = 0;
-const tinyImage = 'data:image/png;base64,' + 'A'.repeat(100);
+const tinyImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC';
 const validBody = () => ({
   image: tinyImage,
   product: 'Aurora Lamp',
@@ -106,7 +106,7 @@ test('audit success via mocked Meta call (serverless budget)', async () => {
 test('improve rejects oversized Muse Image output with actionable error, never truncated/fake', async () => {
   const fetcher = async () => metaOk({ data: [{ b64_json: 'A'.repeat(5_000_000) }] });
   const handler = createHandler({ key: 'k', maxBody: VERCEL_MAX_BODY, fetcher });
-  const body = { ...validBody(), issues: [{ title: 't', suggestion: 's' }] };
+  const body = { ...validBody(), issues: [{ title: 't', evidence: 'Visible incorrect copy', suggestion: 's' }] };
   const res = mockRes();
   await handler(postReq('/api/improve', body), res);
   assert.equal(res.status, 502);
@@ -115,10 +115,10 @@ test('improve rejects oversized Muse Image output with actionable error, never t
 });
 
 test('improve returns small image intact', async () => {
-  const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0]).toString('base64');
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC';
   const fetcher = async () => metaOk({ data: [{ b64_json: png }] });
   const handler = createHandler({ key: 'k', maxBody: VERCEL_MAX_BODY, fetcher });
-  const body = { ...validBody(), issues: [{ title: 't', suggestion: 's' }] };
+  const body = { ...validBody(), issues: [{ title: 't', evidence: 'Visible incorrect copy', suggestion: 's' }] };
   const res = mockRes();
   await handler(postReq('/api/improve', body), res);
   assert.equal(res.status, 200);

@@ -1,3 +1,6 @@
+import {createConsistencyUI} from './consistency-ui.js';
+import {inspectConsistency} from './visual-consistency.js';
+import {comparePixels,compositeRegion,dimensions} from './output-system.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
@@ -17,6 +20,7 @@ const ui = {
 };
 loadPreference();
 const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify});
 let toastTimer=null;
 function renderSavedLanguageNotice(){
  if(!state.imported){ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';return;}
@@ -34,6 +38,7 @@ function renderSavedLanguageNotice(){
 }
 function applySelectedLanguage(){
  refreshProofLanguage();
+ visualUI.sync();
  syncDeck();syncSticky();
  applyLanguage();
  renderSavedLanguageNotice();
@@ -173,6 +178,7 @@ function syncDeck(){
  ui.continueOriginal.disabled=state.busy||state.importing||!state.imported||!state.original||state.history.length>=8;
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
  renderArchiveHistory();
+ visualUI.sync();
  put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
  put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
@@ -199,7 +205,7 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit({preserveHistory=false}={}){resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -236,6 +242,7 @@ async function prepareImage(file){
    // pixels, then step quality down until the payload fits (~3.6 MB cap
    // leaves headroom for product facts and JSON overhead).
    const CAP=3.6*1024*1024;
+   if(file.size*4/3<CAP){const raw=await file.arrayBuffer();const bytes=new Uint8Array(raw);let binary='';for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384));return 'data:'+file.type+';base64,'+btoa(binary);}
    let scale=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight));
    for(const quality of [.82,.72,.62,.5]){
      const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
@@ -254,7 +261,8 @@ async function compactOriginalReference(dataUrl){
   if(typeof dataUrl!=='string'||!dataUrl.startsWith('data:image/'))throw Error('Gambar asli tidak tersedia untuk dibandingkan.');
   const img=new Image();img.decoding='async';img.src=dataUrl;
   try{await img.decode();}catch{throw Error('Gambar asli tidak dapat dibaca untuk verifikasi.');}
-  const maxDim=420,scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
+  if(dataUrl.length<450_000)return dataUrl;
+  const maxDim=1280,scale=Math.min(1,maxDim/Math.max(img.naturalWidth,img.naturalHeight));
   const canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
   canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
@@ -266,7 +274,7 @@ async function compactOriginalReference(dataUrl){
   }
   throw Error('Referensi gambar asli terlalu besar untuk pemeriksaan. Gunakan gambar sumber yang lebih kecil.');
 }
-async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
+async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;const rawUrl=URL.createObjectURL(file);try{state.uploadDimensions=await dimensions(rawUrl);}finally{URL.revokeObjectURL(rawUrl);}state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
@@ -280,7 +288,7 @@ function switchView(view){
 }
 function setCompare(value){ui.beforeWrap.style.clipPath=`inset(0 ${100-value}% 0 0)`;ui.bar.style.left=`${value}%`;}
 function inputContext(){return {product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
-function payload(image){return {image,language:getLanguage(),...(state.context||inputContext())};}
+function payload(image){return {image,consistency:state.repairMetadata?.settings||visualUI.readSettings(),language:getLanguage(),...(state.context||inputContext())};}
 function el(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
 function renderClaimEvidence(a, verified=false){
  const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
@@ -367,6 +375,11 @@ async function performAudit(image,verify=false){
   if(verify){
      state.verified=out.audit;
      state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage});
+     const measurements=await comparePixels(state.original,state.revised);
+     state.consistencyReview=inspectConsistency(state.initialAudit,out.audit,state.repairMetadata?.settings||state.consistency,measurements);
+     if(state.repairReview.status==='regression_suspected'){state.consistencyReview.status='failed';state.consistencyReview.risks.push(...state.repairReview.reasons.map(evidence=>({code:'legacy_guard',evidence})));}
+     if(state.consistencyReview.status==='failed'){state.repairReview.status='regression_suspected';state.repairReview.reasons=state.consistencyReview.risks.map(r=>r.evidence).filter(Boolean).slice(0,8);switchView('original');}
+     visualUI.clear();
      phase(3);
    }else{state.initialAudit=out.audit;state.verified=null;state.repairReview=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
@@ -384,8 +397,12 @@ async function performImprove(){
   if(!hasImageRepairTarget(state.initialAudit))throw Error('Tidak ada temuan gambar yang jelas untuk diperbaiki. Jangan paksa AI membuat ulang gambar tanpa alasan.');
  setBusy(true,'Refining…');
  try{
-  const out=await api('/api/improve',{...payload(state.original),issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
-   await validateCandidateImage(out.image);state.imageResponded=true;updateMetaStatus();
+  const repairSettings=visualUI.readSettings();
+  const out=await api('/api/improve',{...payload(state.original),consistency:repairSettings,issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
+   await validateCandidateImage(out.image);
+   const composed=await compositeRegion(state.original,out.image,repairSettings.region);
+   state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
+   out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=true;updateMetaStatus();
   state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
  }finally{setBusy(false);}
 }
@@ -406,6 +423,7 @@ function reportSnapshot(){
    original:state.initialAudit,verified:state.verified,
    disclaimer:'Saved model observations, not independently certified. Image edits always need human review.'};
  // JSON contains metadata only, no image bytes. ZIP adds historical pixels.
+ report.visual_consistency={upload_dimensions:state.uploadDimensions||null,source_dimensions:state.sourceDimensions||null,settings:state.consistency,repair:state.repairMetadata||null,verification:state.consistencyReview||null,output_requested:state.outputRequested||null,output_actual:state.outputActual||null};
  report.archive_history=(state.history||[]).map(round=>({from:round.from,report:round.report}));
  return report;
 }
@@ -421,6 +439,9 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  state.verified=report.verified||null;
  state.audit=state.verified||state.initialAudit;
  state.repairReview=report.repair_review||null;
+ state.consistencyReview=report.visual_consistency?.verification||null;state.repairMetadata=report.visual_consistency?.repair||null;
+ visualUI.restore(report.visual_consistency?.settings,report.visual_consistency?.output_requested);
+ state.outputActual=report.visual_consistency?.output_actual||null;state.uploadDimensions=report.visual_consistency?.upload_dimensions||null;state.sourceDimensions=report.visual_consistency?.source_dimensions||null;
  state.runs=report.runs||[];
  state.archivedReport=report;
  state.reportLanguage=report.report_language||'und';
@@ -470,10 +491,11 @@ function continueArchivedAudit(from){
  state.imported=false;state.archivedReport=null;state.continuedFrom=from;
  ui.archiveLanguageNote.hidden=true;
  state.original=image;
+ state.sourceDimensions=from==='revised'?(state.repairMetadata?.candidate_dimensions||null):state.sourceDimensions;
  state.originalFilename='saved '+from+' · repair baseline';
  state.initialAudit=baseline;
  state.audit=baseline;
- state.verified=null;state.revised=null;state.repairReview=null;
+ state.verified=null;state.revised=null;state.repairReview=null;state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();
  state.runs=[{stage:'archive_baseline',origin:'saved_archive',model:priorModel?.model||'Saved audit model (not rerun)',
   tokens:null,provenance:priorModel?.provenance||null}];
  state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
@@ -506,13 +528,7 @@ ui.downloadPackage.addEventListener('click',()=>{
   notify('Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.');
  }catch(e){notify(e.message,true);}
 });
-ui.downloadImage.addEventListener('click',()=>{
- if(!state.revised)return;
- try{
-  const {bytes,mime,extension}=fromImageDataUrl(state.revised);
-  download(new Blob([bytes],{type:mime}),'adproof-revised.'+extension,mime);
- }catch(e){notify(e.message,true);}
-});
+ui.downloadImage.addEventListener('click',()=>visualUI.export());
 const chooseImport=()=>{if(state.busy||state.importing)return;ui.importReportInput.click();};
 ui.importReportButton.addEventListener('click',chooseImport);
 ui.importReportStart.addEventListener('click',chooseImport);

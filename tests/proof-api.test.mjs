@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHandler,VERCEL_MAX_BODY} from '../server.mjs';
-const input={image:'data:image/png;base64,'+'A'.repeat(128),product:'Lamp',facts:'Wood frame, 5 watts.',caption:''};
+const input={image:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC',product:'Lamp',facts:'Wood frame, 5 watts.',caption:''};
 const audit={score:60,issues:[null],claim_ledger:[{claim:'Wood frame',origin:'creative',assessment:'supported_by_supplied_facts',fact_quote:'Wood frame',reason:'Input match',recommended_action:'Keep'}]};
 async function invoke(fetcher,body=input,route='/api/audit',options={}){
  const handler=createHandler({fetcher,key:'unit-test-only',demoCode:'test-only',maxBody:VERCEL_MAX_BODY,...options});
@@ -20,7 +20,7 @@ test('audit snapshot digest binds facts/image/caption without including input or
 });
 test('repair prompt carries bounded claim actions even when generic issues are empty',async()=>{
  let sent;
- const r=await invoke(async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));},{...input,issues:[],claims:[{claim:'Cures fatigue',assessment:'unsupported_by_supplied_facts',recommended_action:'Remove unsupported benefit'}]},'/api/improve');
+ const r=await invoke(async(url,opts)=>{sent=JSON.parse(opts.body);return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));},{...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}],claims:[{claim:'Cures fatigue',origin:'creative',assessment:'unsupported_by_supplied_facts',recommended_action:'Remove unsupported benefit'}]},'/api/improve');
  assert.equal(r.status,200);assert.match(sent.prompt,/Remove unsupported benefit/);assert.equal(sent.model,'muse-image-1.0');
 });
 test('provider failures and aborts are explicit, never fake success',async()=>{
@@ -40,14 +40,14 @@ test('signed image downloads are timed and never followed to insecure URLs',asyn
  let downloads=0;
  const fetcher=async(url,opts)=>{
   if(url.endsWith('images/edits'))return new Response(JSON.stringify({data:[{url:'https://images.example.test/result.png'}]}));
-  downloads++;assert.ok(opts.signal);assert.equal(opts.redirect,'error');return new Response(new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0]),{headers:{'content-type':'application/octet-stream'}});
+  downloads++;assert.ok(opts.signal);assert.equal(opts.redirect,'error');return new Response(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC','base64'),{headers:{'content-type':'application/octet-stream'}});
  };
- const ok=await invoke(fetcher,{...input,issues:[]},'/api/improve');assert.equal(ok.status,200);assert.equal(downloads,1);assert.ok(ok.data.image.startsWith('data:image/png;base64,'));
- const bad=await invoke(async()=>new Response(JSON.stringify({data:[{url:'http://localhost/private'}]})),{...input,issues:[]},'/api/improve');assert.equal(bad.status,500);
+ const ok=await invoke(fetcher,{...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]},'/api/improve');assert.equal(ok.status,200);assert.equal(downloads,1);assert.ok(ok.data.image.startsWith('data:image/png;base64,'));
+ const bad=await invoke(async()=>new Response(JSON.stringify({data:[{url:'http://localhost/private'}]})),{...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]},'/api/improve');assert.equal(bad.status,500);
 });
 
 test('malformed base64 or signed image responses are rejected before browser delivery',async()=>{
- const body={...input,issues:[]};
+ const body={...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]};
  const invalid=await invoke(async()=>new Response(JSON.stringify({data:[{b64_json:Buffer.from('not a real image').toString('base64')}]})),body,'/api/improve');
  assert.equal(invalid.status,502);
  assert.match(invalid.data.error,/format yang tidak didukung/i);
@@ -64,9 +64,9 @@ test('malformed base64 or signed image responses are rejected before browser del
 });
 
 test('Muse Image JPEG and WebP base64 outputs use their actual MIME signatures',async()=>{
- const body={...input,issues:[]};
- const jpg=Buffer.from([255,216,255,224,0,12,74,70,73,70,0,0]);
- const webp=Buffer.from('RIFF'+'xxxx'+'WEBP'+'VP8 ','ascii');
+ const body={...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]};
+ const jpg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD1uiiioA//2Q==','base64');
+ const webp=Buffer.from('UklGRiYAAABXRUJQVlA4IBoAAAAwAQCdASoIAAgAAUAmJZwAA3AA/voYV0swAA==','base64');
  for(const [bytes,mime] of [[jpg,'jpeg'],[webp,'webp']]){
   const result=await invoke(async()=>new Response(JSON.stringify({data:[{b64_json:bytes.toString('base64')}]})),body,'/api/improve');
   assert.equal(result.status,200);
@@ -80,7 +80,7 @@ test('Verify re-audit sends original reference as second image in SAME Muse Spar
   seen.push({url,payload:JSON.parse(opts.body)});
   return new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(audit)}}]}));
  };
- const reference='data:image/jpeg;base64,'+'A'.repeat(128);
+ const reference='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD1uiiioA//2Q==';
  const body={...input,referenceImage:reference};
  const out=await invoke(mock,body);
  assert.equal(out.status,200);
@@ -90,7 +90,7 @@ test('Verify re-audit sends original reference as second image in SAME Muse Spar
  assert.equal(blocks[1].image_url.url,input.image);
  assert.equal(blocks[2].image_url.url,reference);
  assert.match(blocks[0].text,/REVISED creative/);
- assert.match(blocks[0].text,/DOWNSAMPLED REFERENCE/);
+ assert.match(blocks[0].text,/ORIGINAL REFERENCE/);
  assert.match(blocks[0].text,/material observed regressions/);
  assert.ok(!JSON.stringify(out.data).includes(reference),'comparison reference must not be returned');
 });
@@ -119,7 +119,7 @@ test('repair instruction preserves geometry and rejects invented USB-C connectio
  const out=await invoke(async(url,opts)=>{
   sent=JSON.parse(opts.body);
   return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));
- },{...input,issues:[{title:'Unverified claim',suggestion:'Remove it'}],claims:[]},'/api/improve');
+ },{...input,issues:[{title:'Unverified claim',evidence:'Image contains unsupported copy',suggestion:'Remove it'}],claims:[]},'/api/improve');
  assert.equal(out.status,200);
  assert.match(sent.prompt,/PRESERVE FIRST/);
  assert.match(sent.prompt,/USB 5V does NOT prove USB-C/);
@@ -169,7 +169,7 @@ test('repair retains original advertising language regardless of locale',async()
  const response=await invoke(async(url,opts)=>{
   prompt=JSON.parse(opts.body).prompt;
   return new Response(JSON.stringify({data:[{b64_json:"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XtyfFAAAAABJRU5ErkJggg=="}]}));
- },{...input,language:'en',issues:[],claims:[]},'/api/improve');
+ },{...input,language:'en',issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}],claims:[]},'/api/improve');
  assert.equal(response.status,200);
  assert.match(prompt,/Preserve the ORIGINAL LANGUAGE/);
  assert.match(prompt,/do not translate the advertisement/);
@@ -188,13 +188,13 @@ test('audit records returned model separately from request and leaves absent IDs
 });
 
 test('repair provenance binds output bytes and inputs for base64 and downloaded images',async()=>{
- const image=Buffer.from([137,80,78,71,13,10,26,10,0,0,0,0]);
+ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC','base64');
  const {createHash}=await import('node:crypto');
  const expected=createHash('sha256').update(image).digest('hex');
  for(const signed of [false,true]){
   const fetcher=async url=>url.endsWith('images/edits')?Response.json({id:'image-provider-123',model:'muse-image-1.0',data:[signed?{url:'https://images.example.test/result.png'}:{b64_json:image.toString('base64')}]}):new Response(image);
-  const before=await invoke(fetcher,{...input,issues:[]},'/api/improve');
-  const after=await invoke(fetcher,{...input,facts:'Different factual product context',issues:[]},'/api/improve');
+  const before=await invoke(fetcher,{...input,issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]},'/api/improve');
+  const after=await invoke(fetcher,{...input,facts:'Different factual product context',issues:[{title:'Unsupported copy',evidence:'Image says Best ever',suggestion:'Remove unsupported copy'}]},'/api/improve');
   assert.equal(before.status,200);
   assert.equal(before.data.provenance.stage,'repair');
   assert.equal(before.data.provenance.response_id,'image-provider-123');
