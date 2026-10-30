@@ -92,3 +92,27 @@ export function inspectConsistency(initial,revised,settings,measurements=null){
  return {version:POLICY_VERSION,status:risks.length?'failed':'review_required',auto_approved:false,coverage,locks,text:{added,removed,changed:i?.changed_text||[],limitations:[original?.limitations,next?.limitations].filter(Boolean)},risks,measurements,
   limitations:['Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.',...(unresolved?['Some locks could not be independently verified.']:[])]};
 }
+
+/**
+ * Format adaptation intentionally extends the scene / changes the canvas ratio.
+ * Those two differences cannot be judged as ordinary "preserve composition"
+ * regressions. All product/claim/typography/brand locks remain conservative.
+ * A model-only inspection never authorizes automatic approval.
+ */
+export function inspectFormatCandidate(baseline,adapted,settings){
+ const normalized=normalizeSettings(settings);
+ const adaptedLocks={...normalized.locks,background:false,composition:false};
+ const check=inspectConsistency(baseline,adapted,{...normalized,locks:adaptedLocks});
+ const observedIssues=(Array.isArray(adapted?.issues)?adapted.issues:[])
+  .filter(x=>['Visual','Readability','Consistency'].includes(x?.category)&&['high','medium'].includes(x?.severity));
+ if(observedIssues.length){
+  check.status='failed';
+  check.risks.push(...observedIssues.map(x=>({code:'format_visual_issue',evidence:String(x?.title||'Visible regression').slice(0,200)})));
+ }
+ check.format_relayout=true;
+ check.exempt_from_lock_comparison=['background_extension','canvas_aspect_ratio'];
+ check.original_locks={...normalized.locks};
+ check.auto_approved=false;
+ check.limitations.push('Expected scene extension and canvas ratio changes are not preservation proof. Inspect product edges, copy and logos at 100%.');
+ return check;
+}

@@ -1,6 +1,7 @@
 import {createConsistencyUI} from './consistency-ui.js';
 import {inspectConsistency} from './visual-consistency.js';
 import {comparePixels,compositeRegion,dimensions} from './output-system.js';
+import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
@@ -20,7 +21,7 @@ const ui = {
 };
 loadPreference();
 const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
-const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify});
+const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
 let toastTimer=null;
 function renderSavedLanguageNotice(){
  if(!state.imported){ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';return;}
@@ -274,7 +275,11 @@ async function compactOriginalReference(dataUrl){
   }
   throw Error('Referensi gambar asli terlalu besar untuk pemeriksaan. Gunakan gambar sumber yang lebih kecil.');
 }
-async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;const rawUrl=URL.createObjectURL(file);try{state.uploadDimensions=await dimensions(rawUrl);}finally{URL.revokeObjectURL(rawUrl);}state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
+async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;
+ if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
+ state.fullOriginalURL=URL.createObjectURL(file);
+ state.uploadDimensions=await dimensions(state.fullOriginalURL);
+ state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
@@ -391,6 +396,30 @@ async function validateCandidateImage(data){
   try{await candidate.decode();}catch{throw Error('Meta returned an unreadable revised image. Original and audit are preserved; retry Repair only if needed.');}
   if(candidate.naturalWidth<1||candidate.naturalHeight<1)throw Error('Meta returned an empty revised image. Original and audit are preserved.');
 }
+// Explicit final-format action, separate from repairing factual or visual defects.
+// Each successful request uses one Muse Image edit and one independent Muse Spark re-audit.
+async function adaptFormat(image,target){
+ if(state.imported||state.busy)throw Error('The Studio is read-only or busy.');
+ if(!state.configured||!state.initialAudit)throw Error('Complete an authentic audit before AI format adaptation.');
+ const baseline=image===state.revised?state.verified:state.initialAudit;
+ if(!baseline||!state.context)throw Error('No verified source audit is available for this image.');
+ setBusy(true,'AI format…');
+ try {
+  const out=await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
+  await validateCandidateImage(out.image);
+  // Compare against the exact selected source, not a different prior revision.
+  const referenceImage=await compactOriginalReference(image);
+  const checked=await api('/api/audit',{...payload(out.image),referenceImage,language:getLanguage()});
+  if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
+  const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings());
+  const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage()});
+  if(repairReview.status==='regression_suspected'){
+   review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));
+  }
+  state.imageResponded=true;state.sparkResponded=true;updateMetaStatus();
+  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:true}};
+ } finally {setBusy(false);}
+}
 async function performImprove(){
  if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
@@ -432,6 +461,8 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  // the current session. No API call, re-scoring or remote verification here.
  state.original=null;resetAudit();
  state.history=history;
+ if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
+ state.fullOriginalURL=null; // Historical archives contain the bounded source, not the full-resolution upload.
  state.original=original||null;state.originalFilename=original?'original (archived)':'no original in JSON';
  state.revised=revised||null;
  state.context={...report.context};

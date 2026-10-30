@@ -280,9 +280,26 @@ test('auto language selector and locale boundary preserve claims, archive eviden
 
 test('changing output consent or interpolation clears stale rendered preview and metadata',()=>{
  const output=readFileSync(new URL('../public/consistency-ui.js',import.meta.url),'utf8');
- assert.ok(output.includes("clearPrepared({keepReview:['confirmOutput','allowInterpolation'].includes(e.target.id)});"),'both consent toggles must invalidate prepared pixels');
+ assert.ok(output.includes("const sameSource=['confirmOutput','allowInterpolation','outputPadding'].includes(e.target.id)"),'consent toggles retain AI candidate, but invalidate output');
+ assert.ok(output.includes('clearPrepared({keepReview:sameSource,keepFormat:sameSource})'),'changing export options clears prepared pixels');
  assert.ok(output.includes("q('#outputPreview').removeAttribute('src')"),'old preview must not remain visible or reference a revoked object URL');
  assert.ok(output.includes('state.outputActual=null'),'stale dimensions cannot survive output option changes');
  assert.ok(output.includes("if(!keepReview)q('#confirmOutput').checked=false"),'changing source/size requires fresh human confirmation');
  assert.ok(output.includes("q('#downloadImage').disabled=true"),'export must require a newly checked PNG');
+});
+
+
+test('Output Size requires user-triggered, verified AI composition before aspect-ratio-changing social/website exports',()=>{
+ const visual=readFileSync(new URL('../public/consistency-ui.js',import.meta.url),'utf8');
+ const output=readFileSync(new URL('../public/output-system.js',import.meta.url),'utf8');
+ const server=readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
+ assert.match(visual,/id="adaptOutput"/);
+ assert.ok(visual.includes('adaptFormat(image,{width:plan.width,height:plan.height})'));
+ assert.ok(visual.includes("mustAdapt&&!usableFormat(src,plan)"),'cannot use blank-padding fallback for aspect-changing social or website');
+ assert.ok(visual.includes("out.review.status==='failed'"),'failed AI candidates cannot export');
+ assert.ok(visual.includes('aiAdapted:mustAdapt'),'only verified AI candidates may use cover export');
+ assert.ok(output.includes("plan.fit='ai_adapted_full_bleed'"),'full bleed must depend on AI candidate');
+ assert.ok(js.includes("mode:'reframe',target,issues:[],claims:[]"),'AI adaptation must be distinct from ordinary repair');
+ assert.ok(js.includes("api('/api/audit'"),'same Meta audit endpoint must independently check new composition');
+ assert.ok(server.includes("reframe?{size:target.width+'x'+target.height}"),'ask model for target aspect ratio');
 });
