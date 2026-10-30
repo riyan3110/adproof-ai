@@ -30,13 +30,14 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  const options=()=>({category:q('#outputCategory').value,preset:Number(q('#outputPreset').value),width:Number(q('#printWidth').value),height:Number(q('#printHeight').value),unit:q('#printUnit').value,ppi:Number(q('#printPpi').value),standard:q('#printStandard').value,padding:q('#outputPadding').value,source:q('#outputSource').value});
  const failed=()=>state.consistencyReview?.status==='failed'||state.repairReview?.status==='regression_suspected';
  const source=()=>q('#outputSource').value==='revised'?state.revised:state.original;
+ const exportSource=()=>q('#outputSource').value==='original'?(state.fullOriginalURL||state.original):state.revised;
  const candidateAllowed=()=>!!state.verified&&!!state.consistencyReview&&!failed();
  const matchingFormat=(image,plan)=>formatCandidate&&formatCandidate.input===image&&formatCandidate.width===plan.width&&formatCandidate.height===plan.height;
  const usableFormat=(image,plan)=>matchingFormat(image,plan)&&formatCandidate.review?.status!=='failed';
  async function estimate(){
-  const image=source();state.outputRequested=options();q('#printFields').hidden=options().category!=='print';q('#pixelPresetLabel').hidden=options().category==='print';
+  const image=exportSource();state.outputRequested=options();q('#printFields').hidden=options().category!=='print';q('#pixelPresetLabel').hidden=options().category==='print';
   if(!image){q('#outputEstimate').textContent=say('Upload an image first.','Unggah gambar terlebih dahulu.');return;}
-  try{if(image!==dimensionKey){dimensionKey=image;sourceSize=await dimensions(image);if(source()!==image)return;}
+  try{if(image!==dimensionKey){dimensionKey=image;sourceSize=await dimensions(image);if(exportSource()!==image)return;}
    const p=outputPlan(sourceSize,options());q('#outputEstimate').textContent=say('Source ','Sumber ')+`${p.source.width} × ${p.source.height} → ${p.width} × ${p.height} px. `+(p.aspect_changed?say('Fit with padding; nothing cropped. ','Muat utuh dengan padding; tanpa potongan. '):'')+(p.upscaled?say('Interpolation only; no added detail. ','Hanya interpolasi; tanpa detail baru. '):say('No enlargement. ','Tanpa pembesaran. '))+(p.physical?say('Effective source PPI: ','PPI efektif sumber: ')+p.effective_source_ppi+'. ':'')+(p.aspect_changed&&p.category!=='print'?say('AI composition adaptation required to prevent blank margins. ','Perlu adaptasi komposisi AI agar tidak ada margin kosong. '):'')+say('Text/logo sharpness needs inspection. Print quality is not certified.','Ketajaman teks/logo perlu diperiksa. Kualitas cetak tidak disertifikasi.');
   }catch(e){q('#outputEstimate').textContent=e.message;}
  }
@@ -105,11 +106,11 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   const token=++generation;
   try{if(!q('#confirmOutput').checked)throw Error(say('Inspect the source and confirm the review first.','Periksa sumber dan centang pemeriksaan terlebih dahulu.'));
    if(options().source==='revised'&&!candidateAllowed())throw Error(say('Candidate failed or has not been verified. Export the original.','Kandidat gagal atau belum diverifikasi. Ekspor gambar asli.'));
-   const src=source(),opts=options(),plan=outputPlan(await dimensions(src),opts);
+   const src=source(),opts=options(),plan=outputPlan(await dimensions(exportSource()),opts);
    const mustAdapt=plan.aspect_changed&&opts.category!=='print';
    if(mustAdapt&&!usableFormat(src,plan))throw Error(say('Adapt the composition with AI and pass verification before export. No blank-margin fallback.','Sesuaikan komposisi dengan AI dan lolos pemeriksaan sebelum ekspor. Tanpa margin kosong.'));
    q('#prepareOutput').disabled=true;
-   const out=await renderOutput(mustAdapt?formatCandidate.image:src,opts,{allowInterpolation:q('#allowInterpolation').checked,aiAdapted:mustAdapt});if(token!==generation)return;
+   const out=await renderOutput(mustAdapt?formatCandidate.image:exportSource(),opts,{allowInterpolation:q('#allowInterpolation').checked,aiAdapted:mustAdapt});if(token!==generation)return;
    if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=URL.createObjectURL(out.blob);q('#outputPreview').src=previewUrl;q('#outputPreview').hidden=false;prepared=out;state.outputActual={...out.metadata,source:options().source,source_dimensions:out.metadata.source,...(mustAdapt?{format_adaptation:{review:formatCandidate.review,provider:formatCandidate.metadata,model_native_dimensions:out.metadata.native_ai_source}}:{})};
    q('#outputActual').textContent=say('Actual PNG: ','PNG aktual: ')+`${out.metadata.actual.width} × ${out.metadata.actual.height} px · ${Math.round(out.blob.size/1024)} KB. `+say('Inspect the preview, then export.','Periksa pratinjau, lalu ekspor.');q('#downloadImage').disabled=false;
   }catch(e){notify(e.message,true);}finally{q('#prepareOutput').disabled=state.busy;}
