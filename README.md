@@ -86,3 +86,8 @@ Created October 27, 2026 during the hackathon window. This is a **new and separa
 ## Evidence and readiness
 
 See [compliance audit](docs/HACKATHON-COMPLIANCE.md), [readiness and authentic demo](docs/HACKATHON-READINESS.md), and [claim engine](docs/CLAIM-PROOF-ENGINE.md). Muse Code core contribution and ChatGPT integration/fixes are separately attributable. Automated mocks are not a completed live Meta demo.
+
+
+## Visual consistency and checked export
+
+The existing Studio now includes versioned styles, seven consistency locks, optional rectangle compositing, text-inventory and visual change verification, and exact-sized PNG export for Social Media, Website and Print. Failed checks retain the original; scores never approve a candidate. Enlargement is explicitly labelled interpolation, not new detail. See [implementation, provider evidence, validation and limits](docs/VISUAL-CONSISTENCY.md).

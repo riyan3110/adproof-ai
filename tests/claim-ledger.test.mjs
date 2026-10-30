@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import {createHandler, schema} from '../server.mjs';
 
-const IMAGE='data:image/png;base64,'+'A'.repeat(128);
+const IMAGE='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFUlEQVR4nGO8c+c6AzbAhFV00EoAAAHFAp9IYj1VAAAAAElFTkSuQmCC';
 const body={image:IMAGE,product:'Desk Lamp',facts:'Wood frame, 50 cm tall, 5W.',caption:'Wood frame desk lamp'};
 const baseAudit={
   score:70,headline:'Audit estimate',summary:'Compare claims with supplied details',
