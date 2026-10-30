@@ -50,8 +50,23 @@ export function pngDensity(bytes,ppi){
  while(p+12<=bytes.length){const len=dv.getUint32(p);if(p+len+12>bytes.length)throw Error('Invalid PNG.');const type=String.fromCharCode(...bytes.subarray(p+4,p+8));if(type!=='pHYs')parts.push(bytes.subarray(p,p+len+12));if(type==='IHDR')parts.push(chunk);p+=len+12;}
  const out=new Uint8Array(parts.reduce((n,b)=>n+b.length,0));let at=0;for(const part of parts){out.set(part,at);at+=part.length;}return out;
 }
-export async function renderOutput(data,options,{allowInterpolation=false}={}){
+export async function renderOutput(data,options,{allowInterpolation=false,aiAdapted=false}={}){
  const img=await decodeImage(data),plan=outputPlan({width:img.naturalWidth,height:img.naturalHeight},options);
+ if(aiAdapted){
+  // Never disguise letterbox padding as an AI-composed full-bleed result.
+  // The Muse output must already have substantially the intended ratio.
+  const ratio=plan.width/plan.height,sourceRatio=img.naturalWidth/img.naturalHeight;
+  if(Math.abs(sourceRatio-ratio)/ratio>.025)throw Error('AI result ratio is not compatible with this format / Rasio hasil AI tidak sesuai.');
+  const scale=Math.max(plan.width/img.naturalWidth,plan.height/img.naturalHeight);
+  const w=Math.ceil(img.naturalWidth*scale),h=Math.ceil(img.naturalHeight*scale);
+  plan.draw={width:w,height:h,x:Math.floor((plan.width-w)/2),y:Math.floor((plan.height-h)/2)};
+  plan.scale=scale;plan.fit='ai_adapted_full_bleed';plan.padding='none';
+  plan.method=scale>1?'ai_relayout_then_interpolation_no_new_detail':'ai_relayout_then_browser_downsample';
+  plan.upscaled=scale>1.001;
+  plan.detail_certified=false;
+  plan.native_ai_source={width:img.naturalWidth,height:img.naturalHeight};
+  plan.cropped_margin_pixels={x:Math.abs(plan.draw.x),y:Math.abs(plan.draw.y)};
+ }
  if(plan.upscaled&&!allowInterpolation)throw Error('Confirm interpolation before enlarging / Setujui interpolasi sebelum memperbesar.');
  const {c,ctx}=canvas(plan.width,plan.height);
  if(plan.padding==='white'){ctx.fillStyle='#ffffff';ctx.fillRect(0,0,c.width,c.height);}
