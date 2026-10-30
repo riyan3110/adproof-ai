@@ -303,3 +303,15 @@ test('Output Size requires user-triggered, verified AI composition before aspect
  assert.ok(js.includes("api('/api/audit'"),'same Meta audit endpoint must independently check new composition');
  assert.ok(server.includes("reframe?{size:target.width+'x'+target.height}"),'ask model for target aspect ratio');
 });
+
+
+test('studio surfaces real native pixel sufficiency rather than an invented professional-HD badge',()=>{
+ const output=readFileSync(new URL('../public/consistency-ui.js',import.meta.url),'utf8');
+ const pixel=readFileSync(new URL('../public/output-system.js',import.meta.url),'utf8');
+ assert.ok(output.includes('id="outputQuality"'),'output quality assessment must be displayed');
+ assert.ok(output.includes('assessOutputQuality(p)'),'estimate must use real source dimensions');
+ assert.ok(output.includes('DETAIL ASLI TIDAK CUKUP'),'insufficient native resolution must be explicit');
+ assert.ok(output.includes('BELUM tersertifikasi untuk cetak profesional'),'no unfounded print certification');
+ assert.ok(output.includes('HANYA DRAF: diperbesar tanpa tambahan detail asli'),'export preview must disclose enlargement');
+ assert.ok(pixel.includes('quality:assessOutputQuality(plan)'),'actual exported PNG must retain quality metadata');
+});

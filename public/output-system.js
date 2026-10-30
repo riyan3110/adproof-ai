@@ -17,6 +17,41 @@ export function outputPlan(source,options={}){
   method:scale>1?'browser_interpolation_no_new_detail':scale<1?'browser_downsample':'original_pixels_with_padding',upscaled:scale>1.001,aspect_changed:Math.abs(source.width/source.height-width/height)>0.001,
   effective_source_ppi:physical?Math.round(physical.target_ppi/scale):null,detail_certified:false};
 }
+/**
+ * Deterministic pixel sufficiency only. No visual sharpness estimate, no AI detail
+ * reconstruction and no claim of professional print certification.
+ * The actual decoded image dimensions, rather than an API-requested "size", are used.
+ */
+export function assessOutputQuality(plan){
+ const scale=Number(plan?.scale);
+ if(!Number.isFinite(scale)||scale<=0)throw Error('Output scale unavailable.');
+ const enlargement=Math.max(1,scale);
+ const needsInterpolation=enlargement>1.001;
+ const padded=plan.fit==='contain'&&(plan.draw.width<plan.width-1||plan.draw.height<plan.height-1);
+ const print=plan.category==='print';
+ const nativePpi=print?Math.round(plan.physical.target_ppi/scale):null;
+ const nativeMaxPrint=print?{
+  width_mm:Math.round(plan.source.width/plan.physical.target_ppi*25.4),
+  height_mm:Math.round(plan.source.height/plan.physical.target_ppi*25.4)
+ }:null;
+ const status=print
+  ?needsInterpolation||padded?'print_draft_only':'print_pixels_sufficient_manual_review'
+  :needsInterpolation?'interpolated_not_native_detail':'native_pixels_sufficient';
+ return {
+  status,detail_added_by_ai:false,print_certified:false,
+  source:{...plan.source},target:{width:plan.width,height:plan.height},
+  native_source_ppi:nativePpi,max_native_print_mm:nativeMaxPrint,
+  scale_factor:Math.round(scale*100)/100,
+  enlargement_factor:Math.round(enlargement*100)/100,
+  needs_interpolation:needsInterpolation,
+  contains_padding:padded,
+  limitations:[
+   ...(needsInterpolation?['Pixel enlargement cannot create authentic source detail.']:[]),
+   ...(padded?['Aspect ratio mismatch may leave blank margins.']:[]),
+   ...(print?['Effective PPI is mathematical only; no CMYK conversion, proofing or sharpness certification.']:[])
+  ]
+ };
+}
 export async function decodeImage(data){
  const img=new Image();img.decoding='async';img.src=data;await img.decode();
  if(!img.naturalWidth||!img.naturalHeight)throw Error('Unreadable image / Gambar tidak terbaca.');
@@ -74,5 +109,5 @@ export async function renderOutput(data,options,{allowInterpolation=false,aiAdap
  const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)throw Error('PNG export failed.');
  const bytes=pngDensity(new Uint8Array(await blob.arrayBuffer()),plan.physical?.target_ppi);
  const out=new Blob([bytes],{type:'image/png'}),url=URL.createObjectURL(out);
- try{const actual=await dimensions(url);if(actual.width!==plan.width||actual.height!==plan.height)throw Error('Output dimensions mismatch.');return {blob:out,metadata:{...plan,actual,exported_at:new Date().toISOString(),text_sharpness:'manual_review_required',limitations:['No AI upscaler used; interpolation adds no detail.','Raster text/logo sharpness and print quality are not certified.']}};}finally{URL.revokeObjectURL(url);}
+ try{const actual=await dimensions(url);if(actual.width!==plan.width||actual.height!==plan.height)throw Error('Output dimensions mismatch.');return {blob:out,metadata:{...plan,actual,quality:assessOutputQuality(plan),exported_at:new Date().toISOString(),text_sharpness:'manual_review_required',limitations:['No AI upscaler used; interpolation adds no detail.','Raster text/logo sharpness and print quality are not certified.']}};}finally{URL.revokeObjectURL(url);}
 }
