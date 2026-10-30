@@ -275,7 +275,11 @@ async function compactOriginalReference(dataUrl){
   }
   throw Error('Referensi gambar asli terlalu besar untuk pemeriksaan. Gunakan gambar sumber yang lebih kecil.');
 }
-async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;const rawUrl=URL.createObjectURL(file);try{state.uploadDimensions=await dimensions(rawUrl);}finally{URL.revokeObjectURL(rawUrl);}state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
+async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;
+ if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
+ state.fullOriginalURL=URL.createObjectURL(file);
+ state.uploadDimensions=await dimensions(state.fullOriginalURL);
+ state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
@@ -457,6 +461,8 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  // the current session. No API call, re-scoring or remote verification here.
  state.original=null;resetAudit();
  state.history=history;
+ if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
+ state.fullOriginalURL=null; // Historical archives contain the bounded source, not the full-resolution upload.
  state.original=original||null;state.originalFilename=original?'original (archived)':'no original in JSON';
  state.revised=revised||null;
  state.context={...report.context};
