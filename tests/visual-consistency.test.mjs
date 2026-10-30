@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {STYLES,LOCKS,POLICY_VERSION,normalizeSettings,policyPrompt,normalizeInspection,inspectConsistency,hasRepairTarget} from '../public/visual-consistency.js';
+import {STYLES,LOCKS,POLICY_VERSION,normalizeSettings,policyPrompt,normalizeInspection,inspectConsistency,inspectFormatCandidate,hasRepairTarget} from '../public/visual-consistency.js';
 import {outputPlan,pngDensity} from '../public/output-system.js';
 import {imageDimensions} from '../consistency-server.mjs';
 import {createHandler} from '../server.mjs';
@@ -64,4 +64,42 @@ test('new metadata roundtrips ZIP while old archives remain valid; no auth resto
  report.visual_consistency.verification.measurements={original:null};
  const archive=createAuditPackage(report,image,null);const restored=readAuditPackage(new Uint8Array(await archive.blob.arrayBuffer())).report.visual_consistency;
  assert.equal(restored.settings.style,'natural');assert.equal(restored.settings.locks.lighting,false);assert.equal(restored.output_actual.actual.width,5906);assert.equal(restored.verification.auto_approved,false);assert.equal(restored.repair.api_key,undefined);assert.equal(restored.verification.locks.unknown,undefined);assert.equal(restored.verification.measurements,null);
+});
+
+test('explicit AI reframe asks Muse for target aspect and records actual native size, not invented HD pixels',async()=>{
+ const original=Buffer.from(image.split(',')[1],'base64');
+ const mock=Buffer.from(original);mock.writeUInt32BE(9,16);mock.writeUInt32BE(16,20);
+ let sent;
+ const response=await invoke({...input,issues:[],mode:'reframe',target:{width:1080,height:1920}},async(url,opts)=>{
+  sent=JSON.parse(opts.body);
+  return Response.json({model:'muse-image-1.0',data:[{b64_json:mock.toString('base64')}]});
+ });
+ assert.equal(response.status,200);
+ assert.equal(sent.size,'1080x1920');
+ assert.match(sent.prompt,/Extend or rebuild ONLY surrounding scene/);
+ assert.match(sent.prompt,/do not add flat blank margins/);
+ assert.equal(response.data.repair_metadata.method,'reference_image_ai_recomposition_no_mask');
+ assert.deepEqual(response.data.repair_metadata.model_dimensions,{width:9,height:16});
+ assert.equal(response.data.repair_metadata.exact_pixels_promised,false);
+ assert.equal(response.data.repair_metadata.requested_ratio,'1080x1920');
+});
+test('AI reframe rejects fake dimensions or unsupported format before a paid call',async()=>{
+ for(const target of [{width:9000,height:1000},{width:1,height:1},null]){
+  const out=await invoke({...input,issues:[],mode:'reframe',target},()=>{throw Error('must not call paid API');});
+  assert.equal(out.status,400);
+ }
+ const out=await invoke({...input,issues:[],mode:'reframe',target:{width:1600,height:900}},async()=>Response.json({data:[{b64_json:image.split(',')[1]}]}));
+ assert.equal(out.status,502,'provider returning wrong ratio must not pass as edge-to-edge output');
+});
+test('format adaptation still blocks unsupported new copy but does not flag intentional canvas extension itself',()=>{
+ const baseline={score:50,claim_ledger:[],text_inventory:inventory(['Lamp','5 W'])};
+ const after={score:85,claim_ledger:[],consistency:observation()};
+ const r=inspectFormatCandidate(baseline,after,{});
+ assert.equal(r.status,'review_required');
+ assert.equal(r.auto_approved,false);
+ assert.equal(r.original_locks.composition,true);
+ assert.equal(r.locks.composition.locked,false);
+ const unsafe=inspectFormatCandidate(baseline,{...after,consistency:observation({revised_text:inventory(['Lamp','5 W','90% savings'])})},{});
+ assert.equal(unsafe.status,'failed');
+ assert.ok(unsafe.risks.some(x=>x.code==='unverified_added_text'));
 });
