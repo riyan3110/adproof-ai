@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {STYLES,LOCKS,POLICY_VERSION,normalizeSettings,policyPrompt,normalizeInspection,inspectConsistency,inspectFormatCandidate,hasRepairTarget} from '../public/visual-consistency.js';
-import {outputPlan,pngDensity} from '../public/output-system.js';
+import {outputPlan,assessOutputQuality,pngDensity} from '../public/output-system.js';
 import {imageDimensions} from '../consistency-server.mjs';
 import {createHandler} from '../server.mjs';
 import {createAuditPackage,readAuditPackage} from '../public/audit-archive.js';
@@ -103,4 +103,22 @@ test('format adaptation still blocks unsupported new copy but does not flag inte
  const unsafe=inspectFormatCandidate(baseline,{...after,consistency:observation({revised_text:inventory(['Lamp','5 W','90% savings'])})},{});
  assert.equal(unsafe.status,'failed');
  assert.ok(unsafe.risks.some(x=>x.code==='unverified_added_text'));
+});
+
+test('quality assessment distinguishes actual native pixels from interpolation and never certifies print',()=>{
+ const social=assessOutputQuality(outputPlan({width:3000,height:3000},{category:'social',preset:0}));
+ assert.equal(social.status,'native_pixels_sufficient');assert.equal(social.needs_interpolation,false);
+ assert.equal(social.detail_added_by_ai,false);assert.equal(social.print_certified,false);
+ const small=assessOutputQuality(outputPlan({width:540,height:540},{category:'social',preset:0}));
+ assert.equal(small.status,'interpolated_not_native_detail');assert.equal(small.enlargement_factor,2);
+ const draft=assessOutputQuality(outputPlan({width:1000,height:500},{category:'print',width:100,height:50,unit:'cm',ppi:150}));
+ assert.equal(draft.status,'print_draft_only');assert.equal(draft.native_source_ppi,25);
+ assert.equal(draft.max_native_print_mm.width_mm,169);
+ assert.equal(draft.print_certified,false);
+ const native=assessOutputQuality(outputPlan({width:6000,height:3000},{category:'print',width:100,height:50,unit:'cm',ppi:150}));
+ assert.equal(native.status,'print_pixels_sufficient_manual_review');assert.equal(native.needs_interpolation,false);
+ assert.equal(native.print_certified,false);
+ const mismatched=assessOutputQuality(outputPlan({width:6000,height:6000},{category:'print',width:100,height:50,unit:'cm',ppi:150}));
+ assert.equal(mismatched.contains_padding,true);
+ assert.equal(mismatched.status,'print_draft_only');
 });
