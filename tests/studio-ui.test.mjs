@@ -276,3 +276,13 @@ test('auto language selector and locale boundary preserve claims, archive eviden
  assert.ok(backend.includes('Do NOT translate quoted ad claims'));
  assert.ok(backend.includes('Preserve the ORIGINAL LANGUAGE'));
 });
+
+
+test('changing output consent or interpolation clears stale rendered preview and metadata',()=>{
+ const output=readFileSync(new URL('../public/consistency-ui.js',import.meta.url),'utf8');
+ assert.ok(output.includes("clearPrepared({keepReview:['confirmOutput','allowInterpolation'].includes(e.target.id)});"),'both consent toggles must invalidate prepared pixels');
+ assert.ok(output.includes("q('#outputPreview').removeAttribute('src')"),'old preview must not remain visible or reference a revoked object URL');
+ assert.ok(output.includes('state.outputActual=null'),'stale dimensions cannot survive output option changes');
+ assert.ok(output.includes("if(!keepReview)q('#confirmOutput').checked=false"),'changing source/size requires fresh human confirmation');
+ assert.ok(output.includes("q('#downloadImage').disabled=true"),'export must require a newly checked PNG');
+});
