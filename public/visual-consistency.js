@@ -66,11 +66,28 @@ const norm=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim().toLowerCase
 // facts or original caption as if they were visible revised pixels.
 const PERFORMANCE_COPY=/\b(?:efficient|efficiency|energy[ -]?saving|power[ -]?saving|less electricity|low[ -]?consumption|eco[ -]?friendly|efisien|efisiensi|hemat (?:energi|listrik)|ramah lingkungan)\b/i;
 const DENIAL=/\b(?:no|not|without|unverified|unsupported|unproven|tidak|belum|tanpa|bukan|tak|non)\b/i;
-export function unverifiedPerformanceText(lines,facts=''){
+// A comparative slogan is a product-performance promise when it inherits a
+// definite thermal-duration claim from the source creative. Context matters:
+// "Lebih lama" alone must not be treated as a universal advertising violation.
+const THERMAL_DURATION_COPY=/(?:dingin|cold|hangat|panas|warm|heat|suhu|temperature).{0,70}\b\d{1,3}\s*(?:jam|hours?|hari|days?|menit|minutes?)\b|\b\d{1,3}\s*(?:jam|hours?|hari|days?|menit|minutes?)\b.{0,70}(?:dingin|cold|hangat|panas|warm|suhu|temperature)/i;
+const IMPLIED_THERMAL_DURATION=/(?:\b(?:lebih lama|tahan lama|lebih awet|lasts? longer|stay(?:s)? (?:cold|cool|warm) longer|longer lasting|keeps? (?:drinks?|water) (?:cold|cool|warm) longer)\b)/i;
+export function unverifiedPerformanceText(lines,facts='',sourceContext=null){
  const statements=String(facts).split(/[\n.!?;]/).map(s=>s.trim()).filter(Boolean);
  const evidenced=statements.some(s=>PERFORMANCE_COPY.test(s)&&!DENIAL.test(s));
- if(evidenced)return [];
- return (Array.isArray(lines)?lines:[]).filter(s=>typeof s==='string'&&PERFORMANCE_COPY.test(s)).slice(0,12);
+ const output=Array.isArray(lines)?lines.filter(s=>typeof s==='string'):[];
+ const findings=evidenced?[]:output.filter(s=>PERFORMANCE_COPY.test(s));
+ const prior=[...(sourceContext?.text_inventory?.lines||[]),
+  ...(sourceContext?.claim_ledger||[]).filter(c=>c?.origin==='creative').map(c=>c.claim)]
+   .filter(s=>typeof s==='string');
+ const originalThermalClaim=prior.some(s=>THERMAL_DURATION_COPY.test(s));
+ // A negative disclaimer ("no evidence for 24 hours") is not proof.
+ const supportedThermalDuration=statements.some(s=>THERMAL_DURATION_COPY.test(s)&&!DENIAL.test(s));
+ if(originalThermalClaim&&!supportedThermalDuration){
+  for(const line of output){
+   if(IMPLIED_THERMAL_DURATION.test(line)&&!findings.includes(line))findings.push(line);
+  }
+ }
+ return findings.slice(0,12);
 }
 export function inspectConsistency(initial,revised,settings,measurements=null,facts=''){
  const s=normalizeSettings(settings),i=revised?.consistency;
@@ -84,7 +101,7 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  // A model can mark a claim as supported just because 5W or LED appears
  // in the supplied facts. That does not establish an "efficient" promise.
  const inspectedText=[...new Set([...newLines,...(next?.lines||[]),...(i?.new_claims||[]).map(x=>x?.text).filter(Boolean)])];
- for(const text of unverifiedPerformanceText(inspectedText,facts)){
+ for(const text of unverifiedPerformanceText(inspectedText,facts,initial)){
   risks.push({code:'unsupported_performance_copy',evidence:text});
  }
  // If text extraction is partial, missing a phrase here is not proof of safety.
