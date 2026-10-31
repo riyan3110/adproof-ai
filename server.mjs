@@ -272,7 +272,6 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     validation(body);
     const comparing=Boolean(body.referenceImage);
     const settings=normalizeSettings(body.consistency);
-    if(restyle&&(settings.style==='preserve'||!['colors','lighting','background'].some(k=>settings.locks[k]===false)||['product_shape','typography','branding','composition'].some(k=>settings.locks[k]!==true))){const e=new Error('Pilih gaya visual dan buka minimal satu lock visual; bentuk produk, tipografi, identitas merek, serta komposisi harus tetap terlindungi.');e.status=400;throw e;}
     // Old clients retain the established Indonesian report behavior. New Studio
     // sends the resolved browser/selector language explicitly on every audit.
     const reportLanguage=body.language==='en'?'en':'id';
@@ -342,6 +341,7 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     }
     if(!reframe&&!restyle && (!Array.isArray(body.issues)||!hasRepairTarget({issues:body.issues,claim_ledger:body.claims}))) { const e=new Error('Jalankan audit terlebih dahulu.'); e.status=400; throw e; }
     const settings=normalizeSettings(body.consistency);
+    if(restyle&&(settings.style==='preserve'||!['colors','lighting','background'].some(k=>settings.locks[k]===false)||['product_shape','typography','branding','composition'].some(k=>settings.locks[k]!==true))){const e=new Error('Pilih gaya visual dan buka minimal satu lock visual; bentuk produk, tipografi, identitas merek, serta komposisi harus tetap terlindungi.');e.status=400;throw e;}
     const issues = (Array.isArray(body.issues)?body.issues:[]).filter(x=>x?.evidence?.trim()&&!/^caption\s*:/i.test(x.evidence.trim())).slice(0,7).map(x=>({title:String(x?.title||'').slice(0,80),suggestion:String(x?.suggestion||'').slice(0,250)}));
     const caption = String(body.caption || '').slice(0,800);
     const claims=(Array.isArray(body.claims)?body.claims:[]).slice(0,8).map(x=>({claim:String(x?.claim||'').slice(0,240),assessment:String(x?.assessment||'').slice(0,60),action:String(x?.recommended_action||'').slice(0,260)}));
