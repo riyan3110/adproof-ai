@@ -13,6 +13,7 @@ const audit=language=>({score:57,headline:language==='id'?'Audit dalam Bahasa In
  issues:[{title:language==='id'?'Klaim tidak didukung':'Unsupported claim',category:'Claim',
  severity:'medium',evidence:'Save 90% electricity',suggestion:language==='id'?'Hapus klaim.':'Remove claim.'}],
  strengths:[],claim_ledger:[claim]});
+const reportHeading=language=>language==='id'?'Hasil audit iklan':'Creative audit results';
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  const summary=[];
@@ -52,10 +53,12 @@ const audit=language=>({score:57,headline:language==='id'?'Audit dalam Bahasa In
     await page.locator('#auditPhase').filter({hasText:expected==='id'?'AUDIT SELESAI':'AUDIT COMPLETE'}).waitFor();
     assert.equal(calls,1);
     assert.equal(lastLanguage,expected);
-    assert.equal(await page.locator('#scoreHeadline').textContent(),audit(expected).headline);
+    assert.equal(await page.locator('#scoreHeadline').textContent(),reportHeading(expected));
+    assert.match(await page.locator('#scoreExplanationContent').textContent(),new RegExp(audit(expected).headline));
     // Changing UI locale never alters model evidence or reruns Meta.
     await page.locator('#languageSelect').selectOption(other);
-    assert.equal(await page.locator('#scoreHeadline').textContent(),audit(expected).headline);
+    assert.equal(await page.locator('#scoreHeadline').textContent(),reportHeading(other));
+    assert.match(await page.locator('#scoreExplanationContent').textContent(),new RegExp(audit(expected).headline));
     assert.equal(await page.locator('#claimEvidenceList .claim-evidence-claim').first().textContent(),claim.claim);
     assert.equal(calls,1);
     const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#downloadReport').click()]);
@@ -69,11 +72,12 @@ const audit=language=>({score:57,headline:language==='id'?'Audit dalam Bahasa In
      name:'saved-report.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(archived))
     });
     await page.locator('#archiveLanguageNote').waitFor({state:'visible'});
-    assert.equal(await page.locator('#scoreHeadline').textContent(),'Visual akurat, caption mengandung klaim tak didukung');
+    assert.match(await page.locator('#scoreExplanationContent').textContent(),/Visual akurat, caption mengandung klaim tak didukung/);
     assert.equal(calls,1,'archive import must not call Meta');
     await page.locator('#languageSelect').selectOption('en');
     assert.match(await page.locator('#archiveLanguageNote').textContent(),/Saved report language: Bahasa Indonesia/);
-    assert.equal(await page.locator('#scoreHeadline').textContent(),'Visual akurat, caption mengandung klaim tak didukung');
+    assert.equal(await page.locator('#scoreHeadline').textContent(),reportHeading('en'));
+    assert.match(await page.locator('#scoreExplanationContent').textContent(),/Visual akurat, caption mengandung klaim tak didukung/);
     assert.equal(calls,1,'changing UI locale must not call Meta');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
     assert.equal(overflow,false,'horizontal overflow '+width+' '+browserLocale);

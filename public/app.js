@@ -98,6 +98,7 @@ function renderSavedLanguageNotice(){
 }
 function applySelectedLanguage(){
  refreshProofLanguage();
+ if(state.audit)renderAuditOverview(state.audit,Boolean(state.verified));
  visualUI.sync();
  syncDeck();syncSticky();
  applyLanguage();
@@ -164,7 +165,7 @@ async function verifyCode(code,{restoring=false}={}) {
   try{
    res=await fetch('/api/access',{method:'POST',headers:{'x-demo-code':code},signal:controller.signal});
    reply=await res.json().catch(()=>({}));
-  }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
+  }finally{clearTimeout(timer);}
   if(generation!==accessCheckGeneration)return false;
   if(res.ok && reply.ok===true && reply.access==='verified') {
    setCode(code);
@@ -335,8 +336,8 @@ async function api(endpoint,data,retried=false){
   :endpoint==='/api/localize'?(getLanguage()==='id'?'Muse Spark mencari area teks':'Muse Spark finding text bounds')
   :(getLanguage()==='id'?'Muse Spark memeriksa gambar':'Muse Spark checking image');
  const pulse=progressEndpoint?setInterval(()=>{
-  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+' detik');
- },4500):null;
+  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+(getLanguage()==='id'?' detik':' seconds'));
+ },1000):null;
  let r,result;
  try {
   const headers={'content-type':'application/json'};
@@ -346,7 +347,7 @@ async function api(endpoint,data,retried=false){
  }catch(e){
   if(e?.name==='AbortError')throw Error('Permintaan kedaluwarsa. Silakan coba lagi.');
   throw e;
- }finally{clearTimeout(timer);}
+ }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
  if(r.status===401||r.status===403){
   setCode('');
   setAccessStatus('Code rejected by AI endpoint','invalid');
@@ -460,10 +461,7 @@ function renderClaimEvidence(a, verified=false){
  }
 }
 
-function render(a,verified=false){
- ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
- ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
- ui.scoreRing.style.setProperty('--score',String(a.score)); ui.scoreValue.textContent=String(a.score);
+function renderAuditOverview(a,verified=false){
  // Compact, factual overview; full Meta prose stays available on demand
  // and in the saved audit. Scores/ledger/export decisions remain unchanged.
  ui.scoreHeadline.textContent=verified
@@ -480,6 +478,12 @@ function render(a,verified=false){
   ?`${observed} klaim tercatat · ${findings} temuan audit`
   :`${observed} claims recorded · ${findings} audit findings`)+(verificationStatus?' · '+verificationStatus:'');
  ui.scoreExplanationLabel.textContent=getLanguage()==='id'?'Lihat penjelasan AI':'Show AI explanation';
+}
+function render(a,verified=false){
+ ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
+ ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
+ ui.scoreRing.style.setProperty('--score',String(a.score)); ui.scoreValue.textContent=String(a.score);
+ renderAuditOverview(a,verified);
  const scoreChange=verified&&state.initialAudit
   ?(getLanguage()==='id'
     ?`Perubahan skor: ${a.score-state.initialAudit.score>=0?'+':''}${a.score-state.initialAudit.score}. Skor lebih tinggi BUKAN bukti gambar membaik.`
@@ -549,6 +553,10 @@ async function performAudit(image,verify=false){
      phase(3);
    }else{state.initialAudit=out.audit;state.captionRepair=out.audit.caption_repair||repairCaption({...state.context,original:state.context.caption});state.verified=null;state.repairReview=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.consistencyReview?.status==='validated'?(getLanguage()==='id'?'Validasi otomatis selesai. Revisi siap untuk penyiapan output.':'Automatic validation completed. Revision ready for output preparation.'):state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Export blocked.':'Validation incomplete. Candidate retained; export blocked.'):'AI audit completed.',verify&&state.consistencyReview?.status!=='validated');
+  workStep(verify?(getLanguage()==='id'?'Verifikasi selesai':'Verification completed'):(getLanguage()==='id'?'Audit selesai':'Audit completed'));
+ }catch(error){
+  workStep(verify?(getLanguage()==='id'?'Verifikasi belum selesai':'Verification incomplete'):(getLanguage()==='id'?'Audit belum selesai':'Audit incomplete'));
+  throw error;
  }finally{setBusy(false);}
 }
 async function validateCandidateImage(data){
