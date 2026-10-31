@@ -73,6 +73,48 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
    const print=await output.renderOutput(printSource.image,{category:'print',width:210,height:297,unit:'mm',ppi:150},{allowInterpolation:true,aiAdapted:true});
    return {proof,original:await imageBytes(original),revised:await imageBytes(revised),transitions,print:{metadata:print.metadata,bytes:[...new Uint8Array(await print.blob.arrayBuffer())]},source_dimensions:{width:source.naturalWidth,height:source.naturalHeight}};
   });
+  // Adversarial complex background: the image model changes EVERYTHING,
+  // including the bottle, while the source-pixel compositor must only accept
+  // the localized text patch. This checks decoded pixels, not AI assertions.
+  const complex=await page.evaluate(async()=>{
+    const {compositePlannedRegions,verifyLocalPixels}=await import('/output-system.js');
+    const c=document.createElement('canvas');c.width=600;c.height=600;
+    const x=c.getContext('2d');const g=x.createLinearGradient(0,0,600,600);
+    g.addColorStop(0,'#234931');g.addColorStop(.5,'#be9980');g.addColorStop(1,'#293d5b');
+    x.fillStyle=g;x.fillRect(0,0,600,600);
+    for(let j=0;j<90;j++){x.fillStyle='rgba(224,241,151,0.14)';x.beginPath();x.ellipse((j*117)%600,(j*139)%600,9+(j%5)*4,12+(j%7)*3,0,0,Math.PI*2);x.fill();}
+    x.fillStyle='#d1d2c4';x.fillRect(380,150,122,310);
+    x.fillStyle='#3d5349';x.fillRect(382,145,118,27);
+    x.font='bold 24px Arial';x.fillStyle='white';x.fillText('24 HOUR CLAIM',45,220);
+    const original=c.toDataURL('image/png');
+    x.fillStyle='#f30';x.fillRect(0,0,600,600); // intentionally destroys product+background
+    x.fillStyle='#dde2d3';x.fillRect(48,183,205,70);
+    x.font='18px Arial';x.fillStyle='#12372a';x.fillText('600 mL',52,222);
+    const candidate=c.toDataURL('image/png');
+    const plan={coverage:'complete',protected_regions:[{x:.61,y:.23,width:.26,height:.56}],
+      edits:[{before:'24 HOUR CLAIM',replacement:'600 mL',background:'complex',box:{x:.06,y:.29,width:.41,height:.15}}]};
+    const result=await compositePlannedRegions(original,candidate,plan);
+    const proof=await verifyLocalPixels(original,result.image,result.pixel_proof.rectangles);
+    const [a,b]=await Promise.all([original,result.image].map(async img=>{
+      const i=new Image();i.src=img;await i.decode();const canvas=document.createElement('canvas');canvas.width=600;canvas.height=600;const cx=canvas.getContext('2d');cx.drawImage(i,0,0);return cx.getImageData(0,0,600,600).data;
+    }));
+    let bottleDiff=0,borderDiff=0;
+    for(let y=150;y<460;y++)for(let xx=380;xx<502;xx++){
+      const k=(y*600+xx)*4;if(a[k]!==b[k]||a[k+1]!==b[k+1]||a[k+2]!==b[k+2])bottleDiff++;
+    }
+    for(let y=0;y<600;y++)for(let xx=0;xx<600;xx++){
+      const k=(y*600+xx)*4;if((y===0||xx===0||y===599||xx===599)&&(a[k]!==b[k]||a[k+1]!==b[k+1]||a[k+2]!==b[k+2]))borderDiff++;
+    }
+    let rejected=false;
+    try{await compositePlannedRegions(original,candidate,{...plan,edits:[{...plan.edits[0],box:{x:.63,y:.3,width:.19,height:.12}}]});}catch{rejected=true;}
+    return {proof,bottleDiff,borderDiff,rejected,method:result.method};
+  });
+  assert.equal(complex.proof.outside_changed_pixels,0);
+  assert.ok(complex.proof.inside_changed_pixels>0);
+  assert.equal(complex.bottleDiff,0);
+  assert.equal(complex.borderDiff,0);
+  assert.equal(complex.rejected,true);
+  assert.equal(complex.method,'feathered_text_regions_source_locked');
   assert.equal(checks.proof.outside_changed_pixels,0);assert.ok(checks.proof.inside_changed_pixels>0);
   await fs.writeFile(path.join(outDir,'luma-revised.png'),Buffer.from(checks.revised));
   for(const x of checks.transitions){assert.deepEqual(x.metadata.actual,{width:x.metadata.width,height:x.metadata.height});assert.equal(x.metadata.padding,'none');await fs.writeFile(path.join(outDir,`${x.from.replace(':','x')}-to-${x.to.replace(':','x')}.png`),Buffer.from(x.bytes));delete x.bytes;}
