@@ -8,7 +8,7 @@ export function outputPlan(source,options={}){
   if(![w,h,ppi].every(Number.isFinite)||w<=0||h<=0||ppi<72||ppi>600)throw Error('Invalid print size / Ukuran cetak tidak valid.');
   const mm=unit==='cm'?10:1;width=Math.round(w*mm/25.4*ppi);height=Math.round(h*mm/25.4*ppi);physical={width:w,height:h,unit,target_ppi:ppi};
  }else{
-  const idx=Number(options.preset);const preset=PRESETS[category][Number.isInteger(idx)?idx:0];if(!preset)throw Error('Invalid preset.');[width,height]=preset;
+  const idx=options.preset==null||options.preset===''?0:Number(options.preset);if(!Number.isInteger(idx))throw Error('Invalid preset.');const preset=PRESETS[category][idx];if(!preset)throw Error('Invalid preset.');[width,height]=preset;
  }
  if(width<1||height<1||width>8192||height>8192||width*height>32e6)throw Error('Output limit: 8192 px per side / 32 MP. Reduce size or PPI / Kurangi ukuran atau PPI.');
  if(!source||![source.width,source.height].every(n=>Number.isFinite(n)&&n>0))throw Error('Source dimensions unavailable / Dimensi sumber belum tersedia.');
