@@ -66,3 +66,14 @@ export function normalizeLocalPlan(plan,audit,facts){
   (!['Claim','Readability'].includes(i.category)||!edits.some(e=>norm(i.evidence).includes(norm(e.before))))))return null;
  return {version:REPAIR_VERSION,coverage:'complete',edits,protected_regions:protectedRegions};
 }
+
+
+// For a copy-only defect, never replace the whole photograph merely because
+// the first audit did not return coordinates. Run a bounded localization pass.
+export function isTextOnlyRepair(audit){
+ const issues=Array.isArray(audit?.issues)?audit.issues:[];
+ const claims=Array.isArray(audit?.claim_ledger)?audit.claim_ledger:[];
+ const bad=claims.filter(c=>c?.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment));
+ if(!bad.length||!issues.every(i=>['Claim','Readability'].includes(i?.category)))return false;
+ return issues.length>0;
+}

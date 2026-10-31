@@ -8,7 +8,7 @@ const initial={
   score:42,headline:'TEST unsupported ad claim',summary:'TEST FIXTURE',
   recommended_caption:'A desk light, 5 watts.',
   strengths:['Recognizable product'],
-  issues:[{title:'Unsupported savings',category:'Claim',severity:'high',evidence:'90% savings in creative',suggestion:'Remove unsupported claim'}],
+  issues:[{title:'Misaligned product label',category:'Visual',severity:'high',evidence:'Label placement does not match source',suggestion:'Correct the visibly misaligned label'}],
   checks:{claim:20,clarity:84,hierarchy:90,action:88},
   claim_ledger:[
     {claim:'LumaDesk Mini',origin:'creative',assessment:'supported_by_supplied_facts',fact_quote:'LumaDesk Mini',reason:'test',recommended_action:'Retain'},

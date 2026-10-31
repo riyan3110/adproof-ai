@@ -23,6 +23,9 @@
     },
     "api/access.mjs": {
       "maxDuration": 10
+    },
+    "api/localize.mjs": {
+      "maxDuration": 100
     }
   },
   "headers": [

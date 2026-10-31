@@ -73,6 +73,48 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
    const print=await output.renderOutput(printSource.image,{category:'print',width:210,height:297,unit:'mm',ppi:150},{allowInterpolation:true,aiAdapted:true});
    return {proof,original:await imageBytes(original),revised:await imageBytes(revised),transitions,print:{metadata:print.metadata,bytes:[...new Uint8Array(await print.blob.arrayBuffer())]},source_dimensions:{width:source.naturalWidth,height:source.naturalHeight}};
   });
+  // Adversarial complex background: the image model changes EVERYTHING,
+  // including the bottle, while the source-pixel compositor must only accept
+  // the localized text patch. This checks decoded pixels, not AI assertions.
+  const complex=await page.evaluate(async()=>{
+    const {compositePlannedRegions,verifyLocalPixels}=await import('/output-system.js');
+    const c=document.createElement('canvas');c.width=600;c.height=600;
+    const x=c.getContext('2d');const g=x.createLinearGradient(0,0,600,600);
+    g.addColorStop(0,'#234931');g.addColorStop(.5,'#be9980');g.addColorStop(1,'#293d5b');
+    x.fillStyle=g;x.fillRect(0,0,600,600);
+    for(let j=0;j<90;j++){x.fillStyle='rgba(224,241,151,0.14)';x.beginPath();x.ellipse((j*117)%600,(j*139)%600,9+(j%5)*4,12+(j%7)*3,0,0,Math.PI*2);x.fill();}
+    x.fillStyle='#d1d2c4';x.fillRect(380,150,122,310);
+    x.fillStyle='#3d5349';x.fillRect(382,145,118,27);
+    x.font='bold 24px Arial';x.fillStyle='white';x.fillText('24 HOUR CLAIM',45,220);
+    const original=c.toDataURL('image/png');
+    x.fillStyle='#f30';x.fillRect(0,0,600,600); // intentionally destroys product+background
+    x.fillStyle='#dde2d3';x.fillRect(48,183,205,70);
+    x.font='18px Arial';x.fillStyle='#12372a';x.fillText('600 mL',52,222);
+    const candidate=c.toDataURL('image/png');
+    const plan={coverage:'complete',protected_regions:[{x:.61,y:.23,width:.26,height:.56}],
+      edits:[{before:'24 HOUR CLAIM',replacement:'600 mL',background:'complex',box:{x:.06,y:.29,width:.41,height:.15}}]};
+    const result=await compositePlannedRegions(original,candidate,plan);
+    const proof=await verifyLocalPixels(original,result.image,result.pixel_proof.rectangles);
+    const [a,b]=await Promise.all([original,result.image].map(async img=>{
+      const i=new Image();i.src=img;await i.decode();const canvas=document.createElement('canvas');canvas.width=600;canvas.height=600;const cx=canvas.getContext('2d');cx.drawImage(i,0,0);return cx.getImageData(0,0,600,600).data;
+    }));
+    let bottleDiff=0,borderDiff=0;
+    for(let y=150;y<460;y++)for(let xx=380;xx<502;xx++){
+      const k=(y*600+xx)*4;if(a[k]!==b[k]||a[k+1]!==b[k+1]||a[k+2]!==b[k+2])bottleDiff++;
+    }
+    for(let y=0;y<600;y++)for(let xx=0;xx<600;xx++){
+      const k=(y*600+xx)*4;if((y===0||xx===0||y===599||xx===599)&&(a[k]!==b[k]||a[k+1]!==b[k+1]||a[k+2]!==b[k+2]))borderDiff++;
+    }
+    let rejected=false;
+    try{await compositePlannedRegions(original,candidate,{...plan,edits:[{...plan.edits[0],box:{x:.63,y:.3,width:.19,height:.12}}]});}catch{rejected=true;}
+    return {proof,bottleDiff,borderDiff,rejected,method:result.method};
+  });
+  assert.equal(complex.proof.outside_changed_pixels,0);
+  assert.ok(complex.proof.inside_changed_pixels>0);
+  assert.equal(complex.bottleDiff,0);
+  assert.equal(complex.borderDiff,0);
+  assert.equal(complex.rejected,true);
+  assert.equal(complex.method,'feathered_text_regions_source_locked');
   assert.equal(checks.proof.outside_changed_pixels,0);assert.ok(checks.proof.inside_changed_pixels>0);
   await fs.writeFile(path.join(outDir,'luma-revised.png'),Buffer.from(checks.revised));
   for(const x of checks.transitions){assert.deepEqual(x.metadata.actual,{width:x.metadata.width,height:x.metadata.height});assert.equal(x.metadata.padding,'none');await fs.writeFile(path.join(outDir,`${x.from.replace(':','x')}-to-${x.to.replace(':','x')}.png`),Buffer.from(x.bytes));delete x.bytes;}
@@ -95,6 +137,70 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   },'data:image/png;base64,'+actual.toString('base64'));
   assert.equal(exportedPixels.preview_matches_export,true);assert.equal(exportedPixels.all_opaque,true);checks.exportedPixels=exportedPixels;
   assert.equal(imageCalls,0);assert.equal(audits,3,'one re-audit for extension, no new image generation');
+  // End-to-end: no localized box in the first audit. The actual Studio
+  // requests a bounded Spark localization, then a Muse candidate, and
+  // automatically re-audits. A deliberately destroyed full-frame candidate
+  // must not replace source pixels around the text.
+  const fresh=await browser.newContext({viewport:{width:1200,height:900}});
+  const complexPage=await fresh.newPage();
+  let locCalls=0,editCalls=0,complexAudits=0;
+  const allText=['DINGIN HINGGA 24 JAM','ARUNA','600 mL'];
+  const complexPlan={coverage:'complete',protected_regions:[{x:.62,y:.2,width:.3,height:.58}],
+    edits:[{before:'DINGIN HINGGA 24 JAM',replacement:'',background:'complex',box:{x:.07,y:.30,width:.44,height:.16}}]};
+  const firstAudit={score:30,headline:'MOCK initial',summary:'TEST ONLY',checks:{claim:30,clarity:70,hierarchy:70,action:70},
+    issues:[{category:'Claim',severity:'high',title:'Unsupported temperature duration',evidence:'DINGIN HINGGA 24 JAM',suggestion:'Remove duration'}],
+    claim_ledger:[{origin:'creative',claim:'DINGIN HINGGA 24 JAM',assessment:'unsupported_by_supplied_facts',recommended_action:'Remove duration'}],
+    text_inventory:inventory(allText),local_text_repair:null};
+  const subsequent={...firstAudit,score:80,headline:'MOCK localized re-audit',issues:[],claim_ledger:[],
+    text_inventory:inventory(['ARUNA','600 mL']),
+    consistency:{original_text:inventory(allText),revised_text:inventory(['ARUNA','600 mL']),
+      changed_text:[],new_claims:[],visual:{}}};
+  await complexPage.route('**/api/health',r=>r.fulfill({json:{ok:true,configured:true,demoGate:false}}));
+  await complexPage.route('**/api/localize',r=>{locCalls++;return r.fulfill({json:{plan:complexPlan,model:'MOCK Spark localization',tokens:0,requires_manual_region:false}});});
+  await complexPage.route('**/api/audit',r=>{complexAudits++;const comparison=!!r.request().postDataJSON().referenceImage;
+    return r.fulfill({json:{audit:comparison?subsequent:firstAudit,model:'MOCK Spark audit',original_reference_sent:comparison,report_language:'id'}});});
+  let damagedCandidate='';
+  await complexPage.route('**/api/improve',r=>{editCalls++;return r.fulfill({json:{image:damagedCandidate,model:'MOCK damaged Muse output',repair_metadata:{method:'mock_full_frame_distortion'}}});});
+  await complexPage.goto('http://127.0.0.1:3000/app');
+  const sources=await complexPage.evaluate(()=>{
+    const c=document.createElement('canvas');c.width=500;c.height=500;const x=c.getContext('2d');
+    const grad=x.createLinearGradient(0,0,500,500);grad.addColorStop(0,'#123927');grad.addColorStop(.5,'#82977d');grad.addColorStop(1,'#284a3d');
+    x.fillStyle=grad;x.fillRect(0,0,500,500);
+    for(let i=0;i<100;i++){x.fillStyle='rgba(226,255,215,.1)';x.beginPath();x.arc((i*109)%500,(i*79)%500,8+(i%13),0,Math.PI*2);x.fill();}
+    x.fillStyle='#dedfd3';x.fillRect(330,120,110,300);
+    x.fillStyle='#24382a';x.fillRect(332,104,106,25);
+    x.fillStyle='white';x.font='bold 18px Arial';x.fillText('DINGIN HINGGA 24 JAM',45,192);
+    const original=c.toDataURL('image/png');
+    x.fillStyle='#ff2712';x.fillRect(0,0,500,500);
+    const damaged=c.toDataURL('image/png');
+    return {original,damaged};
+  });
+  damagedCandidate=sources.damaged;
+  await complexPage.locator('#fileInput').setInputFiles({name:'complex-ad.png',mimeType:'image/png',buffer:Buffer.from(sources.original.split(',')[1],'base64')});
+  await complexPage.locator('#product').fill('ARUNA');
+  await complexPage.locator('#facts').fill('ARUNA is a stainless steel bottle with 600 mL capacity and screw cap.');
+  await complexPage.locator('#auditButton').click();
+  await complexPage.waitForFunction(()=>document.querySelector('#refineButton')&&!document.querySelector('#refineButton').disabled);
+  await complexPage.locator('#refineButton').click();
+  await complexPage.waitForFunction(()=>document.querySelector('#repairJourney')?.dataset.phase==='passed');
+  const restored=await complexPage.evaluate(async()=>{
+    const {verifyLocalPixels}=await import('/output-system.js');
+    const a=document.querySelector('#compareBefore').src,b=document.querySelector('#compareAfter').src;
+    const proof=await verifyLocalPixels(a,b,[{x:35,y:150,width:220,height:80}]);
+    const decoded=async url=>{const img=new Image();img.src=url;await img.decode();const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);return x.getImageData(0,0,c.width,c.height).data;};
+    const [x,y]=await Promise.all([decoded(a),decoded(b)]);let protectedDiff=0;
+    for(let py=120;py<420;py++)for(let px=330;px<440;px++){
+      const i=(py*500+px)*4;if(x[i]!==y[i]||x[i+1]!==y[i+1]||x[i+2]!==y[i+2])protectedDiff++;
+    }
+    return {proof,protectedDiff};
+  });
+  assert.equal(locCalls,1);assert.equal(editCalls,1);assert.equal(complexAudits,2);
+  assert.equal(restored.proof.outside_changed_pixels,0);
+  assert.ok(restored.proof.inside_changed_pixels>0);
+  assert.equal(restored.protectedDiff,0);
+  await fs.writeFile(path.join(outDir,'complex-source-pixel-lock-proof.json'),JSON.stringify({evidence_type:'real_chromium_pixels_with_mock_meta_reports',locCalls,editCalls,complexAudits,...restored},null,2));
+  await fresh.close();
+
   assert.deepEqual(errors,[]);
   const caption=await page.locator('#suggestedCaption').textContent();
   await fs.writeFile(path.join(outDir,'caption.txt'),caption);

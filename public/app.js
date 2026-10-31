@@ -7,7 +7,7 @@ import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
 import {isClearlySubjectiveSlogan} from './claim-engine.js';
 import {describeRepairNotice} from './repair-notice.js';
 import {repairJourney} from './repair-journey.js';
-import {repairCaption,reviewRepairedCaption} from './factual-repair.js';
+import {repairCaption,reviewRepairedCaption,isTextOnlyRepair} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 import {storeRecovery,retrieveRecovery,removeRecovery} from './local-recovery.js';
@@ -649,6 +649,23 @@ async function performImprove(){
  setBusy(true,'Refining…');
  try{
   const repairSettings=visualUI.readSettings();
+  // The first audit may have found the unsupported copy but omitted accurate
+  // bounds. For copy-only defects, request Spark localization rather than
+  // letting an unmasked Muse Image edit redraw the product or entire scene.
+  if(!repairSettings.region&&!state.initialAudit.local_text_repair&&isTextOnlyRepair(state.initialAudit)){
+   const localized=await api('/api/localize',{...payload(state.original),audit:{
+    issues:state.initialAudit.issues,claim_ledger:state.initialAudit.claim_ledger,
+    text_inventory:state.initialAudit.text_inventory}});
+   state.runs.push({stage:'localize',model:localized.model,tokens:localized.tokens,provenance:localized.provenance||null});
+   if(!localized.plan){
+    await persistMilestone();
+    throw Error(getLanguage()==='id'
+      ?'AI belum bisa menemukan area teks yang aman. Buka "Batasi area perbaikan", pilih kotak yang hanya mencakup teks salah tanpa produk/logo, lalu klik Perbaiki lagi. Gambar asli tidak diubah.'
+      :'AI could not locate a safe text box. Open "Target a repair area", set the rectangle over wrong copy only (not product/logo), then press Repair again. Original retained.');
+   }
+   state.initialAudit.local_text_repair=localized.plan;
+   await persistMilestone();
+  }
   const local=!repairSettings.region&&await repairTextLocally(state.original,state.initialAudit.local_text_repair);
   const out=local?{image:local.image,model:'deterministic-source-pixel-repair',repair_metadata:{local_repair:local,method:local.method},provenance:null}:await api('/api/improve',{...payload(state.original),consistency:repairSettings,issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
   if(local)delete out.repair_metadata.local_repair.image;
@@ -657,7 +674,7 @@ async function performImprove(){
    if(composed.pixel_proof)out.repair_metadata={...out.repair_metadata,local_repair:{...composed,image:undefined}};
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
    out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=!local;updateMetaStatus();
-  state.verified=null;state.repairReview=null;state.autoCorrection=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
+  state.verified=null;state.repairReview=null;state.autoCorrection=null;state.runs=state.runs.filter(r=>['initial','archive_baseline','localize'].includes(r.stage));state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
  }finally{setBusy(false);}
  // One user-initiated Repair includes ONE independent Spark re-audit.
  // Do not silently regenerate more paid images. If verification fails, the

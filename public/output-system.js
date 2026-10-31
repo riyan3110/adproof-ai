@@ -115,19 +115,44 @@ export async function repairTextLocally(original,plan){
  if(!proof.verified)return null;
  return {image,method:'source_pixels_with_deterministic_text',local_plan:plan,pixel_proof:proof};
 }
+// Muse Image edits the whole image: never paste that full candidate for a
+// localized text correction. Use exact original source pixels everywhere
+// outside independently localized rectangles. Feather only INSIDE each patch,
+// so exterior/product/logo/source pixels remain byte-for-byte identical.
+function softPatch(ctx,candidate,x,y,w,h,srcBox){
+ const patch=canvas(w,h);
+ patch.ctx.drawImage(candidate,srcBox.x,srcBox.y,srcBox.width,srcBox.height,0,0,w,h);
+ const src=ctx.getImageData(x,y,w,h),out=patch.ctx.getImageData(0,0,w,h);
+ const margin=Math.max(1,Math.min(8,Math.floor(Math.min(w,h)/8)));
+ for(let py=0;py<h;py++)for(let px=0;px<w;px++){
+  const d=Math.min(px,py,w-1-px,h-1-py);
+  const alpha=Math.min(1,Math.max(0,d/margin));
+  const i=(py*w+px)*4;
+  for(let k=0;k<4;k++)out.data[i+k]=Math.round(src.data[i+k]*(1-alpha)+out.data[i+k]*alpha);
+ }
+ ctx.putImageData(out,x,y);
+}
 export async function compositePlannedRegions(original,candidate,plan){
+ if(!plan?.edits?.length||!plan?.protected_regions?.length)throw Error('Validated text and product rectangles are required.');
  const [a,b]=await Promise.all([decodeImage(original),decodeImage(candidate)]);
  if(Math.abs((a.naturalWidth/a.naturalHeight)/(b.naturalWidth/b.naturalHeight)-1)>.01)throw Error('Localized repair changed canvas geometry; candidate blocked.');
- const {c,ctx}=canvas(a.naturalWidth,a.naturalHeight);ctx.drawImage(a,0,0);const rectangles=[];
+ const {c,ctx}=canvas(a.naturalWidth,a.naturalHeight);ctx.drawImage(a,0,0);
+ const rectangles=[];
  for(const edit of plan.edits){
-  const r=edit.box,x=Math.floor(r.x*c.width),y=Math.floor(r.y*c.height),w=Math.min(c.width-x,Math.ceil(r.width*c.width)),h=Math.min(c.height-y,Math.ceil(r.height*c.height));
-  ctx.drawImage(b,x/c.width*b.naturalWidth,y/c.height*b.naturalHeight,w/c.width*b.naturalWidth,h/c.height*b.naturalHeight,x,y,w,h);
+  const r=edit.box;
+  if(!r||!['x','y','width','height'].every(k=>Number.isFinite(r[k]))||r.x<0||r.y<0||r.width<=0||r.height<=0||r.x+r.width>1||r.y+r.height>1)throw Error('Invalid localized text bounds.');
+  if(plan.protected_regions.some(p=>p&&r.x<p.x+p.width&&r.x+r.width>p.x&&r.y<p.y+p.height&&r.y+r.height>p.y))throw Error('Text area overlaps a protected product or logo.');
+  const x=Math.floor(r.x*c.width),y=Math.floor(r.y*c.height),w=Math.min(c.width-x,Math.ceil(r.width*c.width)),h=Math.min(c.height-y,Math.ceil(r.height*c.height));
+  if(w<8||h<8||rectangles.some(p=>x<p.x+p.width&&x+w>p.x&&y<p.y+p.height&&y+h>p.y))throw Error('Invalid or overlapping image edit areas.');
+  softPatch(ctx,b,x,y,w,h,{x:r.x*b.naturalWidth,y:r.y*b.naturalHeight,width:r.width*b.naturalWidth,height:r.height*b.naturalHeight});
   rectangles.push({x,y,width:w,height:h});
  }
  const image=c.toDataURL('image/png'),proof=await verifyLocalPixels(original,image,rectangles);
  if(!proof.verified)throw Error('Localized candidate did not produce a measurable source-bound correction.');
- return {image,method:'generated_text_regions_composited_into_original',local_plan:plan,pixel_proof:proof};
+ return {image,method:'feathered_text_regions_source_locked',local_plan:plan,pixel_proof:proof,
+   limitations:['All original decoded pixels outside the bounded text regions are retained. Inside text areas are model-generated and must pass independent re-audit.']};
 }
+
 // Seamless extension is permitted only for a measured flat source background.
 // Every original pixel remains inside the composition with uniform scaling.
 // This does not synthesize native detail or authorize an unsafe creative.
