@@ -5,6 +5,7 @@ import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate} from './repair-guard.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
+import {storeRecovery,retrieveRecovery,removeRecovery} from './local-recovery.js';
 import {loadPreference,setPreference,getPreference,getLanguage,t,applyLanguage,observeDynamicLabels,onBrowserLanguageChange} from './i18n.js';
 const $ = (selector) => document.querySelector(selector);
 const ui = {
@@ -16,6 +17,7 @@ const ui = {
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
+  recoveryBar:$('#localRecoveryBar'),recoveryText:$('#localRecoveryText'),recoveryClear:$('#clearLocalRecovery'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
@@ -23,6 +25,55 @@ loadPreference();
 const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
 let toastTimer=null;
+
+// Persist completed milestones in THIS browser only, never the access code.
+// Serializing writes prevents a late old save from resurrecting an invalidated
+// session after a new upload, changed facts or user-requested clear.
+let recoveryQueue=Promise.resolve();
+let recoveryVersion=0;
+function setRecoveryStatus(message,warning=false){
+ ui.recoveryBar.hidden=false;
+ ui.recoveryBar.dataset.warning=String(warning);
+ ui.recoveryText.textContent=message;
+}
+async function persistMilestone(){
+ if(!state.original||!state.initialAudit||state.imported)return;
+ const snapshot={report:reportSnapshot(),original:state.original,revised:state.revised||null,history:state.history||[]};
+ const version=recoveryVersion;
+ recoveryQueue=recoveryQueue.catch(()=>{}).then(async()=>{
+  if(version!==recoveryVersion)return;
+  try{
+   await storeRecovery(snapshot);
+   if(version===recoveryVersion)setRecoveryStatus('Local recovery saved on this device. No Meta call; use Export ZIP for a separate backup.');
+  }catch{
+   if(version===recoveryVersion)setRecoveryStatus('Local autosave unavailable on this device. Export ZIP now to protect this audit.',true);
+  }
+ });
+ await recoveryQueue;
+}
+function forgetMilestone(){
+ recoveryVersion++;
+ recoveryQueue=recoveryQueue.catch(()=>{}).then(async()=>{
+  try{await removeRecovery();}catch{setRecoveryStatus('Unable to clear local browser recovery. Clear website storage in browser settings.',true);}
+ });
+ return recoveryQueue;
+}
+async function recoverMilestone(){
+ try{
+  const snapshot=await retrieveRecovery();
+  if(!snapshot||state.original||state.importing||ui.product.value.trim()||ui.facts.value.trim())return;
+  restoreAuditSnapshot({...snapshot,hasImages:true},{resumeLive:true});
+  setRecoveryStatus('Recovered the last completed audit/repair from this browser. No Meta request was made. Review the images and export ZIP.');
+ }catch{
+  // IndexedDB may be unavailable in private mode; keep the normal Studio usable.
+ }
+}
+ui.recoveryClear.addEventListener('click',async()=>{
+ await forgetMilestone();
+ if(ui.recoveryBar.dataset.warning!=='true')ui.recoveryBar.hidden=true;
+ notify('Local recovery backup cleared. The current open Studio session remains visible.');
+});
+
 function renderSavedLanguageNotice(){
  if(!state.imported){ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';return;}
  const saved=state.reportLanguage;
@@ -275,7 +326,7 @@ async function compactOriginalReference(dataUrl){
   }
   throw Error('Referensi gambar asli terlalu besar untuk pemeriksaan. Gunakan gambar sumber yang lebih kecil.');
 }
-async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();state.original=data;
+async function upload(file){if(state.busy||state.importing)return;try{const data=await prepareImage(file);resetAudit();await forgetMilestone();ui.recoveryBar.hidden=true;state.original=data;
  if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
  state.fullOriginalURL=URL.createObjectURL(file);
  state.uploadDimensions=await dimensions(state.fullOriginalURL);
@@ -387,7 +438,7 @@ async function performAudit(image,verify=false){
      visualUI.clear();
      phase(3);
    }else{state.initialAudit=out.audit;state.verified=null;state.repairReview=null;phase(1);}
-  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
  }finally{setBusy(false);}
 }
 async function validateCandidateImage(data){
@@ -444,11 +495,11 @@ async function performImprove(){
    const composed=await compositeRegion(state.original,out.image,repairSettings.region);
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
    out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=true;updateMetaStatus();
-  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
+  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
  }finally{setBusy(false);}
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
-for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
+for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){void forgetMilestone();ui.recoveryBar.hidden=true;resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
 ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy||state.imported)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
 ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){notify(e.message,true);}});
 ui.verify.addEventListener('click',async()=>{if(state.busy||state.imported||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
@@ -468,7 +519,7 @@ function reportSnapshot(){
  report.archive_history=(state.history||[]).map(round=>({from:round.from,report:round.report}));
  return report;
 }
-function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
+function restoreAuditSnapshot({report,original,revised,history=[],hasImages},{resumeLive=false}={}){
  // Validation/parsing and ZIP integrity checks are complete BEFORE modifying
  // the current session. No API call, re-scoring or remote verification here.
  state.original=null;resetAudit();
@@ -486,37 +537,39 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  visualUI.restore(report.visual_consistency?.settings,report.visual_consistency?.output_requested);
  state.outputActual=report.visual_consistency?.output_actual||null;state.uploadDimensions=report.visual_consistency?.upload_dimensions||null;state.sourceDimensions=report.visual_consistency?.source_dimensions||null;
  state.runs=report.runs||[];state.formatHistory=report.visual_consistency?.format_history||[];
- state.archivedReport=report;
+ state.archivedReport=resumeLive?null:report;
  state.reportLanguage=report.report_language||'und';
- state.imported=true;
+ state.imported=!resumeLive;
  state.continuedFrom=null;
  state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
  updateMetaStatus(); // saved model output is NOT a new verified Meta call
  ui.product.value=report.context.product;
  ui.facts.value=report.context.facts;
  ui.caption.value=report.context.caption;
- for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=true;
+ for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=!resumeLive;
  ui.originalTab.disabled=!state.original;
  ui.revisedTab.disabled=!state.revised;
  ui.compareTab.disabled=!(state.original&&state.revised);
  ui.replace.disabled=false;
- ui.name.textContent=hasImages?'ORIGINAL IMAGE · SAVED ARCHIVE':'AUDIT JSON · IMAGES NOT INCLUDED';
+ ui.name.textContent=resumeLive?'RECOVERED LOCAL SOURCE':hasImages?'ORIGINAL IMAGE · SAVED ARCHIVE':'AUDIT JSON · IMAGES NOT INCLUDED';
  ui.archiveNotice.hidden=false;
  renderSavedLanguageNotice();
- ui.archiveNotice.textContent=hasImages
+ ui.archiveNotice.textContent=resumeLive
+   ? 'LOCAL RECOVERY · Last completed Studio milestone restored without Meta API calls. The original upload file handle is not retained; saved source image and revision are recovered. Review and export ZIP. Never assume previously pending requests completed.'
+   :hasImages
    ? 'IMPORTED ARCHIVE · READ ONLY UNTIL YOU CHOOSE A SOURCE. Select Repair original or Repair revised below to continue using the saved audit (no repeat initial audit). No Meta AI call was made on import. Saved report is not independently authenticated.'
    : 'IMPORTED JSON · READ ONLY. Claim DNA and proof records restored, but the old JSON contains NO original/revised pixels. Continue editing requires ZIP with images; cannot invent missing pixels. No Meta AI call was made.';
- phase(state.verified?3:1);
+ phase(state.verified?3:state.revised?2:1);
  render(state.audit,Boolean(state.verified));
  renderProofStudio({before:state.initialAudit,after:state.verified,
   facts:state.context.facts,caption:state.context.caption,
   originalImage:state.original,revisedImage:state.revised,
   onInspect:stage=>{if(state.original)switchView(stage==='revised'&&state.revised?'revised':'original');}});
- switchView(state.original&&state.revised&&state.verified?'compare':'original');
+ switchView(state.original&&state.revised?'compare':'original');
  selectReportView('claims');
  activateProofView(state.verified?'evolution':'xray');
  syncDeck();syncSticky();
- notify(hasImages?'Saved archive restored. No paid model request.':'Saved JSON restored without images. No paid model request.');
+ notify(resumeLive?'Browser session recovered from local device storage. No paid Meta request.':hasImages?'Saved archive restored. No paid model request.':'Saved JSON restored without images. No paid model request.');
 }
 // Explicit continuation preserves the whole imported round and all older
 // rounds as evidence before any changes. No inference is performed here.
@@ -554,6 +607,7 @@ function continueArchivedAudit(from){
   originalImage:state.original,revisedImage:null,onInspect:()=>switchView('original')});
  phase(1);switchView('original');selectReportView('claims');activateProofView('xray');
  syncDeck();syncSticky();
+ void persistMilestone();
  notify('Saved '+from+' audit reused. No new API request. Review issues, then press Repair when ready.');
 }
 ui.continueOriginal.addEventListener('click',()=>continueArchivedAudit('original'));
@@ -581,6 +635,7 @@ ui.importReportInput.addEventListener('change',async()=>{
  state.importing=true;syncDeck();
  try{
   const archive=await openAuditFile(file);
+  await forgetMilestone();ui.recoveryBar.hidden=true;
   restoreAuditSnapshot(archive);
  }catch(e){notify('Impor tidak berhasil: '+e.message,true);}
  finally{state.importing=false;syncDeck();}
@@ -639,3 +694,6 @@ onBrowserLanguageChange(()=>applySelectedLanguage());
 applySelectedLanguage();
 observeDynamicLabels();
 syncDeck();syncSticky();
+// Restore only after the initial UI is initialized. Recovery never calls /api/audit
+// or /api/improve and never repeats a possibly charged request.
+void recoverMilestone();
