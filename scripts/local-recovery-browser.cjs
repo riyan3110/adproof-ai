@@ -86,7 +86,7 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.locator('#compareView').waitFor({state:'visible'});
   // Automatic re-audit starts after Repair, but this first attempt fails.
   // The already charged-looking image MUST remain saved for retry.
-  await page.locator('#toast').filter({hasText:'Verifikasi otomatis gagal'}).waitFor({timeout:20000});
+  await page.locator('#toast').filter({hasText:'Verifikasi otomatis tidak tersedia'}).waitFor({timeout:20000});
   await page.waitForFunction(async()=>{
     const req=indexedDB.open('adproof-studio-recovery-v1');
     return await new Promise(resolve=>{
