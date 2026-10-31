@@ -28,6 +28,29 @@ or masquerade as a Meta Muse Code contribution.
 5. Review the diff, CI and test coverage. A PR is **not** proof of working
    image repair. Merge only once it is safe to ship.
 
+## Continue Work from the SAME Issue #37
+
+You do **not** need to create another Issue. From GitHub Mobile, open
+[Issue #37](https://github.com/riyan3110/adproof-ai/issues/37) and add a new
+owner-authored comment beginning with `[baseten] `. Each new qualifying
+comment triggers **one additional, potentially charged** coding run, starting
+from the latest **merged main** (not an unmerged draft PR). Do not repeat a
+comment just because the GitHub UI takes time to update.
+
+Suggested sequence (one comment per step; review and merge the previous PR
+only if safe before proceeding):
+
+1. `[baseten] Audit remaining real bugs and update a truthful hackathon readiness checklist. Review latest PRs and production evidence. Keep PASS, FAIL, and BLOCKED distinct. Make only small code/test fixes supported by evidence.`
+2. `[baseten] Investigate visual consistency and image output regression gaps from the latest README and docs. Improve deterministic source safeguards and tests only; do not claim model fidelity from mocks. Produce a review-only PR.`
+3. `[baseten] Prepare FINAL-HACKATHON-READINESS.md with grounded PASS/FAIL/BLOCKED evidence, precise remaining live Meta/browser test steps, honest risks, and no invented provider results.`
+
+**Important:** Aider's GitHub runner can edit code, run Node tests, and propose PRs,
+but this workflow does **not** independently operate an authenticated production
+browser, call Meta Muse Image, generate original screen recordings, or submit the
+hackathon. Actual live Meta/image/judge checks remain separate and must be
+performed and evidenced before READY status. Baseten credits pay for AI coding,
+not for ChatGPT Work or Meta Image.
+
 ## Guardrails and limits
 
 - The model is exactly `meta-models/muse-spark-open-1026` as granted by the
