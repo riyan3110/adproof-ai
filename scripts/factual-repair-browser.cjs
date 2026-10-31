@@ -35,8 +35,9 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   assert.equal(await page.locator('#repairJourneyButton').getAttribute('data-action'),'repair');
   assert.match(await page.locator('#suggestedCaption').textContent(),/Power consumption: 5 watts/);
   assert.doesNotMatch(await page.locator('#suggestedCaption').textContent(),/Efficient|Saves 90|protects eyes/);
-  await page.locator('#refineButton').click();
+  await page.locator('#repairJourneyButton').click();
   await page.waitForFunction(()=>document.querySelector('#consistencyResult h3')?.textContent.includes('Consistency validated'));
+  await page.waitForFunction(()=>document.querySelector('#repairJourney')?.dataset.phase==='passed');
   assert.equal(await page.locator('#repairJourney').getAttribute('data-phase'),'passed');
   assert.equal(await page.locator('#repairJourneyButton').getAttribute('data-action'),'compare');
   assert.equal(audits,2);assert.equal(imageCalls,0);
