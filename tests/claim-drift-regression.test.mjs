@@ -36,7 +36,8 @@ test('model eight-claim cap cannot erase image performance words surfaced only b
 });
 test('numeric power, neutral warm white and USB 5V facts do not themselves trigger unsupported performance',()=>{
  assert.deepEqual(unverifiedPerformanceText(['5 Watts Power','Warm White 3000K','USB 5V'],facts),[]);
- assert.equal(inspectConsistency(before,after(['5 Watts Power','Warm White 3000K','USB 5V']),{},null,facts).status,'review_required');
+ const r=inspectConsistency(before,after(['5 Watts Power','Warm White 3000K','USB 5V']),{},null,facts);
+ assert.equal(r.risks.some(x=>x.code==='unsupported_performance_copy'),false,'ordinary specifications should not be interpreted as efficiency claims');
 });
 test('positive explicit supplier efficiency statement does not count as third-party proof but can avoid unsupported warning',()=>{
  assert.deepEqual(unverifiedPerformanceText(['Energy efficient LED'], 'The lamp is energy efficient; seller-supplied assertion.'),[]);
