@@ -63,11 +63,15 @@ const audit={score:80,headline:'TEST FIXTURE',summary:'Synthetic browser regress
    const activeIntervals=await page.evaluate(()=>window.__testActiveIntervals.size);
    assert.equal(activeIntervals,0,'no progress timer may survive a completed request');
    assert.equal(auditCalls,1,'no duplicate model request');
-   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
-   assert.equal(overflow,false,'no horizontal overflow');
-   assert.deepEqual(errors,[]);
+   const layout=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+    outside:[...document.querySelectorAll('body *')].filter(el=>{
+     const b=el.getBoundingClientRect();return b.width&&b.height&&b.right>innerWidth+1;
+    }).map(el=>({tag:el.tagName,id:el.id,className:el.className,right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width})).slice(0,25)}));
+   const overflow=layout.scrollWidth>width+1;
    await page.screenshot({path:path.join(artifactDir,`studio-${width}.png`),fullPage:true});
-   report.cases.push({width,accessChecks,auditCalls,activeIntervals,overflow,pageErrors:errors,status:'passed'});
+   report.cases.push({width,accessChecks,auditCalls,activeIntervals,overflow,layout,pageErrors:errors,status:overflow?'failed':'passed'});
+   assert.equal(overflow,false,'no horizontal overflow: '+JSON.stringify(layout));
+   assert.deepEqual(errors,[]);
    await context.close();
   }
  }finally{

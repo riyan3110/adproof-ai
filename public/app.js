@@ -98,6 +98,7 @@ function renderSavedLanguageNotice(){
 }
 function applySelectedLanguage(){
  refreshProofLanguage();
+ if(state.audit)renderAuditOverview(state.audit,Boolean(state.verified));
  visualUI.sync();
  syncDeck();syncSticky();
  applyLanguage();
@@ -460,10 +461,7 @@ function renderClaimEvidence(a, verified=false){
  }
 }
 
-function render(a,verified=false){
- ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
- ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
- ui.scoreRing.style.setProperty('--score',String(a.score)); ui.scoreValue.textContent=String(a.score);
+function renderAuditOverview(a,verified=false){
  // Compact, factual overview; full Meta prose stays available on demand
  // and in the saved audit. Scores/ledger/export decisions remain unchanged.
  ui.scoreHeadline.textContent=verified
@@ -480,6 +478,12 @@ function render(a,verified=false){
   ?`${observed} klaim tercatat · ${findings} temuan audit`
   :`${observed} claims recorded · ${findings} audit findings`)+(verificationStatus?' · '+verificationStatus:'');
  ui.scoreExplanationLabel.textContent=getLanguage()==='id'?'Lihat penjelasan AI':'Show AI explanation';
+}
+function render(a,verified=false){
+ ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
+ ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
+ ui.scoreRing.style.setProperty('--score',String(a.score)); ui.scoreValue.textContent=String(a.score);
+ renderAuditOverview(a,verified);
  const scoreChange=verified&&state.initialAudit
   ?(getLanguage()==='id'
     ?`Perubahan skor: ${a.score-state.initialAudit.score>=0?'+':''}${a.score-state.initialAudit.score}. Skor lebih tinggi BUKAN bukti gambar membaik.`

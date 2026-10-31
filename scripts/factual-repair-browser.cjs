@@ -85,7 +85,10 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
     for(let i=0;i<50;i++){ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fillRect((i*83)%600,(i*67)%600,15,15);}
     ctx.fillStyle='#deded2';ctx.fillRect(390,110,140,370);
     ctx.fillStyle='#f4dda1';ctx.fillRect(24,230,320,100);
-    ctx.font='bold 24px Arial';ctx.fillStyle='#152b23';ctx.fillText('DINGIN HINGGA 24 JAM',39,282);
+    // Keep the source glyphs inside the badge with a real background margin.
+    // At 24px Linux Arial fallback touches its right edge, correctly failing
+    // the production perimeter check. Do not weaken that pixel protection.
+    ctx.font='bold 20px Arial';ctx.fillStyle='#152b23';ctx.fillText('DINGIN HINGGA 24 JAM',39,282);
     const original=c.toDataURL('image/png');
     const plan={edits:[{background:'complex',before:'DINGIN HINGGA 24 JAM',
       replacement:'STAINLESS STEEL 600 mL TUTUP ULIR',

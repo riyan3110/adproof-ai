@@ -505,6 +505,8 @@ button:disabled{cursor:not-allowed;opacity:.42}
   .studio-body .dropzone{height:460px;min-height:430px}
 }
 @media(max-width:1080px){
+  .studio-body .studio-nav{height:auto;min-height:76px;gap:16px;padding-top:10px;padding-bottom:10px}
+  .studio-body .studio-actions{flex:1 1 0;min-width:0;flex-wrap:wrap;justify-content:flex-end;gap:8px 12px}
   .studio-body .studio-shell{grid-template-columns:minmax(0,1fr);gap:21px}
   .studio-body .engine-rail{position:static;min-height:0;padding:13px;background:var(--proof-ink)}
   .studio-body .engine-rail .deck-heading{padding:3px 6px 12px}

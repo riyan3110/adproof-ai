@@ -13,8 +13,10 @@ on:
       - 'public/local-recovery.js'
       - 'public/i18n.js'
       - 'public/styles.css'
+      - 'public/studio.css'
       - 'scripts/local-recovery-browser.cjs'
       - 'scripts/request-lifecycle-browser.cjs'
+      - 'scripts/i18n-smoke.cjs'
       - '.github/workflows/local-recovery-check.yml'
   workflow_dispatch:
 
@@ -64,6 +66,8 @@ jobs:
           retention-days: 7
       - name: Test recovery without paid provider calls
         run: node scripts/local-recovery-browser.cjs
+      - name: Test automatic language and unchanged report evidence at six widths (MOCK Meta)
+        run: node scripts/i18n-smoke.cjs
       - name: Upload safe diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
