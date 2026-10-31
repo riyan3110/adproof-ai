@@ -126,7 +126,7 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.reload();
   await page.locator('#archiveRestoreNotice').filter({hasText:'LOCAL RECOVERY'}).waitFor();
   assert.equal(await page.locator('#scoreValue').textContent(),'83');
-  assert.equal(await page.locator('#verifyButton').isDisabled(),true);
+  assert.equal(await page.locator('#verifyButton').isDisabled(),false,'an incomplete recovered comparison may be explicitly rechecked; recovery itself never repeats Meta');
   assert.equal(audits,3,'recovered verified result must not call Meta again');
   assert.equal(repairs,1);
   // User-controlled deletion must stop future automatic restore.
@@ -158,7 +158,7 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.locator('#auditPhase').filter({hasText:'RE-CHECK COMPLETE'}).waitFor({timeout:25000});
   assert.equal(audits,5,'one initial audit, one automatic verification per successful Repair; no duplicate');
   assert.equal(repairs,2,'only one image request per Repair click');
-  assert.equal(await page.locator('#verifyButton').isDisabled(),true,'automatic Verify completed');
+  assert.equal(await page.locator('#verifyButton').isDisabled(),false,'automatic Verify responded; its incomplete fixture evidence can be explicitly rechecked');
   const autoSaved=await getSaved(page);
   assert.equal(autoSaved.snapshot.report.verified.score,83,'successful automatic verification saved');
   // Third workflow: the re-audit flags a newly invented claim. One corrective

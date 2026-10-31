@@ -277,7 +277,8 @@ function syncDeck(){
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
- ui.verify.disabled=state.busy||state.imported||!state.revised||!!state.verified;
+ ui.verify.disabled=state.busy||state.imported||!state.revised||(!!state.verified&&state.consistencyReview?.status!=='review_required');
+ ui.originalTab.disabled=!state.original;ui.revisedTab.disabled=!state.revised;ui.compareTab.disabled=!(state.original&&state.revised);
  ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported||!!state.initialAudit;
   if(!state.busy)ui.auditText.textContent=t(state.initialAudit?'Audit complete ✓':'Run audit');
  ui.continueActions.hidden=!state.imported||!state.original;
@@ -406,7 +407,7 @@ async function upload(file){if(state.busy||state.importing)return;try{const data
  if(state.fullOriginalURL)URL.revokeObjectURL(state.fullOriginalURL);
  state.fullOriginalURL=URL.createObjectURL(file);
  state.uploadDimensions=await dimensions(state.fullOriginalURL);
- state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');notify('Creative ready.');}catch(e){notify(e.message,true);}}
+ state.sourceDimensions=await dimensions(data);state.originalFilename=file.name;ui.empty.hidden=true;ui.name.textContent=file.name.toUpperCase();ui.replace.disabled=false;ui.originalTab.disabled=false;switchView('original');syncDeck();syncSticky();notify('Creative ready.');}catch(e){notify(e.message,true);}}
 function switchView(view){
  if(view!=='original'&&!state.revised)return;
  state.view=view;$('#canvasSourceLabel').textContent=view==='compare'?'ORIGINAL / REVISED':view==='revised'?'REVISED SOURCE':'ORIGINAL SOURCE';
@@ -536,6 +537,11 @@ async function performAudit(image,verify=false){
      state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage,caption:state.captionRepair?.final||state.context?.caption});
      if(state.captionRepair)state.repairReview.caption_review=reviewRepairedCaption(state.captionRepair,out.audit);
      const measurements=await comparePixels(state.original,state.revised);
+     const baselineRun=state.runs.find(r=>['initial','archive_baseline'].includes(r.stage)&&r.provenance?.response_id);
+     measurements.independent_review={reference_sent:out.original_reference_sent===true,
+      provider:out.provenance?.provider,stage:out.provenance?.stage,
+      source_response_id:baselineRun?.provenance?.response_id,
+      response_id:out.provenance?.response_id,input_sha256:out.provenance?.input_sha256};
      const local=state.repairMetadata?.local_repair;
      if(local)measurements.local_repair=await verifyLocalPixels(state.original,state.revised,local.pixel_proof.rectangles);
      state.consistencyReview=inspectConsistency(state.initialAudit,out.audit,state.repairMetadata?.settings||state.consistency,measurements,state.context?.facts||'');
@@ -550,6 +556,7 @@ async function performAudit(image,verify=false){
      if(state.repairReview.status==='regression_suspected'){state.consistencyReview.status='failed';state.consistencyReview.auto_approved=false;state.consistencyReview.risks.push(...state.repairReview.reasons.map(evidence=>({code:'legacy_guard',evidence})));}
      if(state.consistencyReview.status==='failed'){state.repairReview.status='regression_suspected';state.repairReview.reasons=state.consistencyReview.risks.map(r=>r.evidence).filter(Boolean).slice(0,8);switchView('original');}
      visualUI.clear();
+     if(state.consistencyReview.status==='validated')visualUI.selectRevision();
      phase(3);
    }else{state.initialAudit=out.audit;state.captionRepair=out.audit.caption_repair||repairCaption({...state.context,original:state.context.caption});state.verified=null;state.repairReview=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.consistencyReview?.status==='validated'?(getLanguage()==='id'?'Validasi otomatis selesai. Revisi siap untuk penyiapan output.':'Automatic validation completed. Revision ready for output preparation.'):state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Export blocked.':'Validation incomplete. Candidate retained; export blocked.'):'AI audit completed.',verify&&state.consistencyReview?.status!=='validated');

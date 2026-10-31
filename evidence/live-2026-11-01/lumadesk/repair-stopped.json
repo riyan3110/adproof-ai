@@ -1,0 +1,866 @@
+{
+  "app": "AdProof AI",
+  "date": "2026-10-31T20:10:09.561Z",
+  "report_language": "id",
+  "product": "LumaDesk Mini — LED Desk Lamp",
+  "context": {
+    "product": "LumaDesk Mini — LED Desk Lamp",
+    "facts": "Product: LumaDesk Mini\nCategory: LED desk lamp\nPower consumption: 5 watts\nLight color: Warm white (3000K)\nPower source: USB 5V\nMaterial: ABS plastic\nFeatures: Adjustable lamp head, touch on/off button\nUse: Indoor desk lighting\nWarranty: Not specified\nNo verified evidence for medical benefits, eye protection, energy savings percentages, or sleep improvement.",
+    "caption": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!"
+  },
+  "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+  "caption_repair": {
+    "version": "source-bound-1",
+    "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+    "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "status": "source_bound",
+    "method": "meta_selected_verbatim_facts",
+    "product_identity": "LumaDesk Mini — LED Desk Lamp",
+    "statements": [
+      {
+        "text": "Category: LED desk lamp",
+        "fact_quote": "Category: LED desk lamp"
+      },
+      {
+        "text": "Power consumption: 5 watts",
+        "fact_quote": "Power consumption: 5 watts"
+      },
+      {
+        "text": "Light color: Warm white (3000K)",
+        "fact_quote": "Light color: Warm white (3000K)"
+      },
+      {
+        "text": "Power source: USB 5V",
+        "fact_quote": "Power source: USB 5V"
+      }
+    ],
+    "verification": {
+      "status": "passed",
+      "basis": "complete_source_lines_and_exact_rendered_values",
+      "unsupported_sentences": 0
+    },
+    "basis": "seller_supplied_facts_not_independently_verified"
+  },
+  "runs": [
+    {
+      "stage": "initial",
+      "model": "muse-spark-1.3",
+      "tokens": 12955,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "stage": "audit",
+        "completed_at": "2026-10-31T20:06:05.150Z",
+        "input_sha256": "f05ddf354e57f6732cf1c2ce38f167588e74fa1df400b3e1b18c930fd7a4ff9c",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "localize",
+      "model": "muse-spark-1.3",
+      "tokens": 6224,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a19392-40f0-71f1-962d-cfeadb40363d",
+        "stage": "localize",
+        "completed_at": "2026-10-31T20:06:38.178Z",
+        "input_sha256": "eb80d1deef24f532fdf0a30b99f8b1727c653b53abbe901fdf8a18e0d67b0c2e"
+      }
+    }
+  ],
+  "auto_correction": null,
+  "repair_review": null,
+  "claim_evolution": {
+    "basis": "seller_supplied_facts_not_independently_verified",
+    "entries": [
+      {
+        "before": {
+          "id": "claim-1",
+          "claim": "LumaDesk Mini",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Product: LumaDesk Mini",
+          "reason": "Nama produk pada gambar sama persis dengan fakta pemasok.",
+          "recommended_action": "Pertahankan nama produk apa adanya."
+        },
+        "after": null,
+        "before_index": 0,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-2",
+          "claim": "LED DESK LAMP",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Category: LED desk lamp",
+          "reason": "Kategori pada gambar sesuai dengan kategori pada fakta pemasok.",
+          "recommended_action": "Pertahankan kategori apa adanya."
+        },
+        "after": null,
+        "before_index": 1,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-3",
+          "claim": "Save up to 90% Electricity",
+          "origin": "creative",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+          "recommended_action": "Hapus klaim persentase atau ganti dengan fakta watt yang tersedia."
+        },
+        "after": null,
+        "before_index": 2,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-4",
+          "claim": "Protect Your Eyes",
+          "origin": "creative",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada manfaat perlindungan mata pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perlindungan mata.",
+          "recommended_action": "Hapus klaim kesehatan mata tersebut."
+        },
+        "after": null,
+        "before_index": 3,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-5",
+          "claim": "Better Sleep in 7 Days",
+          "origin": "creative",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada manfaat tidur atau durasi 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perbaikan tidur.",
+          "recommended_action": "Hapus klaim tidur dan durasi tersebut."
+        },
+        "after": null,
+        "before_index": 4,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-6",
+          "claim": "Save up to 90% electricity",
+          "origin": "caption",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+          "recommended_action": "Hapus klaim persentase dari caption."
+        },
+        "after": null,
+        "before_index": 5,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-7",
+          "claim": "protect your eyes with our revolutionary LED technology",
+          "origin": "caption",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada manfaat perlindungan mata atau teknologi revolusioner pada fakta pemasok.",
+          "recommended_action": "Hapus klaim perlindungan mata dari caption."
+        },
+        "after": null,
+        "before_index": 6,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-8",
+          "claim": "Guaranteed better sleep in just 7 days!",
+          "origin": "caption",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Tidak ada garansi atau manfaat tidur dalam 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi.",
+          "recommended_action": "Hapus klaim garansi tidur dari caption."
+        },
+        "after": null,
+        "before_index": 7,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      }
+    ],
+    "summary": {
+      "pending": 8
+    },
+    "complete": false
+  },
+  "proof_constellation": {
+    "initial": {
+      "nodes": [
+        {
+          "id": "fact-source",
+          "type": "fact_source",
+          "label": "Seller-supplied facts",
+          "detail": "Product: LumaDesk Mini\nCategory: LED desk lamp\nPower consumption: 5 watts\nLight color: Warm white (3000K)\nPower source: USB 5V\nMaterial: ABS plastic\nFeatures: Adjustable lamp head, touch on/off button\nUse: Indoor desk lighting\nWarranty: Not specified\nNo verified evidence for medical benefits, eye protection, energy savings percentages, or sleep improvement.",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "id": "claim-1",
+          "type": "claim",
+          "label": "LumaDesk Mini",
+          "detail": "[creative] LumaDesk Mini",
+          "source": "claim_ledger[0].claim"
+        },
+        {
+          "id": "claim-1-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Nama produk pada gambar sama persis dengan fakta pemasok.",
+          "source": "claim_ledger[0].assessment"
+        },
+        {
+          "id": "claim-1-action",
+          "type": "action",
+          "label": "Pertahankan nama produk apa adanya.",
+          "detail": "Pertahankan nama produk apa adanya.",
+          "source": "claim_ledger[0].recommended_action"
+        },
+        {
+          "id": "claim-1-quote",
+          "type": "quote",
+          "label": "Product: LumaDesk Mini",
+          "detail": "Product: LumaDesk Mini",
+          "source": "claim_ledger[0].fact_quote"
+        },
+        {
+          "id": "claim-2",
+          "type": "claim",
+          "label": "LED DESK LAMP",
+          "detail": "[creative] LED DESK LAMP",
+          "source": "claim_ledger[1].claim"
+        },
+        {
+          "id": "claim-2-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Kategori pada gambar sesuai dengan kategori pada fakta pemasok.",
+          "source": "claim_ledger[1].assessment"
+        },
+        {
+          "id": "claim-2-action",
+          "type": "action",
+          "label": "Pertahankan kategori apa adanya.",
+          "detail": "Pertahankan kategori apa adanya.",
+          "source": "claim_ledger[1].recommended_action"
+        },
+        {
+          "id": "claim-2-quote",
+          "type": "quote",
+          "label": "Category: LED desk lamp",
+          "detail": "Category: LED desk lamp",
+          "source": "claim_ledger[1].fact_quote"
+        },
+        {
+          "id": "claim-3",
+          "type": "claim",
+          "label": "Save up to 90% Electricity",
+          "detail": "[creative] Save up to 90% Electricity",
+          "source": "claim_ledger[2].claim"
+        },
+        {
+          "id": "claim-3-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+          "source": "claim_ledger[2].assessment"
+        },
+        {
+          "id": "claim-3-action",
+          "type": "action",
+          "label": "Hapus klaim persentase atau ganti dengan fakta watt yang tersedia.",
+          "detail": "Hapus klaim persentase atau ganti dengan fakta watt yang tersedia.",
+          "source": "claim_ledger[2].recommended_action"
+        },
+        {
+          "id": "claim-4",
+          "type": "claim",
+          "label": "Protect Your Eyes",
+          "detail": "[creative] Protect Your Eyes",
+          "source": "claim_ledger[3].claim"
+        },
+        {
+          "id": "claim-4-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada manfaat perlindungan mata pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perlindungan mata.",
+          "source": "claim_ledger[3].assessment"
+        },
+        {
+          "id": "claim-4-action",
+          "type": "action",
+          "label": "Hapus klaim kesehatan mata tersebut.",
+          "detail": "Hapus klaim kesehatan mata tersebut.",
+          "source": "claim_ledger[3].recommended_action"
+        },
+        {
+          "id": "claim-5",
+          "type": "claim",
+          "label": "Better Sleep in 7 Days",
+          "detail": "[creative] Better Sleep in 7 Days",
+          "source": "claim_ledger[4].claim"
+        },
+        {
+          "id": "claim-5-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada manfaat tidur atau durasi 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perbaikan tidur.",
+          "source": "claim_ledger[4].assessment"
+        },
+        {
+          "id": "claim-5-action",
+          "type": "action",
+          "label": "Hapus klaim tidur dan durasi tersebut.",
+          "detail": "Hapus klaim tidur dan durasi tersebut.",
+          "source": "claim_ledger[4].recommended_action"
+        },
+        {
+          "id": "claim-6",
+          "type": "claim",
+          "label": "Save up to 90% electricity",
+          "detail": "[caption] Save up to 90% electricity",
+          "source": "claim_ledger[5].claim"
+        },
+        {
+          "id": "claim-6-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+          "source": "claim_ledger[5].assessment"
+        },
+        {
+          "id": "claim-6-action",
+          "type": "action",
+          "label": "Hapus klaim persentase dari caption.",
+          "detail": "Hapus klaim persentase dari caption.",
+          "source": "claim_ledger[5].recommended_action"
+        },
+        {
+          "id": "claim-7",
+          "type": "claim",
+          "label": "protect your eyes with our revolutionary LED technology",
+          "detail": "[caption] protect your eyes with our revolutionary LED technology",
+          "source": "claim_ledger[6].claim"
+        },
+        {
+          "id": "claim-7-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada manfaat perlindungan mata atau teknologi revolusioner pada fakta pemasok.",
+          "source": "claim_ledger[6].assessment"
+        },
+        {
+          "id": "claim-7-action",
+          "type": "action",
+          "label": "Hapus klaim perlindungan mata dari caption.",
+          "detail": "Hapus klaim perlindungan mata dari caption.",
+          "source": "claim_ledger[6].recommended_action"
+        },
+        {
+          "id": "claim-8",
+          "type": "claim",
+          "label": "Guaranteed better sleep in just 7 days!",
+          "detail": "[caption] Guaranteed better sleep in just 7 days!",
+          "source": "claim_ledger[7].claim"
+        },
+        {
+          "id": "claim-8-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Tidak ada garansi atau manfaat tidur dalam 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi.",
+          "source": "claim_ledger[7].assessment"
+        },
+        {
+          "id": "claim-8-action",
+          "type": "action",
+          "label": "Hapus klaim garansi tidur dari caption.",
+          "detail": "Hapus klaim garansi tidur dari caption.",
+          "source": "claim_ledger[7].recommended_action"
+        },
+        {
+          "id": "issue-1",
+          "type": "issue",
+          "label": "Klaim hemat listrik 90% tanpa dukungan fakta",
+          "detail": "Category: Claim. Severity: high.",
+          "source": "issues[0]"
+        },
+        {
+          "id": "issue-1-evidence",
+          "type": "evidence",
+          "label": "Pada panel kiri tertera Save up to 90% Electricity dan caption memuat Save up to 90% electricity, sedangkan fakta pemaso",
+          "detail": "Pada panel kiri tertera Save up to 90% Electricity dan caption memuat Save up to 90% electricity, sedangkan fakta pemasok hanya memuat Power consumption: 5 watts tanpa persentase penghematan.",
+          "source": "issues[0].evidence"
+        },
+        {
+          "id": "issue-1-suggestion",
+          "type": "suggestion",
+          "label": "Hapus klaim 90% dari gambar dan caption, gunakan fakta daya yang tersedia bila relevan.",
+          "detail": "Hapus klaim 90% dari gambar dan caption, gunakan fakta daya yang tersedia bila relevan.",
+          "source": "issues[0].suggestion"
+        },
+        {
+          "id": "issue-2",
+          "type": "issue",
+          "label": "Klaim perlindungan mata tanpa dukungan fakta",
+          "detail": "Category: Claim. Severity: high.",
+          "source": "issues[1]"
+        },
+        {
+          "id": "issue-2-evidence",
+          "type": "evidence",
+          "label": "Pada panel kiri tertera Protect Your Eyes dan caption memuat protect your eyes with our revolutionary LED technology, se",
+          "detail": "Pada panel kiri tertera Protect Your Eyes dan caption memuat protect your eyes with our revolutionary LED technology, sedangkan fakta pemasok tidak mencantumkan manfaat perlindungan mata.",
+          "source": "issues[1].evidence"
+        },
+        {
+          "id": "issue-2-suggestion",
+          "type": "suggestion",
+          "label": "Hapus klaim perlindungan mata dari gambar dan caption.",
+          "detail": "Hapus klaim perlindungan mata dari gambar dan caption.",
+          "source": "issues[1].suggestion"
+        },
+        {
+          "id": "issue-3",
+          "type": "issue",
+          "label": "Klaim tidur lebih baik dalam 7 hari tanpa dukungan fakta",
+          "detail": "Category: Claim. Severity: high.",
+          "source": "issues[2]"
+        },
+        {
+          "id": "issue-3-evidence",
+          "type": "evidence",
+          "label": "Pada panel kiri tertera Better Sleep in 7 Days dan caption memuat Guaranteed better sleep in just 7 days!, sedangkan fak",
+          "detail": "Pada panel kiri tertera Better Sleep in 7 Days dan caption memuat Guaranteed better sleep in just 7 days!, sedangkan fakta pemasok tidak mencantumkan manfaat tidur, durasi, atau garansi.",
+          "source": "issues[2].evidence"
+        },
+        {
+          "id": "issue-3-suggestion",
+          "type": "suggestion",
+          "label": "Hapus klaim tidur, durasi 7 hari, dan garansi dari gambar dan caption.",
+          "detail": "Hapus klaim tidur, durasi 7 hari, dan garansi dari gambar dan caption.",
+          "source": "issues[2].suggestion"
+        }
+      ],
+      "edges": [
+        {
+          "from": "claim-1",
+          "to": "claim-1-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-1",
+          "to": "claim-1-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-1",
+          "to": "claim-1-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[0].fact_quote"
+        },
+        {
+          "from": "claim-1-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[1].fact_quote"
+        },
+        {
+          "from": "claim-2-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-5",
+          "to": "claim-5-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[4]"
+        },
+        {
+          "from": "claim-5",
+          "to": "claim-5-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[4]"
+        },
+        {
+          "from": "claim-6",
+          "to": "claim-6-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[5]"
+        },
+        {
+          "from": "claim-6",
+          "to": "claim-6-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[5]"
+        },
+        {
+          "from": "claim-7",
+          "to": "claim-7-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[6]"
+        },
+        {
+          "from": "claim-7",
+          "to": "claim-7-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[6]"
+        },
+        {
+          "from": "claim-8",
+          "to": "claim-8-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[7]"
+        },
+        {
+          "from": "claim-8",
+          "to": "claim-8-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[7]"
+        },
+        {
+          "from": "issue-1",
+          "to": "issue-1-evidence",
+          "relation": "has_evidence",
+          "source": "issues[0].evidence"
+        },
+        {
+          "from": "issue-1",
+          "to": "issue-1-suggestion",
+          "relation": "has_suggestion",
+          "source": "issues[0].suggestion"
+        },
+        {
+          "from": "issue-2",
+          "to": "issue-2-evidence",
+          "relation": "has_evidence",
+          "source": "issues[1].evidence"
+        },
+        {
+          "from": "issue-2",
+          "to": "issue-2-suggestion",
+          "relation": "has_suggestion",
+          "source": "issues[1].suggestion"
+        },
+        {
+          "from": "issue-3",
+          "to": "issue-3-evidence",
+          "relation": "has_evidence",
+          "source": "issues[2].evidence"
+        },
+        {
+          "from": "issue-3",
+          "to": "issue-3-suggestion",
+          "relation": "has_suggestion",
+          "source": "issues[2].suggestion"
+        }
+      ],
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "revised": null
+  },
+  "evidence_basis": "seller_supplied_facts_not_independently_verified",
+  "original": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "",
+      "lines": [
+        "LumaDesk Mini",
+        "LED DESK LAMP",
+        "Brighter Days. Calmer Nights.",
+        "A Smarter Light for a Healthier You.",
+        "Save up to",
+        "90% Electricity",
+        "Protect",
+        "Your Eyes",
+        "Better Sleep",
+        "in 7 Days",
+        "Shop Now ->",
+        "The Better Home",
+        "A Brighter You"
+      ]
+    },
+    "consistency": null,
+    "score": 58,
+    "headline": "Klaim hemat energi dan manfaat kesehatan tidak didukung fakta pemasok",
+    "summary": "Nama dan kategori produk sesuai fakta, tetapi klaim 90%, perlindungan mata, dan tidur dalam 7 hari pada gambar dan caption tidak didukung fakta pemasok. Visual produk tampak bersih tanpa cacat yang jelas. Disarankan menghapus klaim yang tidak didukung dan hanya memakai spesifikasi yang diberikan.",
+    "recommended_caption": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "issues": [
+      {
+        "id": "issue-1",
+        "title": "Klaim hemat listrik 90% tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Save up to 90% Electricity dan caption memuat Save up to 90% electricity, sedangkan fakta pemasok hanya memuat Power consumption: 5 watts tanpa persentase penghematan.",
+        "suggestion": "Hapus klaim 90% dari gambar dan caption, gunakan fakta daya yang tersedia bila relevan."
+      },
+      {
+        "id": "issue-2",
+        "title": "Klaim perlindungan mata tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Protect Your Eyes dan caption memuat protect your eyes with our revolutionary LED technology, sedangkan fakta pemasok tidak mencantumkan manfaat perlindungan mata.",
+        "suggestion": "Hapus klaim perlindungan mata dari gambar dan caption."
+      },
+      {
+        "id": "issue-3",
+        "title": "Klaim tidur lebih baik dalam 7 hari tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Better Sleep in 7 Days dan caption memuat Guaranteed better sleep in just 7 days!, sedangkan fakta pemasok tidak mencantumkan manfaat tidur, durasi, atau garansi.",
+        "suggestion": "Hapus klaim tidur, durasi 7 hari, dan garansi dari gambar dan caption."
+      }
+    ],
+    "strengths": [
+      "Nama produk dan kategori sesuai dengan fakta pemasok.",
+      "Visual lampu, meja, dan pencahayaan tampak jelas dan rapi.",
+      "Hierarki teks dan tombol Shop Now mudah dibaca.",
+      "Slogan ekspresif tidak dinilai sebagai klaim faktual."
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "LumaDesk Mini",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Product: LumaDesk Mini",
+        "reason": "Nama produk pada gambar sama persis dengan fakta pemasok.",
+        "recommended_action": "Pertahankan nama produk apa adanya."
+      },
+      {
+        "id": "claim-2",
+        "claim": "LED DESK LAMP",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Category: LED desk lamp",
+        "reason": "Kategori pada gambar sesuai dengan kategori pada fakta pemasok.",
+        "recommended_action": "Pertahankan kategori apa adanya."
+      },
+      {
+        "id": "claim-3",
+        "claim": "Save up to 90% Electricity",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+        "recommended_action": "Hapus klaim persentase atau ganti dengan fakta watt yang tersedia."
+      },
+      {
+        "id": "claim-4",
+        "claim": "Protect Your Eyes",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat perlindungan mata pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perlindungan mata.",
+        "recommended_action": "Hapus klaim kesehatan mata tersebut."
+      },
+      {
+        "id": "claim-5",
+        "claim": "Better Sleep in 7 Days",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat tidur atau durasi 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perbaikan tidur.",
+        "recommended_action": "Hapus klaim tidur dan durasi tersebut."
+      },
+      {
+        "id": "claim-6",
+        "claim": "Save up to 90% electricity",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+        "recommended_action": "Hapus klaim persentase dari caption."
+      },
+      {
+        "id": "claim-7",
+        "claim": "protect your eyes with our revolutionary LED technology",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat perlindungan mata atau teknologi revolusioner pada fakta pemasok.",
+        "recommended_action": "Hapus klaim perlindungan mata dari caption."
+      },
+      {
+        "id": "claim-8",
+        "claim": "Guaranteed better sleep in just 7 days!",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada garansi atau manfaat tidur dalam 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi.",
+        "recommended_action": "Hapus klaim garansi tidur dari caption."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 8,
+      "supported_by_supplied_facts": 2,
+      "unsupported_by_supplied_facts": 6,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 30,
+      "clarity": 88,
+      "hierarchy": 85,
+      "action": 85
+    },
+    "caption_repair": {
+      "version": "source-bound-1",
+      "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+      "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+      "status": "source_bound",
+      "method": "meta_selected_verbatim_facts",
+      "product_identity": "LumaDesk Mini — LED Desk Lamp",
+      "statements": [
+        {
+          "text": "Category: LED desk lamp",
+          "fact_quote": "Category: LED desk lamp"
+        },
+        {
+          "text": "Power consumption: 5 watts",
+          "fact_quote": "Power consumption: 5 watts"
+        },
+        {
+          "text": "Light color: Warm white (3000K)",
+          "fact_quote": "Light color: Warm white (3000K)"
+        },
+        {
+          "text": "Power source: USB 5V",
+          "fact_quote": "Power source: USB 5V"
+        }
+      ],
+      "verification": {
+        "status": "passed",
+        "basis": "complete_source_lines_and_exact_rendered_values",
+        "unsupported_sentences": 0
+      },
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "local_text_repair": null
+  },
+  "verified": null,
+  "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+  "visual_consistency": {
+    "format_history": [],
+    "upload_dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "source_dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "settings": {
+      "version": "visual-consistency-2",
+      "style": "preserve",
+      "locks": {
+        "product_shape": true,
+        "colors": true,
+        "lighting": true,
+        "background": true,
+        "composition": true,
+        "typography": true,
+        "branding": true
+      },
+      "region": null
+    },
+    "repair": null,
+    "verification": null,
+    "output_requested": {
+      "category": "social",
+      "preset": 0,
+      "width": 210,
+      "height": 297,
+      "unit": "mm",
+      "ppi": 150,
+      "standard": "a4",
+      "padding": "white",
+      "source": "original"
+    },
+    "output_actual": null
+  },
+  "archive_history": []
+}

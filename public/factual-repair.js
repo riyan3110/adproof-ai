@@ -2,6 +2,42 @@
 export const REPAIR_VERSION='source-bound-1';
 const clean=s=>typeof s==='string'?s.trim():'';
 const norm=s=>clean(s).normalize('NFKC').replace(/\s+/g,' ').toLowerCase();
+// OCR inventories contain visual lines, while the factual ledger contains
+// complete assertions. Match only whole, consecutive source lines. Never use
+// fuzzy words/substrings: numbers, negation and non-adjacent text must agree.
+export function observedTextSpans(text,lines){
+ const target=norm(text),source=(Array.isArray(lines)?lines:[]).map(norm);
+ const spans=[];
+ if(!target)return spans;
+ for(let start=0;start<source.length;start++){
+  let group='';
+  for(let end=start;end<Math.min(source.length,start+8);end++){
+   if(!source[end])break;
+   group+=(group?' ':'')+source[end];
+   if(group===target){spans.push({start,end:end+1});break;}
+   if(group.length>=target.length)break;
+  }
+ }
+ return spans;
+}
+export const observedTextGroup=(text,lines)=>observedTextSpans(text,lines).length>0;
+// Compare content independently of the model's visual line wrapping. A match
+// still requires exactly the same complete source words in the same order.
+export function inventoryDelta(original,revised){
+ const preserved=(lines,reference)=>{
+  const keep=new Set();
+  lines.forEach((line,index)=>{if(observedTextGroup(line,reference))keep.add(index);});
+  for(const line of reference)for(const span of observedTextSpans(line,lines)){
+   for(let index=span.start;index<span.end;index++)keep.add(index);
+  }
+  return keep;
+ };
+ const oldLines=Array.isArray(original)?original:[],newLines=Array.isArray(revised)?revised:[];
+ const oldKeep=preserved(oldLines,newLines),newKeep=preserved(newLines,oldLines);
+ const removedIndices=oldLines.map((_,index)=>index).filter(index=>!oldKeep.has(index));
+ const addedIndices=newLines.map((_,index)=>index).filter(index=>!newKeep.has(index));
+ return {removed:removedIndices.map(index=>oldLines[index]),added:addedIndices.map(index=>newLines[index]),removedIndices,addedIndices};
+}
 export function factLines(facts){
  return String(facts||'').split(/\r?\n/).map(s=>s.replace(/^\s*[-*•]\s*/, '').trim()).filter(s=>s&&s.length<=350);
 }
@@ -50,7 +86,7 @@ export function normalizeLocalPlan(plan,audit,facts){
  for(const e of plan.edits){
   if(!validBox(e?.box)||e.box.width*e.box.height>.16||!['solid','complex'].includes(e.background)||!clean(e.before)||e.before.length>350)return null;
   if(protectedRegions.some(b=>overlaps(e.box,b))||edits.some(x=>overlaps(e.box,x.box)))return null;
-  if(!sourceLines.some(s=>norm(s)===norm(e.before)))return null;
+  if(!observedTextGroup(e.before,sourceLines))return null;
   const target=bad.some(c=>norm(c.claim)===norm(e.before))||(audit.issues||[]).some(i=>['Claim','Readability'].includes(i.category)&&norm(i.evidence).includes(norm(e.before)));
   if(!target)return null;
   // Replacement text is an entire supplied fact line (or deletion). No paraphrase.
