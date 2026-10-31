@@ -4,6 +4,7 @@ import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPi
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
+import {isClearlySubjectiveSlogan} from './claim-engine.js';
 import {describeRepairNotice} from './repair-notice.js';
 import {repairCaption,reviewRepairedCaption} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
@@ -377,10 +378,11 @@ function renderClaimEvidence(a, verified=false){
  ui.claimCount.textContent=getLanguage()==='id'?`${ledger.length} KLAIM · ${verified?'AUDIT ULANG':'AWAL'}`:`${ledger.length} CLAIM${ledger.length===1?'':'S'} · ${verified?'RE-CHECK':'INITIAL'}`;
  for(const [index,item] of ledger.entries()){
   const mapped=labels[item.assessment]||labels.needs_human_review;
+  const expressive=isClearlySubjectiveSlogan(item);
   const card=el('article','claim-evidence-item');
   const top=el('div','claim-evidence-top');
   const source=el('span','claim-evidence-source',item.origin==='caption'?'CAPTION':item.origin==='creative'?'CREATIVE':'SOURCE UNCERTAIN');
-  const status=el('span',`claim-evidence-status ${mapped[1]}`,mapped[0]);
+  const status=el('span',`claim-evidence-status ${expressive?'uncertain':mapped[1]}`,expressive?(getLanguage()==='id'?'SLOGAN KREATIF':'CREATIVE SLOGAN'):mapped[0]);
   top.append(source,status);
   const claim=el('p','claim-evidence-claim',String(item.claim||''));
   card.append(top,claim);
@@ -389,8 +391,11 @@ function renderClaimEvidence(a, verified=false){
    quote.append(el('span','claim-evidence-kicker','INPUT FACT'),el('q','',String(item.fact_quote)));
    card.append(quote);
   }
-  if(item.reason)card.append(el('p','claim-evidence-detail',String(item.reason)));
-  if(item.recommended_action)card.append(el('p','claim-evidence-action',String(item.recommended_action)));
+  if(expressive)card.append(el('p','claim-evidence-detail',getLanguage()==='id'?'Kalimat promosi kreatif; tidak memerlukan bukti spesifikasi.':'Creative promotional language; no specification proof is required.'));
+  else {
+   if(item.reason)card.append(el('p','claim-evidence-detail',String(item.reason)));
+   if(item.recommended_action)card.append(el('p','claim-evidence-action',String(item.recommended_action)));
+  }
   const inspect=el('button','text-button','Inspect claim ↗');inspect.type='button';inspect.addEventListener('click',()=>openClaimInspector(index,verified?'revised':'initial'));card.append(inspect);
   ui.claimList.append(card);
  }
