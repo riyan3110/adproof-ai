@@ -247,7 +247,7 @@ test('saved audit can resume from original or revised only after explicit action
  assert.ok(js.includes("state.verified=null;state.revised=null;state.repairReview=null;"));
  assert.ok(js.includes("state.initialAudit=baseline;"));
  assert.ok(js.includes("state.original=image;"));
- assert.ok(js.includes("state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline')"));
+ assert.ok(js.includes("state.runs.filter(r=>['initial','archive_baseline','localize'].includes(r.stage))"), 'retain source-localization provenance during repair');
  assert.ok(js.includes("createAuditPackage(reportSnapshot(),state.original,state.revised,state.history)"));
  assert.ok(js.includes("state.history.length>=8"),'must refuse new edits if history cannot be retained');
  assert.ok(js.includes("if(state.imported)throw Error"),'archive review cannot call AI by itself');
