@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'public/app.js'
+      - 'public/factual-repair.js'
+      - 'public/output-system.js'
+      - 'public/consistency-ui.js'
+      - 'scripts/factual-repair-browser.cjs'
       - 'public/app.html'
       - 'public/local-recovery.js'
       - 'public/i18n.js'
@@ -39,6 +43,15 @@ jobs:
           done
           cat /tmp/adproof-server.log
           exit 1
+      - name: Test source-bound repair, caption, pixel locks and three ratio transitions (MOCK Meta)
+        run: node scripts/factual-repair-browser.cjs
+      - name: Upload deterministic pixel evidence (not live Meta)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-bound-pixel-evidence
+          path: qa-artifacts/source-bound
+          retention-days: 7
       - name: Test recovery without paid provider calls
         run: node scripts/local-recovery-browser.cjs
       - name: Upload safe diagnostics on failure

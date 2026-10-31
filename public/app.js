@@ -1,9 +1,10 @@
 import {createConsistencyUI} from './consistency-ui.js';
 import {inspectConsistency} from './visual-consistency.js';
-import {comparePixels,compositeRegion,dimensions} from './output-system.js';
+import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
+import {repairCaption} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 import {storeRecovery,retrieveRecovery,removeRecovery} from './local-recovery.js';
@@ -23,7 +24,7 @@ const ui = {
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
 loadPreference();
-const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],autoCorrection:null,continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const state={captionRepair:null,reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],autoCorrection:null,continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
 let toastTimer=null;
 
@@ -218,20 +219,13 @@ ui.accessForm.addEventListener('submit',async event=>{
 ui.accessCancel.addEventListener('click',()=>ui.accessDialog.close('cancelled'));
 function notify(message,error=false){ui.toast.textContent=t(message);ui.toast.classList.toggle('error',error);ui.toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>ui.toast.hidden=true,5100);}
 function refreshCaptionSafety(){
- const caption=state.context?.caption||'';
- if(!state.initialAudit||!caption.trim()){
-  ui.captionSafety.hidden=true;ui.captionSafety.textContent='';return;
- }
- const result=reviewUnchangedCaption(state.initialAudit,state.verified,caption);
- const base=getLanguage()==='id'
-  ? '⚠️ Caption asli tetap tidak berubah setelah Repair. Gambar yang diperbaiki tidak memperbaiki caption. Periksa dan sunting caption secara terpisah sebelum dipublikasikan.'
-  : '⚠️ Original caption remains unchanged after image Repair. Image edits do not fix caption text. Review and edit the caption separately before publishing.';
- const detected=result.issues.length?(getLanguage()==='id'
-  ? ' Klaim yang sebelumnya ditandai tanpa dukungan: '
-  : ' Previously flagged unsupported claims: ')+result.issues.join('; ').slice(0,400)+'.':'';
- ui.captionSafety.hidden=false;
- ui.captionSafety.textContent=base+detected;
+ const caption=state.captionRepair;
+ ui.captionSafety.hidden=!caption;
+ ui.captionSafety.textContent=caption?(getLanguage()==='id'
+  ?'Caption dikoreksi otomatis dari fakta produk. Caption asli tetap tersimpan dalam riwayat dan paket ZIP.'
+  :'Caption automatically corrected from product facts. The original remains in history and the ZIP archive.'):'';
 }
+
 function syncDeck(){
  refreshCaptionSafety();
  const current=state.phase, ready=!!state.original, indonesian=getLanguage()==='id';
@@ -251,8 +245,8 @@ function syncDeck(){
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
  renderArchiveHistory();
  visualUI.sync();
- put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
- put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
+ put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Automatic verification is pending.':state.consistencyReview?.status==='validated'?'Automatic validation complete. Choose the output size and export.':'Validation incomplete. Export blocked; source and candidate retained.');
+ put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?(state.consistencyReview?.status==='validated'?'Validated revision, corrected caption and audit evidence available.':'Source, candidate and audit evidence retained. Final export awaits validation.'):current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
   const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
@@ -277,7 +271,7 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit({preserveHistory=false}={}){state.autoCorrection=null;state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){state.captionRepair=null;state.autoCorrection=null;state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -422,7 +416,7 @@ function render(a,verified=false){
   button.addEventListener('click',()=>{details.hidden=!details.hidden;button.setAttribute('aria-expanded',String(!details.hidden));arrow.textContent=details.hidden?'+':'−';});
   wrapper.append(button,details);ui.issues.append(wrapper);
  }
- ui.suggested.textContent=a.recommended_caption||t('No caption suggestion available.');
+ ui.suggested.textContent=state.captionRepair?.final||a.recommended_caption||t('No caption suggestion available.');
  if(verified && state.initialAudit) ui.scoreSummary.textContent=getLanguage()==='id'?`${a.summary||''} · Perkiraan skor ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} dibanding sebelumnya. Skor lebih tinggi BUKAN bukti gambar membaik.`:`${a.summary||''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
   ui.repairNotice.hidden=!verified;
   if(verified){
@@ -430,8 +424,8 @@ function render(a,verified=false){
     ui.repairNotice.dataset.level=risk?.status==='regression_suspected'?'warning':'review';
     const heading=risk?.status==='regression_suspected'
       ? (getLanguage()==='id'?'⚠️ KEMUNGKINAN KUALITAS REVISI MEMBURUK · JANGAN SETUJUI OTOMATIS':'⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE')
-      : (getLanguage()==='id'?'⚠️ HANYA KANDIDAT · PERLU PEMERIKSAAN MANUSIA':'⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED');
-    ui.repairNotice.textContent=heading+' — '+(risk?.reasons||['Compare original and revised before using.']).join(' ')+(risk?.caption_review?.status==='needs_human_review'?(getLanguage()==='id'?' Caption asli tetap belum diperbaiki; periksa klaim secara terpisah.':' Original caption is still unchanged; review it separately.'):'');
+      : (getLanguage()==='id'?'VALIDASI BELUM LENGKAP · EKSPOR DITAHAN':'VALIDATION INCOMPLETE · EXPORT BLOCKED');
+    if(state.consistencyReview?.status==='validated') {ui.repairNotice.textContent=getLanguage()==='id'?'Validasi otomatis selesai: piksel di luar koreksi tetap identik, caption terikat fakta, dan audit ulang tidak menemukan regresi.':'Automatic validation completed: unchanged pixels outside corrections, source-bound caption, and no detected re-audit regression.';} else ui.repairNotice.textContent=heading+' — '+(risk?.status==='review_required'?[getLanguage()==='id'?'Sumber dan kandidat disimpan sampai pemeriksaan otomatis dapat membuktikan kelayakan hasil.':'Source and candidate retained until automatic checks establish output eligibility.']:risk?.reasons||['Compare original and revised before using.']).join(' ')+(risk?.caption_review?.status==='needs_human_review'?(getLanguage()==='id'?' Caption asli tetap belum diperbaiki; periksa klaim secara terpisah.':' Original caption is still unchanged; review it separately.'):'');
   }
  ui.refine.hidden=false;
  ui.verify.hidden=false;
@@ -444,21 +438,25 @@ async function performAudit(image,verify=false){
  try{
   if(!verify){resetAudit({preserveHistory:state.history.length>0});switchView('original');state.context=inputContext();}
   const auditPayload={...payload(image)};
-   if(verify)auditPayload.referenceImage=await compactOriginalReference(state.original);
+   if(verify){auditPayload.referenceImage=await compactOriginalReference(state.original);auditPayload.caption=state.captionRepair?.final||state.context.caption;}
    const out=await api('/api/audit',auditPayload);
    if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');
    state.sparkResponded=true;if(verify)state.reauditResponded=true;state.reportLanguage=out.report_language||getLanguage();updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
   if(verify){
      state.verified=out.audit;
-     state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage,caption:state.context?.caption});
+     if(state.captionRepair)state.captionRepair.independent_audit={provenance:out.provenance||null,caption_sent:state.captionRepair.final,observed_claims:out.audit.claim_ledger.filter(c=>c.origin==='caption')};
+     state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage,caption:state.captionRepair?.final||state.context?.caption});
+     if(state.captionRepair)state.repairReview.caption_review={status:'source_bound',unchanged:false,issues:[]};
      const measurements=await comparePixels(state.original,state.revised);
+     const local=state.repairMetadata?.local_repair;
+     if(local)measurements.local_repair=await verifyLocalPixels(state.original,state.revised,local.pixel_proof.rectangles);
      state.consistencyReview=inspectConsistency(state.initialAudit,out.audit,state.repairMetadata?.settings||state.consistency,measurements,state.context?.facts||'');
      if(state.repairReview.status==='regression_suspected'){state.consistencyReview.status='failed';state.consistencyReview.risks.push(...state.repairReview.reasons.map(evidence=>({code:'legacy_guard',evidence})));}
      if(state.consistencyReview.status==='failed'){state.repairReview.status='regression_suspected';state.repairReview.reasons=state.consistencyReview.risks.map(r=>r.evidence).filter(Boolean).slice(0,8);switchView('original');}
      visualUI.clear();
      phase(3);
-   }else{state.initialAudit=out.audit;state.verified=null;state.repairReview=null;phase(1);}
-  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
+   }else{state.initialAudit=out.audit;state.captionRepair=out.audit.caption_repair||repairCaption({...state.context,original:state.context.caption});state.verified=null;state.repairReview=null;phase(1);}
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.consistencyReview?.status==='validated'?(getLanguage()==='id'?'Validasi otomatis selesai. Revisi siap untuk penyiapan output.':'Automatic validation completed. Revision ready for output preparation.'):state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Export blocked.':'Validation incomplete. Candidate retained; export blocked.'):'AI audit completed.',verify&&state.consistencyReview?.status!=='validated');
  }finally{setBusy(false);}
 }
 async function validateCandidateImage(data){
@@ -473,7 +471,7 @@ async function adaptFormat(image,target){
  if(state.imported||state.busy)throw Error('The Studio is read-only or busy.');
  if(!state.configured||!state.initialAudit)throw Error('Complete an authentic audit before AI format adaptation.');
  const allowed=new Set(['1080x1080','1080x1350','1080x1920','1600x900','1920x1080','2560x1440']);
- if(!target||!Number.isInteger(target.width)||!Number.isInteger(target.height)||!allowed.has(target.width+'x'+target.height))throw Error('Target AI hanya mendukung enam ukuran Sosial Media dan Website.');
+ if(!target||!Number.isInteger(target.width)||!Number.isInteger(target.height)||(!target.print&&!allowed.has(target.width+'x'+target.height))||target.width<1||target.height<1||target.width>8192||target.height>8192||target.width*target.height>32e6)throw Error('Target AI hanya mendukung enam ukuran Sosial Media dan Website.');
  const baseline=image===state.revised?state.verified:state.initialAudit;
  if(!baseline||!state.context)throw Error('No verified source audit is available for this image.');
  if(state.formatHistory.length>=16)throw Error('Export this session before starting more format adaptations.');
@@ -481,25 +479,32 @@ async function adaptFormat(image,target){
  state.formatHistory.push(attempt);
  setBusy(true,'AI format…');
  try {
-  const out=await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
+  const extended=await extendFlatBackground(image,target);
+  if(target.print&&!extended)throw Error('Latar kompleks untuk rasio cetak memerlukan komposisi tervalidasi. Ekspor ditahan; sumber tetap tersimpan.');
+  const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
+  attempt.deterministic_extension=extended?{...extended,image:undefined}:null;
   attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;
   state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
-  state.imageResponded=true;updateMetaStatus();
+  state.imageResponded=state.imageResponded||!extended;updateMetaStatus();
   await validateCandidateImage(out.image);
+  const frame=extended||await compositeReferenceFrame(image,out.image);
+  out.image=frame.image;
+  attempt.reference_frame={...frame,image:undefined};
   // Compare against the exact selected source, not a different prior revision.
   const referenceImage=await compactOriginalReference(image);
-  const checked=await api('/api/audit',{...payload(out.image),referenceImage,language:getLanguage()});
+  const checked=await api('/api/audit',{...payload(out.image),caption:state.captionRepair?.final||state.context.caption,referenceImage,language:getLanguage()});
   attempt.audit=checked.provenance||null;attempt.tokens=checked.tokens??null;
   state.runs.push({stage:'format_audit',model:checked.model,tokens:checked.tokens,provenance:checked.provenance||null});
   state.sparkResponded=true;updateMetaStatus();
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
   const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings(),state.context?.facts||'');
   const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage(),caption:state.context?.caption});
+  if(frame.source_pixels_preserved&&review.status!=='failed'&&review.coverage==='model_reports_complete'&&repairReview.status!=='regression_suspected'){review.status='validated';review.auto_approved=true;review.pixel_preservation={...frame,image:undefined};}
   if(repairReview.status==='regression_suspected'){
    review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));
   }
   attempt.status=review.status;attempt.review=review;
-  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:true}};
+  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.status!=='validated',reference_frame:{...frame,image:undefined},deterministic_extension:extended?{...extended,image:undefined}:null}};
  } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);throw error;}
  finally {setBusy(false);}
 }
@@ -529,12 +534,12 @@ async function attemptAutoCorrectionOnce(){
   const out=await api('/api/improve',{...payload(state.original),consistency:settings,...correction});
   // Image replacement is atomic only AFTER the provider response is validated.
   await validateCandidateImage(out.image);
-  const composed=await compositeRegion(state.original,out.image,settings.region);
+  const composed=!settings.region&&state.initialAudit.local_text_repair?await compositePlannedRegions(state.original,out.image,state.initialAudit.local_text_repair):await compositeRegion(state.original,out.image,settings.region);
   await validateCandidateImage(composed.image);
   state.history=[...state.history,before]; // first rejected candidate remains in ZIP/history
   state.runs.push({stage:'auto_correction_image',model:out.model,provenance:out.provenance||null});
   state.revised=composed.image;state.imageResponded=true;updateMetaStatus();
-  state.repairMetadata={...out.repair_metadata,settings,correction_attempt:1,
+  state.repairMetadata={...out.repair_metadata,settings,correction_attempt:1,...(composed.pixel_proof?{local_repair:{...composed,image:undefined}}:{}),
    compositing:{method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},
    candidate_dimensions:await dimensions(composed.image)};
   state.autoCorrection={...state.autoCorrection,status:'awaiting_verification'};
@@ -571,11 +576,14 @@ async function performImprove(){
  setBusy(true,'Refining…');
  try{
   const repairSettings=visualUI.readSettings();
-  const out=await api('/api/improve',{...payload(state.original),consistency:repairSettings,issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
+  const local=!repairSettings.region&&await repairTextLocally(state.original,state.initialAudit.local_text_repair);
+  const out=local?{image:local.image,model:'deterministic-source-pixel-repair',repair_metadata:{local_repair:local,method:local.method},provenance:null}:await api('/api/improve',{...payload(state.original),consistency:repairSettings,issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
+  if(local)delete out.repair_metadata.local_repair.image;
    await validateCandidateImage(out.image);
-   const composed=await compositeRegion(state.original,out.image,repairSettings.region);
+   const composed=local?{image:out.image,method:local.method}:!repairSettings.region&&state.initialAudit.local_text_repair?await compositePlannedRegions(state.original,out.image,state.initialAudit.local_text_repair):await compositeRegion(state.original,out.image,repairSettings.region);
+   if(composed.pixel_proof)out.repair_metadata={...out.repair_metadata,local_repair:{...composed,image:undefined}};
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
-   out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=true;updateMetaStatus();
+   out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=!local;updateMetaStatus();
   state.verified=null;state.repairReview=null;state.autoCorrection=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
  }finally{setBusy(false);}
  // One user-initiated Repair includes ONE independent Spark re-audit.
@@ -601,7 +609,7 @@ function reportSnapshot(){
  const report=state.imported&&state.archivedReport?
   {...state.archivedReport,...proofReport()}:
   {app:'AdProof AI',date:new Date().toISOString(),report_language:state.reportLanguage||'und',product:state.context?.product,context:state.context,
-   caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',
+   caption_scope:'Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.',caption_repair:state.captionRepair,
    runs:state.runs,auto_correction:state.autoCorrection,repair_review:state.repairReview,...proofReport(),
    original:state.initialAudit,verified:state.verified,
    disclaimer:'Saved model observations, not independently certified. Image edits always need human review.'};
@@ -623,6 +631,7 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages},{re
  state.initialAudit=report.original;
  state.verified=report.verified||null;
  state.audit=state.verified||state.initialAudit;
+ state.captionRepair=report.caption_repair||null;
  state.repairReview=report.repair_review||null;state.autoCorrection=report.auto_correction||null;
  state.consistencyReview=report.visual_consistency?.verification||null;state.repairMetadata=report.visual_consistency?.repair||null;
  visualUI.restore(report.visual_consistency?.settings,report.visual_consistency?.output_requested);

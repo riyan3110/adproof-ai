@@ -1,6 +1,8 @@
 # AdProof AI — Final Hackathon Readiness Register
 **Status: NOT READY for final submission as of 31 October 2026 (WIB).**
 
+**Latest functional continuation:** PR #47 adds automatic fact-bound captions, source-pixel protection and stricter output validation. See [the current quality-fix record](docs/QUALITY-FIX-2026-10-31.md). Fresh post-change Meta inference and professional native-detail print remain unproven.
+
 Repository: https://github.com/riyan3110/adproof-ai  
 Production: https://adproof-ai.vercel.app  
 Studio: https://adproof-ai.vercel.app/app  

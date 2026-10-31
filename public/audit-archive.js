@@ -1,3 +1,4 @@
+import {repairCaption} from './factual-repair.js';
 import {LOCKS,normalizeSettings} from './visual-consistency.js';
 // Local, dependency-free AdProof audit archive. ZIP files use STORED entries
 // (no compression); only our known archive entries are accepted on import.
@@ -111,6 +112,7 @@ function safeReportData(source,{withHistory=true}={}){
  const result={
   app,date:typeof date==='string'?date:null,report_language:reportLanguage,product:typeof product==='string'?product.slice(0,130):ctx.product,
   context:{product:ctx.product,facts:ctx.facts,caption:ctx.caption},
+  caption_repair:source.caption_repair?repairCaption({product:ctx.product,facts:ctx.facts,original:ctx.caption,selections:(source.caption_repair.statements||[]).map(x=>x?.fact_quote)}):null,
   caption_scope:typeof caption_scope==='string'?caption_scope.slice(0,350):'The supplied caption is unchanged in both audits.',
   runs:Array.isArray(runs)?runs.slice(0,128).map(r=>({
    stage:String(r?.stage||'').slice(0,32),model:String(r?.model||'').slice(0,70),
@@ -127,6 +129,7 @@ function safeReportData(source,{withHistory=true}={}){
    }:null
   })):[],
   original,verified:verified||null,
+  auto_correction:source.auto_correction&&typeof source.auto_correction==='object'?{attempted:source.auto_correction.attempted===true,status:String(source.auto_correction.status||'').slice(0,60),max_extra_image_requests:1,max_extra_audit_requests:1}:null,
   visual_consistency:safeVisualMetadata(source.visual_consistency),
   repair_review:repair_review&&typeof repair_review==='object'?{
    status:repair_review.status==='regression_suspected'?'regression_suspected':'review_required',
@@ -189,6 +192,10 @@ export function createAuditPackage(report,originalDataUrl,revisedDataUrl,history
  const assets={original:'original.'+original.extension,revised:revised?'revised.'+revised.extension:null};
  const entries=[{name:assets.original,bytes:original.bytes}];
  if(revised)entries.push({name:assets.revised,bytes:revised.bytes});
+ if(validated.caption_repair){
+  entries.push({name:'caption.txt',bytes:encoder.encode(validated.caption_repair.final)});
+  entries.push({name:'original-caption.txt',bytes:encoder.encode(validated.context.caption)});
+ }
  const archive_history=history.map((item,i)=>{
   assert(item&&['original','revised'].includes(item.from),'Jenis sumber putaran tidak valid.');
   assert(item.original,'Gambar sumber riwayat '+(i+1)+' tidak tersedia. Riwayat tidak boleh dihapus.');
@@ -218,7 +225,7 @@ function unzipStored(input){
  assert(eocd>=0,'Format ZIP tidak dikenali.');
  assert(v.getUint16(eocd+4,true)===0&&v.getUint16(eocd+6,true)===0,'ZIP multi-disk tidak didukung.');
  const count=v.getUint16(eocd+10,true), size=v.getUint32(eocd+12,true), start=v.getUint32(eocd+16,true);
- assert(count===v.getUint16(eocd+8,true)&&count>=2&&count<=3+2*MAX_HISTORY,'Isi paket ZIP tidak sesuai format AdProof.');
+ assert(count===v.getUint16(eocd+8,true)&&count>=2&&count<=5+2*MAX_HISTORY,'Isi paket ZIP tidak sesuai format AdProof.');
  assert(start+size===eocd,'Struktur ZIP tidak valid.');
  const output=new Map();let off=start;
  for(let i=0;i<count;i++){
@@ -230,7 +237,7 @@ function unzipStored(input){
   assert((flags&~0x0800)===0&&method===0&&raw===compressed&&raw<=MAX_IMAGE,'ZIP harus berisi file tanpa kompresi dan enkripsi.');
   assert(off+46+n+extra+comment<=eocd,'Nama file ZIP tidak lengkap.');
   let name;try{name=decoder.decode(input.subarray(off+46,off+46+n));}catch{throw Error('Nama file ZIP rusak.');}
-  assert(name==='audit.json'||/^(original|revised)\.(png|jpg|webp)$/.test(name)||/^history\/round0[1-8]-(original|revised)\.(png|jpg|webp)$/.test(name),'Paket ZIP berisi nama file tak dikenal.');
+  assert(['audit.json','caption.txt','original-caption.txt'].includes(name)||/^(original|revised)\.(png|jpg|webp)$/.test(name)||/^history\/round0[1-8]-(original|revised)\.(png|jpg|webp)$/.test(name),'Paket ZIP berisi nama file tak dikenal.');
   assert(!output.has(name),'Paket ZIP mengandung file ganda.');
   assert(localOffset+30<=start&&v.getUint32(localOffset,true)===0x04034b50,'Data file ZIP rusak.');
   const localFlags=v.getUint16(localOffset+6,true),localMethod=v.getUint16(localOffset+8,true),
@@ -266,6 +273,11 @@ export function readAuditPackage(bytes){
  const revised=artifacts.revised==null?null:unpackImage(artifacts.revised,'revised');
  if(report.verified)assert(revised,'Audit ulang memerlukan gambar revisi.');
  let expected=revised?3:2;
+ if(entries.has('caption.txt')||entries.has('original-caption.txt')){
+  assert(report.caption_repair&&entries.has('caption.txt')&&entries.has('original-caption.txt'),'Caption archive incomplete.');
+  assert(decoder.decode(entries.get('caption.txt'))===report.caption_repair.final&&decoder.decode(entries.get('original-caption.txt'))===report.context.caption,'Caption archive mismatch.');
+  expected+=2;
+ }
  const history=(report.archive_history||[]).map((item,i)=>{
   const prefix='history/round'+String(i+1).padStart(2,'0')+'-';
   assert(item.assets&&typeof item.assets==='object','Referensi gambar riwayat tidak ada.');

@@ -59,6 +59,115 @@ export async function decodeImage(data){
 }
 export async function dimensions(data){const i=await decodeImage(data);return {width:i.naturalWidth,height:i.naturalHeight};}
 function canvas(width,height){const c=document.createElement('canvas');c.width=width;c.height=height;const ctx=c.getContext('2d',{willReadFrequently:true});if(!ctx)throw Error('Canvas unavailable.');return {c,ctx};}
+function solidPerimeter(data,width,height){
+ const rgb=[data[0],data[1],data[2]];let count=0;
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  if(x>1&&y>1&&x<width-2&&y<height-2)continue;
+  const p=(y*width+x)*4;
+  if(data[p+3]!==255||rgb.some((v,k)=>Math.abs(v-data[p+k])>6))return null;
+  count++;
+ }
+ return count?rgb:null;
+}
+export async function verifyLocalPixels(original,revised,rectangles){
+ const [a,b]=await Promise.all([decodeImage(original),decodeImage(revised)]);
+ if(a.naturalWidth!==b.naturalWidth||a.naturalHeight!==b.naturalHeight)throw Error('Local repair changed source dimensions.');
+ const read=img=>{const {ctx}=canvas(img.naturalWidth,img.naturalHeight);ctx.drawImage(img,0,0);return ctx.getImageData(0,0,img.naturalWidth,img.naturalHeight).data;};
+ const x=read(a),y=read(b),w=a.naturalWidth;let outside=0,inside=0;
+ for(let i=0;i<x.length;i+=4){
+  if(x[i]===y[i]&&x[i+1]===y[i+1]&&x[i+2]===y[i+2]&&x[i+3]===y[i+3])continue;
+  const px=(i/4)%w,py=Math.floor(i/4/w);
+  if(rectangles.some(r=>px>=r.x&&py>=r.y&&px<r.x+r.width&&py<r.y+r.height))inside++;else outside++;
+ }
+ return {basis:'all_decoded_rgba_pixels',outside_changed_pixels:outside,inside_changed_pixels:inside,
+  source_dimensions:{width:w,height:a.naturalHeight},rectangles,verified:outside===0&&inside>0};
+}
+// Automatic text-only route: retain the original raster everywhere except
+// source-grounded text rectangles on independently measured solid backgrounds.
+export async function repairTextLocally(original,plan){
+ if(!plan?.edits?.length||plan.edits.some(e=>e.background==='complex'))return null;
+ const a=await decodeImage(original),{c,ctx}=canvas(a.naturalWidth,a.naturalHeight);ctx.drawImage(a,0,0);
+ const rectangles=[];
+ for(const edit of plan.edits){
+  const b=edit.box,x=Math.floor(b.x*c.width),y=Math.floor(b.y*c.height),w=Math.ceil(b.width*c.width),h=Math.ceil(b.height*c.height);
+  if(w<8||h<8||x+w>c.width||y+h>c.height)return null;
+  const pixels=ctx.getImageData(x,y,w,h).data,bg=solidPerimeter(pixels,w,h);
+  if(!bg)return null; // no erasing photographs, gradients or intersecting objects
+  let left=w,top=h,right=0,bottom=0,ink=0,inkColor=null;
+  for(let py=2;py<h-2;py++)for(let px=2;px<w-2;px++){
+   const i=(py*w+px)*4,d=bg.reduce((n,v,k)=>n+Math.abs(v-pixels[i+k]),0);
+   if(d<60)continue;
+   ink++;left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);
+   if(!inkColor||d>inkColor.d)inkColor={d,rgb:[pixels[i],pixels[i+1],pixels[i+2]]};
+  }
+  if(ink<4||ink>w*h*.4||!inkColor)return null;
+  ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(x,y,w,h);
+  if(edit.replacement){
+   let size=Math.floor((bottom-top+1)*1.25);const min=Math.max(9,Math.floor(c.width/200));
+   do{ctx.font=`${size}px Arial, sans-serif`;if(ctx.measureText(edit.replacement).width<=w-6)break;size--;}while(size>=min);
+   if(size<min||size>h-4)return null;
+   ctx.fillStyle=`rgb(${inkColor.rgb.join(',')})`;ctx.textBaseline='middle';
+   ctx.fillText(edit.replacement,x+3,y+h/2);
+  }
+  rectangles.push({x,y,width:w,height:h});
+ }
+ const image=c.toDataURL('image/png'),proof=await verifyLocalPixels(original,image,rectangles);
+ if(!proof.verified)return null;
+ return {image,method:'source_pixels_with_deterministic_text',local_plan:plan,pixel_proof:proof};
+}
+export async function compositePlannedRegions(original,candidate,plan){
+ const [a,b]=await Promise.all([decodeImage(original),decodeImage(candidate)]);
+ if(Math.abs((a.naturalWidth/a.naturalHeight)/(b.naturalWidth/b.naturalHeight)-1)>.01)throw Error('Localized repair changed canvas geometry; candidate blocked.');
+ const {c,ctx}=canvas(a.naturalWidth,a.naturalHeight);ctx.drawImage(a,0,0);const rectangles=[];
+ for(const edit of plan.edits){
+  const r=edit.box,x=Math.floor(r.x*c.width),y=Math.floor(r.y*c.height),w=Math.min(c.width-x,Math.ceil(r.width*c.width)),h=Math.min(c.height-y,Math.ceil(r.height*c.height));
+  ctx.drawImage(b,x/c.width*b.naturalWidth,y/c.height*b.naturalHeight,w/c.width*b.naturalWidth,h/c.height*b.naturalHeight,x,y,w,h);
+  rectangles.push({x,y,width:w,height:h});
+ }
+ const image=c.toDataURL('image/png'),proof=await verifyLocalPixels(original,image,rectangles);
+ if(!proof.verified)throw Error('Localized candidate did not produce a measurable source-bound correction.');
+ return {image,method:'generated_text_regions_composited_into_original',local_plan:plan,pixel_proof:proof};
+}
+// Seamless extension is permitted only for a measured flat source background.
+// Every original pixel remains inside the composition with uniform scaling.
+// This does not synthesize native detail or authorize an unsafe creative.
+export async function extendFlatBackground(data,target){
+ const img=await decodeImage(data),src=canvas(img.naturalWidth,img.naturalHeight);src.ctx.drawImage(img,0,0);
+ const bg=solidPerimeter(src.ctx.getImageData(0,0,src.c.width,src.c.height).data,src.c.width,src.c.height);
+ if(!bg)return null;
+ const ratio=target.width/target.height,sw=img.naturalWidth,sh=img.naturalHeight;
+ const w=sw/sh<ratio?Math.ceil(sh*ratio):sw,h=sw/sh<ratio?sh:Math.ceil(sw/ratio);
+ if(w>8192||h>8192||w*h>32e6)return null;
+ const {c,ctx}=canvas(w,h);ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(0,0,w,h);
+ const x=Math.floor((w-sw)/2),y=Math.floor((h-sh)/2);ctx.drawImage(img,x,y);
+ const image=c.toDataURL('image/png'),decoded=await decodeImage(image),check=canvas(w,h);check.ctx.drawImage(decoded,0,0);
+ const source=src.ctx.getImageData(0,0,sw,sh).data,preserved=check.ctx.getImageData(x,y,sw,sh).data;
+ if(!source.every((v,i)=>v===preserved[i]))return null;
+ return {image,method:'measured_solid_background_extension',
+  source_rect:{x,y,width:sw,height:sh},native_dimensions:{width:w,height:h},background_rgb:bg,
+  source_pixels_preserved:true,detail_added_by_ai:false};
+}
+// Muse supplies surrounding scene pixels only. Restore the complete reference
+// into that scene so reframing cannot redraw any source product/copy/logo.
+export async function compositeReferenceFrame(original,background){
+ const [a,b]=await Promise.all([decodeImage(original),decodeImage(background)]);
+ const scale=Math.min(1,b.naturalWidth/a.naturalWidth,b.naturalHeight/a.naturalHeight);
+ const w=Math.max(1,Math.round(a.naturalWidth*scale)),h=Math.max(1,Math.round(a.naturalHeight*scale));
+ const x=Math.floor((b.naturalWidth-w)/2),y=Math.floor((b.naturalHeight-h)/2);
+ const ref=canvas(w,h);ref.ctx.drawImage(a,0,0,w,h);
+ const {c,ctx}=canvas(b.naturalWidth,b.naturalHeight);ctx.drawImage(b,0,0);ctx.drawImage(ref.c,x,y);
+ const expected=ref.ctx.getImageData(0,0,w,h).data,actual=ctx.getImageData(x,y,w,h).data;
+ if(!expected.every((v,i)=>v===actual[i]))throw Error('Format reference pixel restoration failed.');
+ const data=ctx.getImageData(0,0,c.width,c.height).data;let delta=0,n=0;
+ const pair=(ax,ay,bx,by)=>{if(bx<0||by<0||bx>=c.width||by>=c.height)return;for(let k=0;k<3;k++)delta+=Math.abs(data[(ay*c.width+ax)*4+k]-data[(by*c.width+bx)*4+k])/765;n++;};
+ for(let i=0;i<w;i++){pair(x+i,y,x+i,y-1);pair(x+i,y+h-1,x+i,y+h);}
+ for(let j=0;j<h;j++){pair(x,y+j,x-1,y+j);pair(x+w-1,y+j,x+w,y+j);}
+ const seam=n?delta/n:0;
+ if(seam>.18)throw Error('Extended scene has a measurable boundary discontinuity; format candidate blocked.');
+ return {image:c.toDataURL('image/png'),method:'source_reference_restored_over_generated_surroundings',source_pixels_preserved:true,
+  source_rect:{x,y,width:w,height:h},reference_scale:scale,source_dimensions:{width:a.naturalWidth,height:a.naturalHeight},
+  native_dimensions:{width:c.width,height:c.height},seam_mean_delta:seam,source_upscaled:false,detail_added_by_ai:false};
+}
 export async function comparePixels(before,after){
  const [a,b]=await Promise.all([decodeImage(before),decodeImage(after)]);
  const sample=img=>{const {ctx}=canvas(64,64);ctx.drawImage(img,0,0,64,64);return ctx.getImageData(0,0,64,64).data;};

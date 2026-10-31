@@ -80,6 +80,7 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  const added=newLines.filter(x=>!oldLines.some(y=>norm(x)===norm(y)));
  const removed=oldLines.filter(x=>!newLines.some(y=>norm(x)===norm(y)));
  const risks=[];
+ for(const claim of revised?.claim_ledger||[])if(claim?.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts','unreadable'].includes(claim.assessment))risks.push({code:'unresolved_creative_claim',evidence:claim.claim});
  // A model can mark a claim as supported just because 5W or LED appears
  // in the supplied facts. That does not establish an "efficient" promise.
  const inspectedText=[...new Set([...newLines,...(next?.lines||[]),...(i?.new_claims||[]).map(x=>x?.text).filter(Boolean)])];
@@ -92,8 +93,10 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
   const observation=i?.visual?.[k];
   // Model-only "preserved" is insufficient to certify a lock. Exact byte identity
   // is the only automated preserved outcome; otherwise human comparison remains.
-  let status=measurements?.identical===true?'preserved':observation?.status==='preserved'?'unable_to_verify':observation?.status||'unable_to_verify';
+  const localPreserved=measurements?.local_repair?.verified===true&&measurements.local_repair.outside_changed_pixels===0;
+  let status=localPreserved||measurements?.identical===true?'preserved':observation?.status==='preserved'?'unable_to_verify':observation?.status||'unable_to_verify';
   let evidence=observation?.evidence||'';
+  if(localPreserved)evidence='All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. '+evidence;
   if(status==='unable_to_verify'&&observation?.status==='preserved')evidence+=' [Model reports preserved; no independent pixel/semantic proof.]';
   if(measurements?.aspect_delta>0.02&&k==='composition'){status='changed';evidence+=' Aspect ratio changed >2%.';}
   if((k==='colors'&&measurements?.mean_color_delta>0.08)||(k==='lighting'&&measurements?.luminance_delta>0.08)||(k==='background'&&measurements?.border_delta>0.12)){
@@ -111,7 +114,9 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  const unexplainedRemoval=removed.filter(line=>!initial?.claim_ledger?.some(c=>c.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment)&&norm(c.claim)===norm(line)));
  if(s.locks.typography&&unexplainedRemoval.length)risks.push({code:'removed_text_review',evidence:unexplainedRemoval.join('; ').slice(0,700)});
  const unresolved=Object.values(locks).some(x=>x.locked&&x.status==='unable_to_verify');
- return {version:POLICY_VERSION,status:risks.length?'failed':'review_required',auto_approved:false,coverage,locks,text:{added,removed,changed:i?.changed_text||[],limitations:[original?.limitations,next?.limitations].filter(Boolean)},risks,measurements,
+ const localValidated=!risks.length&&coverage==='model_reports_complete'&&measurements?.local_repair?.verified===true&&
+  !(revised?.issues||[]).some(x=>!/^caption\s*:/i.test(x.evidence||'')&&['high','medium'].includes(x.severity));
+ return {version:POLICY_VERSION,status:risks.length?'failed':localValidated?'validated':'review_required',auto_approved:localValidated,coverage,locks,text:{added,removed,changed:i?.changed_text||[],limitations:[original?.limitations,next?.limitations].filter(Boolean)},risks,measurements,
   limitations:['Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.',...(unresolved?['Some locks could not be independently verified.']:[])]};
 }
 
