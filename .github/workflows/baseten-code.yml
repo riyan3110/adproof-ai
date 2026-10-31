@@ -115,6 +115,7 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           RUN_ID: ${{ github.run_id }}
           TEST_RESULT: ${{ steps.tests.outcome }}
+          BASETEN_KEY: ${{ secrets.BASETEN_API_KEY }}
         shell: bash
         run: |
           set -euo pipefail
@@ -137,7 +138,7 @@ jobs:
           import os
           import subprocess
           import sys
-          secret = os.environ.get("OPENAI_API_KEY", "")
+          secret = os.environ.get("BASETEN_KEY", "")
           if secret and secret.encode() in subprocess.check_output(["git", "diff", "--cached", "--binary"]):
               print("::error::Secret appeared in proposed diff. Refusing publication.")
               sys.exit(1)
