@@ -64,7 +64,7 @@ function safeVisualMetadata(value){
   if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).slice(0,40).filter(([k])=>!/(?:__proto__|constructor|prototype|token|secret|password|api.?key|demo.?code)/i.test(k)).map(([k,x])=>[k.slice(0,80),clean(x,depth+1)]));
   return null;
  };
- const result={upload_dimensions:clean(value.upload_dimensions),source_dimensions:clean(value.source_dimensions),settings:normalizeSettings(value.settings),repair:clean(value.repair),verification:clean(value.verification),output_requested:clean(value.output_requested),output_actual:clean(value.output_actual)};
+ const result={format_history:clean(Array.isArray(value.format_history)?value.format_history.slice(0,16):[]),upload_dimensions:clean(value.upload_dimensions),source_dimensions:clean(value.source_dimensions),settings:normalizeSettings(value.settings),repair:clean(value.repair),verification:clean(value.verification),output_requested:clean(value.output_requested),output_actual:clean(value.output_actual)};
  if(result.verification){
   result.verification.status=result.verification.status==='failed'?'failed':'review_required';
   result.verification.auto_approved=false;
@@ -112,7 +112,7 @@ function safeReportData(source,{withHistory=true}={}){
   app,date:typeof date==='string'?date:null,report_language:reportLanguage,product:typeof product==='string'?product.slice(0,130):ctx.product,
   context:{product:ctx.product,facts:ctx.facts,caption:ctx.caption},
   caption_scope:typeof caption_scope==='string'?caption_scope.slice(0,350):'The supplied caption is unchanged in both audits.',
-  runs:Array.isArray(runs)?runs.slice(0,8).map(r=>({
+  runs:Array.isArray(runs)?runs.slice(0,128).map(r=>({
    stage:String(r?.stage||'').slice(0,32),model:String(r?.model||'').slice(0,70),
    tokens:Number.isFinite(r?.tokens)?r.tokens:null,
    origin:r?.origin==='saved_archive'?'saved_archive':null,

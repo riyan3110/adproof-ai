@@ -20,7 +20,7 @@ const ui = {
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
 loadPreference();
-const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
 let toastTimer=null;
 function renderSavedLanguageNotice(){
@@ -206,7 +206,7 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit({preserveHistory=false}={}){state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -403,22 +403,32 @@ async function adaptFormat(image,target){
  if(!state.configured||!state.initialAudit)throw Error('Complete an authentic audit before AI format adaptation.');
  const baseline=image===state.revised?state.verified:state.initialAudit;
  if(!baseline||!state.context)throw Error('No verified source audit is available for this image.');
+ if(state.formatHistory.length>=16)throw Error('Export this session before starting more format adaptations.');
+ const attempt={requested:{...target},status:'pending',image:null,audit:null,review:null};
+ state.formatHistory.push(attempt);
  setBusy(true,'AI format…');
  try {
   const out=await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
+  attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;
+  state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
+  state.imageResponded=true;updateMetaStatus();
   await validateCandidateImage(out.image);
   // Compare against the exact selected source, not a different prior revision.
   const referenceImage=await compactOriginalReference(image);
   const checked=await api('/api/audit',{...payload(out.image),referenceImage,language:getLanguage()});
+  attempt.audit=checked.provenance||null;attempt.tokens=checked.tokens??null;
+  state.runs.push({stage:'format_audit',model:checked.model,tokens:checked.tokens,provenance:checked.provenance||null});
+  state.sparkResponded=true;updateMetaStatus();
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
   const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings());
   const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage()});
   if(repairReview.status==='regression_suspected'){
    review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));
   }
-  state.imageResponded=true;state.sparkResponded=true;updateMetaStatus();
+  attempt.status=review.status;attempt.review=review;
   return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:true}};
- } finally {setBusy(false);}
+ } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);throw error;}
+ finally {setBusy(false);}
 }
 async function performImprove(){
  if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
@@ -452,7 +462,7 @@ function reportSnapshot(){
    original:state.initialAudit,verified:state.verified,
    disclaimer:'Saved model observations, not independently certified. Image edits always need human review.'};
  // JSON contains metadata only, no image bytes. ZIP adds historical pixels.
- report.visual_consistency={upload_dimensions:state.uploadDimensions||null,source_dimensions:state.sourceDimensions||null,settings:state.consistency,repair:state.repairMetadata||null,verification:state.consistencyReview||null,output_requested:state.outputRequested||null,output_actual:state.outputActual||null};
+ report.visual_consistency={format_history:state.formatHistory,upload_dimensions:state.uploadDimensions||null,source_dimensions:state.sourceDimensions||null,settings:state.consistency,repair:state.repairMetadata||null,verification:state.consistencyReview||null,output_requested:state.outputRequested||null,output_actual:state.outputActual||null};
  report.archive_history=(state.history||[]).map(round=>({from:round.from,report:round.report}));
  return report;
 }
@@ -473,7 +483,7 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages}){
  state.consistencyReview=report.visual_consistency?.verification||null;state.repairMetadata=report.visual_consistency?.repair||null;
  visualUI.restore(report.visual_consistency?.settings,report.visual_consistency?.output_requested);
  state.outputActual=report.visual_consistency?.output_actual||null;state.uploadDimensions=report.visual_consistency?.upload_dimensions||null;state.sourceDimensions=report.visual_consistency?.source_dimensions||null;
- state.runs=report.runs||[];
+ state.runs=report.runs||[];state.formatHistory=report.visual_consistency?.format_history||[];
  state.archivedReport=report;
  state.reportLanguage=report.report_language||'und';
  state.imported=true;
@@ -521,7 +531,7 @@ function continueArchivedAudit(from){
  state.history=[...state.history,preserved];
  state.imported=false;state.archivedReport=null;state.continuedFrom=from;
  ui.archiveLanguageNote.hidden=true;
- state.original=image;
+ state.original=image;state.formatHistory=[];
  state.sourceDimensions=from==='revised'?(state.repairMetadata?.candidate_dimensions||null):state.sourceDimensions;
  state.originalFilename='saved '+from+' · repair baseline';
  state.initialAudit=baseline;

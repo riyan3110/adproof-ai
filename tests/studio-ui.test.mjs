@@ -281,7 +281,7 @@ test('auto language selector and locale boundary preserve claims, archive eviden
 test('changing output consent or interpolation clears stale rendered preview and metadata',()=>{
  const output=readFileSync(new URL('../public/consistency-ui.js',import.meta.url),'utf8');
  assert.ok(output.includes("const sameSource=['confirmOutput','allowInterpolation','outputPadding'].includes(e.target.id)"),'consent toggles retain AI candidate, but invalidate output');
- assert.ok(output.includes('clearPrepared({keepReview:sameSource,keepFormat:sameSource})'),'changing export options clears prepared pixels');
+ assert.ok(output.includes('clearPrepared({keepReview:sameSource,keepFormat:sameSource||sameFormat})'),'changing export options clears prepared pixels');
  assert.ok(output.includes("q('#outputPreview').removeAttribute('src')"),'old preview must not remain visible or reference a revoked object URL');
  assert.ok(output.includes('state.outputActual=null'),'stale dimensions cannot survive output option changes');
  assert.ok(output.includes("if(!keepReview)q('#confirmOutput').checked=false"),'changing source/size requires fresh human confirmation');

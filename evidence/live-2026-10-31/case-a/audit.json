@@ -1,0 +1,466 @@
+{
+  "app": "AdProof AI",
+  "date": "2026-10-30T19:49:26.740Z",
+  "report_language": "id",
+  "product": "LumaDesk Mini",
+  "context": {
+    "product": "LumaDesk Mini",
+    "facts": "Produk fiktif khusus pengujian. Nama: LumaDesk Mini. Daya: 5 W. Bentuk produk berupa siluet hijau seperti terlihat pada gambar dan harus dipertahankan. Tidak ada bukti klaim penghematan 90%. Hapus klaim 90% savings; jangan menambah fitur, harga, manfaat, diskon, logo atau teks lain. Label QA TEST — FICTIONAL PRODUCT harus dipertahankan.",
+    "caption": ""
+  },
+  "caption_scope": "The supplied caption is unchanged in both audits; image repair does not edit external caption text.",
+  "runs": [
+    {
+      "stage": "initial",
+      "model": "muse-spark-1.3",
+      "tokens": 7156,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a18e5a-8400-73e9-ab33-2ba13be160bf",
+        "output_sha256": null,
+        "stage": "audit",
+        "completed_at": "2026-10-30T19:47:39.171Z",
+        "input_sha256": "92cfab4e6d78553425452fe68144ac1b24889e0a62d962984f1813fa2268df5f",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "repair",
+      "model": "muse-image-1.0",
+      "tokens": null,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-image-1.0",
+        "requested_model": "muse-image-1.0",
+        "returned_model": null,
+        "response_id": null,
+        "output_sha256": "d867cc67fc2b81de58582766e29b143c506945ae1332ea73f37c8e5b5d9d2260",
+        "stage": "repair",
+        "completed_at": "2026-10-30T19:48:01.891Z",
+        "input_sha256": "15ea570831de7b2297c2890a840e4c65f16f818368368df63026fd7d5d07de5d",
+        "report_language": "und"
+      }
+    },
+    {
+      "stage": "reaudit",
+      "model": "muse-spark-1.3",
+      "tokens": 12740,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a18e5b-c46f-761a-a1da-db328777f2be",
+        "output_sha256": null,
+        "stage": "reaudit",
+        "completed_at": "2026-10-30T19:49:01.204Z",
+        "input_sha256": "ffddb32c46373bbb255d6ca28324f73001c546025e027b181ff54ad60ccd1af3",
+        "report_language": "id"
+      }
+    }
+  ],
+  "original": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "Tidak ada batasan; seluruh teks terbaca jelas.",
+      "lines": [
+        "QA TEST — FICTIONAL PRODUCT",
+        "LumaDesk Mini / 5 W",
+        "90% savings"
+      ]
+    },
+    "consistency": null,
+    "score": 50,
+    "headline": "Klaim 90% savings Tanpa Bukti Harus Dihapus",
+    "summary": "Kreatif menampilkan label pengujian, nama LumaDesk Mini, daya 5 W, dan siluet hijau sesuai fakta pasokan. Satu-satunya temuan utama adalah klaim '90% savings' di kiri bawah yang tidak memiliki bukti dan harus dihapus. Tidak ditemukan cacat visual yang jelas pada bentuk, latar, atau tipografi.",
+    "recommended_caption": "QA TEST — FICTIONAL PRODUCT. LumaDesk Mini / 5 W.",
+    "issues": [
+      {
+        "id": "issue-1",
+        "title": "Klaim penghematan tanpa bukti",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Teks '90% savings' terbaca jelas di bagian kiri bawah di atas latar terang.",
+        "suggestion": "Hapus klaim '90% savings' sesuai perintah fakta pasokan dan jangan tambahkan fitur, harga, manfaat, atau teks lain."
+      }
+    ],
+    "strengths": [
+      "Label pengujian produk fiktif tampil jelas di bagian atas",
+      "Nama dan daya produk sesuai dengan fakta pasokan",
+      "Bentuk siluet hijau sederhana dan mudah terbaca dengan latar terang"
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "QA TEST — FICTIONAL PRODUCT",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Label QA TEST — FICTIONAL PRODUCT harus dipertahankan.",
+        "reason": "Label pada gambar sama dengan label yang wajib dipertahankan menurut fakta pasokan dan menegaskan status fiktif untuk pengujian.",
+        "recommended_action": "Pertahankan label apa adanya tanpa perubahan."
+      },
+      {
+        "id": "claim-2",
+        "claim": "LumaDesk Mini",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Nama: LumaDesk Mini.",
+        "reason": "Nama produk pada gambar sama persis dengan nama pada fakta pasokan.",
+        "recommended_action": "Pertahankan nama produk apa adanya."
+      },
+      {
+        "id": "claim-3",
+        "claim": "5 W",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Daya: 5 W.",
+        "reason": "Nilai daya pada gambar sama dengan nilai daya pada fakta pasokan.",
+        "recommended_action": "Pertahankan informasi daya apa adanya."
+      },
+      {
+        "id": "claim-4",
+        "claim": "90% savings",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "Tidak ada bukti klaim penghematan 90%. Hapus klaim 90% savings;",
+        "reason": "Fakta pasokan menyatakan tidak ada bukti untuk klaim penghematan ini dan memerintahkan penghapusan, sehingga klaim tidak terverifikasi.",
+        "recommended_action": "Hapus teks '90% savings' dari kreatif tanpa menambah teks lain."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 4,
+      "supported_by_supplied_facts": 3,
+      "unsupported_by_supplied_facts": 1,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 40,
+      "clarity": 90,
+      "hierarchy": 85,
+      "action": 60
+    }
+  },
+  "verified": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "",
+      "lines": [
+        "QA TEST — FICTIONAL PRODUCT",
+        "LumaDesk Mini / 5 W"
+      ]
+    },
+    "consistency": {
+      "original_text": {
+        "coverage": "complete",
+        "limitations": "Resolusi lebih rendah namun teks masih terbaca jelas.",
+        "lines": [
+          "QA TEST — FICTIONAL PRODUCT",
+          "LumaDesk Mini / 5 W",
+          "90% savings"
+        ]
+      },
+      "revised_text": {
+        "coverage": "complete",
+        "limitations": "",
+        "lines": [
+          "QA TEST — FICTIONAL PRODUCT",
+          "LumaDesk Mini / 5 W"
+        ]
+      },
+      "changed_text": [
+        {
+          "before": "90% savings",
+          "after": "",
+          "evidence": "Teks di kiri bawah IMAGE 2 tidak terlihat lagi di IMAGE 1; area tersebut menjadi latar polos sesuai perintah hapus klaim."
+        }
+      ],
+      "new_claims": [],
+      "visual": {
+        "product_shape": {
+          "status": "preserved",
+          "evidence": "Siluet hijau di area tengah dengan badan vertikal membulat di bawah dan tonjolan persegi kecil di atas terlihat sama bentuk dan proporsinya di kedua gambar."
+        },
+        "colors": {
+          "status": "preserved",
+          "evidence": "Warna hijau tua produk dan krem terang latar terlihat sama; tidak ada peningkatan saturasi atau kontras."
+        },
+        "lighting": {
+          "status": "preserved",
+          "evidence": "Pencahayaan datar merata tanpa bayangan, sorotan, atau pantulan baru pada produk maupun latar."
+        },
+        "background": {
+          "status": "preserved",
+          "evidence": "Latar polos terang tanpa objek, permukaan, atau dekorasi tambahan; area bekas teks bawah kini menyatu dengan latar."
+        },
+        "composition": {
+          "status": "preserved",
+          "evidence": "Tata letak teks di kiri atas dan produk di tengah dipertahankan; skala dan sudut kamera tampak konsisten dengan mempertimbangkan perbedaan resolusi; tidak ada objek dekoratif baru."
+        },
+        "typography": {
+          "status": "preserved",
+          "evidence": "Dua baris teks atas dengan bentuk huruf dan penempatan kiri atas sama; keterbacaan tetap jelas; tidak ada teks tambahan."
+        },
+        "branding": {
+          "status": "preserved",
+          "evidence": "Tidak ada logo atau merek dagang pada kedua gambar; tidak ada perubahan identitas merek."
+        }
+      }
+    },
+    "score": 96,
+    "headline": "Revisi patuh: klaim 90% dihapus, identitas produk dipertahankan",
+    "summary": "IMAGE 1 menghapus klaim 90% savings yang tidak ber bukti sesuai instruksi, mempertahankan label QA TEST — FICTIONAL PRODUCT, nama LumaDesk Mini dan daya 5 W, serta mempertahankan siluet hijau, warna, pencahayaan, latar dan tipografi tanpa menambah klaim atau teks baru.",
+    "recommended_caption": "LumaDesk Mini / 5 W — QA TEST — FICTIONAL PRODUCT",
+    "issues": [],
+    "strengths": [
+      "Klaim 90% savings yang tidak didukung telah dihapus sesuai perintah",
+      "Label QA TEST — FICTIONAL PRODUCT, nama dan daya tetap sesuai fakta",
+      "Siluet hijau, warna, pencahayaan dan latar polos dipertahankan",
+      "Tidak ada penambahan fitur, harga, manfaat, logo atau teks lain"
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "QA TEST — FICTIONAL PRODUCT",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Label QA TEST — FICTIONAL PRODUCT harus dipertahankan.",
+        "reason": "Label tersebut terbaca jelas di bagian atas IMAGE 1 dan sesuai dengan perintah untuk dipertahankan.",
+        "recommended_action": "Pertahankan label apa adanya tanpa perubahan."
+      },
+      {
+        "id": "claim-2",
+        "claim": "LumaDesk Mini",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Nama: LumaDesk Mini.",
+        "reason": "Nama produk di IMAGE 1 sama persis dengan nama yang tercantum dalam fakta pemasok.",
+        "recommended_action": "Pertahankan tanpa perubahan."
+      },
+      {
+        "id": "claim-3",
+        "claim": "5 W",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Daya: 5 W.",
+        "reason": "Nilai daya di IMAGE 1 cocok dengan daya yang tercantum dalam fakta pemasok.",
+        "recommended_action": "Pertahankan tanpa perubahan."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 3,
+      "supported_by_supplied_facts": 3,
+      "unsupported_by_supplied_facts": 0,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 100,
+      "clarity": 95,
+      "hierarchy": 90,
+      "action": 90
+    }
+  },
+  "visual_consistency": {
+    "upload_dimensions": {
+      "width": 1200,
+      "height": 800
+    },
+    "source_dimensions": {
+      "width": 1200,
+      "height": 800
+    },
+    "settings": {
+      "version": "visual-consistency-1",
+      "style": "natural",
+      "locks": {
+        "product_shape": true,
+        "colors": true,
+        "lighting": true,
+        "background": true,
+        "composition": true,
+        "typography": true,
+        "branding": true
+      },
+      "region": null
+    },
+    "repair": {
+      "settings": {
+        "version": "visual-consistency-1",
+        "style": "natural",
+        "locks": {
+          "product_shape": true,
+          "colors": true,
+          "lighting": true,
+          "background": true,
+          "composition": true,
+          "typography": true,
+          "branding": true
+        },
+        "region": null
+      },
+      "source_dimensions": {
+        "width": 1200,
+        "height": 800
+      },
+      "model_dimensions": {
+        "width": 1920,
+        "height": 1280
+      },
+      "requested_model": "muse-image-1.0",
+      "returned_model": null,
+      "method": "reference_image_edit_no_mask",
+      "limitations": [
+        "No mask support; style and locks are model instructions, not guaranteed preservation."
+      ],
+      "compositing": {
+        "provider_output_hash_scope": "unmodified_provider_image_before_local_compositing",
+        "method": "full_frame_candidate",
+        "rectangle": null,
+        "limitations": []
+      },
+      "candidate_dimensions": {
+        "width": 1920,
+        "height": 1280
+      },
+      "output_requested": {
+        "category": "social",
+        "preset": 0,
+        "width": 210,
+        "height": 297,
+        "unit": "mm",
+        "ppi": 150,
+        "standard": "a4",
+        "padding": "white",
+        "source": "original"
+      },
+      "upload_dimensions": {
+        "width": 1200,
+        "height": 800
+      }
+    },
+    "verification": {
+      "version": "visual-consistency-1",
+      "status": "review_required",
+      "auto_approved": false,
+      "coverage": "model_reports_complete",
+      "locks": {
+        "product_shape": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Siluet hijau di area tengah dengan badan vertikal membulat di bawah dan tonjolan persegi kecil di atas terlihat sama bentuk dan proporsinya di kedua gambar. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "colors": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Warna hijau tua produk dan krem terang latar terlihat sama; tidak ada peningkatan saturasi atau kontras. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "lighting": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Pencahayaan datar merata tanpa bayangan, sorotan, atau pantulan baru pada produk maupun latar. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "background": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Latar polos terang tanpa objek, permukaan, atau dekorasi tambahan; area bekas teks bawah kini menyatu dengan latar. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "composition": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Tata letak teks di kiri atas dan produk di tengah dipertahankan; skala dan sudut kamera tampak konsisten dengan mempertimbangkan perbedaan resolusi; tidak ada objek dekoratif baru. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "typography": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Dua baris teks atas dengan bentuk huruf dan penempatan kiri atas sama; keterbacaan tetap jelas; tidak ada teks tambahan. [Model reports preserved; no independent pixel/semantic proof.]"
+        },
+        "branding": {
+          "locked": true,
+          "status": "unable_to_verify",
+          "evidence": "Tidak ada logo atau merek dagang pada kedua gambar; tidak ada perubahan identitas merek. [Model reports preserved; no independent pixel/semantic proof.]"
+        }
+      },
+      "text": {
+        "added": [],
+        "removed": [
+          "90% savings"
+        ],
+        "changed": [
+          {
+            "before": "90% savings",
+            "after": "",
+            "evidence": "Teks di kiri bawah IMAGE 2 tidak terlihat lagi di IMAGE 1; area tersebut menjadi latar polos sesuai perintah hapus klaim."
+          }
+        ],
+        "limitations": [
+          "Resolusi lebih rendah namun teks masih terbaca jelas."
+        ]
+      },
+      "risks": [],
+      "measurements": {
+        "basis": "64x64_normalized_pixel_heuristic_not_object_detection",
+        "identical": false,
+        "original": {
+          "width": 1200,
+          "height": 800
+        },
+        "revised": {
+          "width": 1920,
+          "height": 1280
+        },
+        "aspect_delta": 0,
+        "mean_color_delta": 0.006871361825980392,
+        "luminance_delta": 0.006906758961400337,
+        "border_delta": 0.014550507703081191,
+        "mean_pixel_delta": 0.014948108149511091,
+        "changed_sample_fraction": 0.027099609375
+      },
+      "limitations": [
+        "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.",
+        "Some locks could not be independently verified."
+      ]
+    },
+    "output_requested": {
+      "category": "social",
+      "preset": 0,
+      "width": 210,
+      "height": 297,
+      "unit": "mm",
+      "ppi": 150,
+      "standard": "a4",
+      "padding": "white",
+      "source": "original"
+    },
+    "output_actual": null
+  },
+  "repair_review": {
+    "status": "review_required",
+    "reasons": [
+      "Belum ada bukti cukup untuk menyatakan hasil edit lebih baik: tetap bandingkan bentuk produk, perspektif, tepi, bayangan dan teks secara manual."
+    ],
+    "original_reference_sent": true,
+    "basis": "model_selected_observations_not_pixel_certification",
+    "auto_approved": false
+  },
+  "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+  "archive_artifacts": {
+    "original": "original.png",
+    "revised": "revised.webp"
+  },
+  "archive_history": [],
+  "archive_format_version": 2,
+  "archive_note": "Saved previous rounds. Import is not a fresh model run or Meta-signed evidence."
+}
