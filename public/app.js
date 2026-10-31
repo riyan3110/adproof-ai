@@ -164,7 +164,7 @@ async function verifyCode(code,{restoring=false}={}) {
   try{
    res=await fetch('/api/access',{method:'POST',headers:{'x-demo-code':code},signal:controller.signal});
    reply=await res.json().catch(()=>({}));
-  }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
+  }finally{clearTimeout(timer);}
   if(generation!==accessCheckGeneration)return false;
   if(res.ok && reply.ok===true && reply.access==='verified') {
    setCode(code);
@@ -335,8 +335,8 @@ async function api(endpoint,data,retried=false){
   :endpoint==='/api/localize'?(getLanguage()==='id'?'Muse Spark mencari area teks':'Muse Spark finding text bounds')
   :(getLanguage()==='id'?'Muse Spark memeriksa gambar':'Muse Spark checking image');
  const pulse=progressEndpoint?setInterval(()=>{
-  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+' detik');
- },4500):null;
+  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+(getLanguage()==='id'?' detik':' seconds'));
+ },1000):null;
  let r,result;
  try {
   const headers={'content-type':'application/json'};
@@ -346,7 +346,7 @@ async function api(endpoint,data,retried=false){
  }catch(e){
   if(e?.name==='AbortError')throw Error('Permintaan kedaluwarsa. Silakan coba lagi.');
   throw e;
- }finally{clearTimeout(timer);}
+ }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
  if(r.status===401||r.status===403){
   setCode('');
   setAccessStatus('Code rejected by AI endpoint','invalid');
