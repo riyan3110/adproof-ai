@@ -30,10 +30,15 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   await page.locator('#product').fill('LumaDesk Mini');await page.locator('#facts').fill(facts);await page.locator('#caption').fill('Saves 90%, protects eyes and improves sleep.');
   await page.locator('#auditButton').click();await page.locator('#refineButton').waitFor({state:'visible'});
   await page.waitForFunction(()=>!document.querySelector('#refineButton').disabled);
+  assert.equal(await page.locator('#repairJourney').getAttribute('data-phase'),'ready');
+  assert.match(await page.locator('#repairJourneyIssue').textContent(),/90% savings/);
+  assert.equal(await page.locator('#repairJourneyButton').getAttribute('data-action'),'repair');
   assert.match(await page.locator('#suggestedCaption').textContent(),/Power consumption: 5 watts/);
   assert.doesNotMatch(await page.locator('#suggestedCaption').textContent(),/Efficient|Saves 90|protects eyes/);
   await page.locator('#refineButton').click();
   await page.waitForFunction(()=>document.querySelector('#consistencyResult h3')?.textContent.includes('Consistency validated'));
+  assert.equal(await page.locator('#repairJourney').getAttribute('data-phase'),'passed');
+  assert.equal(await page.locator('#repairJourneyButton').getAttribute('data-action'),'compare');
   assert.equal(audits,2);assert.equal(imageCalls,0);
   assert.match(finalCaptionSent,/5 watts/);assert.doesNotMatch(finalCaptionSent,/Saves 90|protects eyes|improves sleep/);
   const downloadEvent=page.waitForEvent('download');await page.locator('#downloadPackage').click();
