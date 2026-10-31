@@ -1,0 +1,161 @@
+name: Baseten AI - AdProof AI (mobile)
+
+# Create an Issue titled "[baseten] <task>" from your phone.
+# Only the repository owner's Issues can spend Baseten credits.
+# No automatic production edit, deploy, merge, or Meta Image invocation.
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+concurrency:
+  group: baseten-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  propose-fix:
+    if: github.event.issue.user.login == 'riyan3110' && startsWith(github.event.issue.title, '[baseten] ')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout existing AdProof AI
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Ensure private Baseten key exists
+        env:
+          BASETEN_KEY: ${{ secrets.BASETEN_API_KEY }}
+        shell: bash
+        run: |
+          if [ -z "$BASETEN_KEY" ]; then
+            echo "::error::Add repository Actions secret BASETEN_API_KEY before opening a [baseten] Issue."
+            exit 1
+          fi
+
+      - name: Set up coding runtime
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up project runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned AI code editor
+        shell: bash
+        run: python -m pip install --disable-pip-version-check --no-input 'aider-chat==0.86.2'
+
+      - name: Prepare owner instruction safely
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          task = os.environ.get("ISSUE_TITLE", "")[10:400]
+          details = os.environ.get("ISSUE_BODY", "")[:7000]
+          guardrails = """
+          You are improving the EXISTING AdProof AI repository for its Meta hackathon.
+          Implement a small, real code fix requested below. Do not start a new project,
+          redesign the UI, or introduce third-party production AI providers.
+          Preserve the existing Meta Muse Spark / Muse Image production integration.
+          Avoid editing credentials, GitHub Actions, deployment/security settings, or
+          any .env files. Do not run paid production model calls, claim fictional test
+          results, or publish to social media. Never expose environment variables.
+          Keep the original artwork, claims, consistency-lock, and export safeguards.
+          Add targeted regression tests where feasible. The repository CI will run
+          npm run check after edits. Only a proposed PR may be created, never merged.
+          USER TASK:
+          """
+          Path("/tmp/adproof-baseten-task.txt").write_text(
+              guardrails + "\n" + task + "\n" + details + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Use Meta Muse Spark Open through Baseten to fix code
+        env:
+          OPENAI_API_KEY: ${{ secrets.BASETEN_API_KEY }}
+          OPENAI_API_BASE: https://inference.baseten.co/v1
+        shell: bash
+        run: |
+          aider \
+            --model openai/meta-models/muse-spark-open-1026 \
+            --reasoning-effort medium \
+            --edit-format diff \
+            --message-file /tmp/adproof-baseten-task.txt \
+            --map-tokens 4096 \
+            --timeout 300 \
+            --no-auto-commits \
+            --no-auto-lint \
+            --no-auto-test \
+            --no-check-update \
+            --no-analytics \
+            --no-add-gitignore-files \
+            --no-suggest-shell-commands \
+            --yes-always
+
+      - name: Run AdProof AI regression tests (mocked provider)
+        id: tests
+        continue-on-error: true
+        run: npm run check
+
+      - name: Publish a review-only branch and PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_ID: ${{ github.run_id }}
+          TEST_RESULT: ${{ steps.tests.outcome }}
+          BASETEN_KEY: ${{ secrets.BASETEN_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="baseten/issue-${ISSUE_NUMBER}-run-${RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+
+          # Only application, test and documentation files are eligible.
+          # AI-proposed GitHub workflow / credential changes are never included.
+          git add -A -- api public scripts test tests server.mjs consistency-server.mjs package.json docs README.md
+          if git diff --cached --quiet; then
+            echo "::error::No permitted application files changed; no PR created."
+            echo "Agent produced no reviewable app changes." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          # Do not publish a secret even if a model accidentally copies it.
+          python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          secret = os.environ.get("BASETEN_KEY", "")
+          if secret and secret.encode() in subprocess.check_output(["git", "diff", "--cached", "--binary"]):
+              print("::error::Secret appeared in proposed diff. Refusing publication.")
+              sys.exit(1)
+          PY
+
+          git commit -m "fix: Baseten AI proposal for AdProof issue #${ISSUE_NUMBER}"
+          git push origin "$branch"
+          if [ "$TEST_RESULT" = "success" ]; then
+            flags=()
+          else
+            flags=(--draft)
+          fi
+          if gh pr create "${flags[@]}" --base main --head "$branch" \
+            --title "Baseten AI: AdProof fix for issue #${ISSUE_NUMBER}" \
+            --body "Proposed by Aider using **Meta Muse Spark Open on Baseten** from issue #${ISSUE_NUMBER}. This is NOT Meta Muse Code and does not replace the existing Meta inference in production.\n\nRegression tests: ${TEST_RESULT} (mocked upstream).\n\nReview before merging. No live Meta image-quality result is claimed."; then
+            echo "PR opened for review; nothing was merged or deployed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::GitHub may block workflow-created PRs. Changes are preserved on branch $branch."
+            echo "PR creation unavailable; review the saved branch." >> "$GITHUB_STEP_SUMMARY"
+          fi
