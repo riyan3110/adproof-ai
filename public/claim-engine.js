@@ -33,6 +33,18 @@ export function normalizeClaim(text) {
   return String(text ?? '').toLocaleLowerCase('en').replace(/\s+/g, ' ').trim();
 }
 
+// Display-only, conservative distinction for historical Meta observations.
+// Never reclassify a measured, comparative, medical, commercial or otherwise
+// objectively checkable promise. This does not change audit/export eligibility.
+export function isClearlySubjectiveSlogan(entry) {
+  if(entry?.assessment!=='needs_human_review')return false;
+  const phrase=String(entry?.claim||'').trim();
+  const explanation=String(entry?.reason||'');
+  if(!phrase||phrase.length>100||!/(?:slogan|tagline|motto|catchphrase|ungkapan kreatif|figurative promotional phrase)/i.test(explanation))return false;
+  const objective=/\\d|[%$€]|\\b(?:garansi|jaminan|terbukti|bersertifikat|aman|menyembuhkan|mengobati|melindungi|mencegah|menurunkan|menaikkan|hemat|irit|diskon|gratis|tahan|lebih cepat|lebih lama|paling|terbaik|nomor satu|guaranteed|certified|clinically|safe|cures?|treats?|prevents?|protects?|reduces?|saves?|discount|free|lasts?|faster|longer|best|number one)\\b/i;
+  return !objective.test(phrase);
+}
+
 function ledgerOf(audit) {
   if (!audit || typeof audit !== 'object') return null;
   if (audit.claim_ledger_available === false || !Array.isArray(audit.claim_ledger)) return null;
