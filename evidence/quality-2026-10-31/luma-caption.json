@@ -1,0 +1,34 @@
+{
+  "version": "source-bound-1",
+  "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+  "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+  "status": "source_bound",
+  "method": "verbatim_fact_fallback",
+  "product_identity": "LumaDesk Mini — LED Desk Lamp",
+  "statements": [
+    {
+      "text": "Category: LED desk lamp",
+      "fact_quote": "Category: LED desk lamp"
+    },
+    {
+      "text": "Power consumption: 5 watts",
+      "fact_quote": "Power consumption: 5 watts"
+    },
+    {
+      "text": "Light color: Warm white (3000K)",
+      "fact_quote": "Light color: Warm white (3000K)"
+    },
+    {
+      "text": "Power source: USB 5V",
+      "fact_quote": "Power source: USB 5V"
+    }
+  ],
+  "verification": {
+    "status": "passed",
+    "basis": "complete_source_lines_and_exact_rendered_values",
+    "unsupported_sentences": 0
+  },
+  "basis": "seller_supplied_facts_not_independently_verified",
+  "evidence_type": "deterministic_caption_correction_from_actual_historical_context",
+  "fresh_meta_calls": 0
+}

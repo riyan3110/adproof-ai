@@ -58,6 +58,11 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
     const bytes=[...new Uint8Array(await png.blob.arrayBuffer())];
     transitions.push({from:from.join(':'),to:to.join(':'),metadata:png.metadata,bytes});
    }
+   // A generated surrounding frame cannot redraw reference pixels or upscale them.
+   const frameCanvas=document.createElement('canvas');frameCanvas.width=1600;frameCanvas.height=900;const fctx=frameCanvas.getContext('2d');fctx.fillStyle='#e9e8de';fctx.fillRect(0,0,1600,900);
+   const restored=await output.compositeReferenceFrame(revised,frameCanvas.toDataURL());
+   if(!restored.source_pixels_preserved||restored.source_upscaled)throw Error('Reference frame drift');
+   fctx.fillStyle='#ff0000';fctx.fillRect(0,0,1600,900);let rejected=false;try{await output.compositeReferenceFrame(revised,frameCanvas.toDataURL())}catch{rejected=true;}if(!rejected)throw Error('Visible scene seam was not rejected');
    const printSource=await output.extendFlatBackground(revised,{width:1240,height:1754});
    const print=await output.renderOutput(printSource.image,{category:'print',width:210,height:297,unit:'mm',ppi:150},{allowInterpolation:true,aiAdapted:true});
    return {proof,original:await imageBytes(original),revised:await imageBytes(revised),transitions,print:{metadata:print.metadata,bytes:[...new Uint8Array(await print.blob.arrayBuffer())]},source_dimensions:{width:source.naturalWidth,height:source.naturalHeight}};

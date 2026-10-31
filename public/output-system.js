@@ -147,6 +147,27 @@ export async function extendFlatBackground(data,target){
   source_rect:{x,y,width:sw,height:sh},native_dimensions:{width:w,height:h},background_rgb:bg,
   source_pixels_preserved:true,detail_added_by_ai:false};
 }
+// Muse supplies surrounding scene pixels only. Restore the complete reference
+// into that scene so reframing cannot redraw any source product/copy/logo.
+export async function compositeReferenceFrame(original,background){
+ const [a,b]=await Promise.all([decodeImage(original),decodeImage(background)]);
+ const scale=Math.min(1,b.naturalWidth/a.naturalWidth,b.naturalHeight/a.naturalHeight);
+ const w=Math.max(1,Math.round(a.naturalWidth*scale)),h=Math.max(1,Math.round(a.naturalHeight*scale));
+ const x=Math.floor((b.naturalWidth-w)/2),y=Math.floor((b.naturalHeight-h)/2);
+ const ref=canvas(w,h);ref.ctx.drawImage(a,0,0,w,h);
+ const {c,ctx}=canvas(b.naturalWidth,b.naturalHeight);ctx.drawImage(b,0,0);ctx.drawImage(ref.c,x,y);
+ const expected=ref.ctx.getImageData(0,0,w,h).data,actual=ctx.getImageData(x,y,w,h).data;
+ if(!expected.every((v,i)=>v===actual[i]))throw Error('Format reference pixel restoration failed.');
+ const data=ctx.getImageData(0,0,c.width,c.height).data;let delta=0,n=0;
+ const pair=(ax,ay,bx,by)=>{if(bx<0||by<0||bx>=c.width||by>=c.height)return;for(let k=0;k<3;k++)delta+=Math.abs(data[(ay*c.width+ax)*4+k]-data[(by*c.width+bx)*4+k])/765;n++;};
+ for(let i=0;i<w;i++){pair(x+i,y,x+i,y-1);pair(x+i,y+h-1,x+i,y+h);}
+ for(let j=0;j<h;j++){pair(x,y+j,x-1,y+j);pair(x+w-1,y+j,x+w,y+j);}
+ const seam=n?delta/n:0;
+ if(seam>.18)throw Error('Extended scene has a measurable boundary discontinuity; format candidate blocked.');
+ return {image:c.toDataURL('image/png'),method:'source_reference_restored_over_generated_surroundings',source_pixels_preserved:true,
+  source_rect:{x,y,width:w,height:h},reference_scale:scale,source_dimensions:{width:a.naturalWidth,height:a.naturalHeight},
+  native_dimensions:{width:c.width,height:c.height},seam_mean_delta:seam,source_upscaled:false,detail_added_by_ai:false};
+}
 export async function comparePixels(before,after){
  const [a,b]=await Promise.all([decodeImage(before),decodeImage(after)]);
  const sample=img=>{const {ctx}=canvas(64,64);ctx.drawImage(img,0,0,64,64);return ctx.getImageData(0,0,64,64).data;};

@@ -19,7 +19,7 @@ function liveAdapter(api){
  const state={formatHistory:[],runs:[],configured:true,initialAudit:{score:70},context:{},consistency:{}};
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  const start=source.indexOf('async function adaptFormat('),end=source.indexOf('\nasync function performImprove',start);
- const context=vm.createContext({state,api,extendFlatBackground:async()=>null,payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
+ const context=vm.createContext({state,api,extendFlatBackground:async()=>null,compositeReferenceFrame:async()=>({image:'result',source_pixels_preserved:true}),payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
   getLanguage:()=> 'en',setBusy:v=>state.busy=v,updateMetaStatus:()=>{},inspectFormatCandidate:()=>({status:'failed',risks:[{code:'lock_typography',evidence:'Missing required text'}]}),reviewRepairCandidate:()=>({status:'review_required'}),visualUI:{readSettings:()=>({})}});
  return {state,run:vm.runInContext(source.slice(start,end)+';adaptFormat',context)};
 }

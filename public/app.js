@@ -1,6 +1,6 @@
 import {createConsistencyUI} from './consistency-ui.js';
 import {inspectConsistency} from './visual-consistency.js';
-import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions} from './output-system.js';
+import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
@@ -487,6 +487,9 @@ async function adaptFormat(image,target){
   state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
   state.imageResponded=state.imageResponded||!extended;updateMetaStatus();
   await validateCandidateImage(out.image);
+  const frame=extended||await compositeReferenceFrame(image,out.image);
+  out.image=frame.image;
+  attempt.reference_frame={...frame,image:undefined};
   // Compare against the exact selected source, not a different prior revision.
   const referenceImage=await compactOriginalReference(image);
   const checked=await api('/api/audit',{...payload(out.image),caption:state.captionRepair?.final||state.context.caption,referenceImage,language:getLanguage()});
@@ -496,12 +499,12 @@ async function adaptFormat(image,target){
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
   const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings(),state.context?.facts||'');
   const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage(),caption:state.context?.caption});
-  if(extended&&review.status!=='failed'&&review.coverage==='model_reports_complete'&&repairReview.status!=='regression_suspected'){review.status='validated';review.auto_approved=true;review.pixel_preservation=extended.source_pixels_preserved;}
+  if(frame.source_pixels_preserved&&review.status!=='failed'&&review.coverage==='model_reports_complete'&&repairReview.status!=='regression_suspected'){review.status='validated';review.auto_approved=true;review.pixel_preservation={...frame,image:undefined};}
   if(repairReview.status==='regression_suspected'){
    review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));
   }
   attempt.status=review.status;attempt.review=review;
-  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.status!=='validated',deterministic_extension:extended?{...extended,image:undefined}:null}};
+  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.status!=='validated',reference_frame:{...frame,image:undefined},deterministic_extension:extended?{...extended,image:undefined}:null}};
  } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);throw error;}
  finally {setBusy(false);}
 }
