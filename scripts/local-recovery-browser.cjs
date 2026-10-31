@@ -170,9 +170,14 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.locator('#auditButton').click();
   await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
   await page.locator('#refineButton').click();
+  // Wait for the actual network requests, not a single transient IndexedDB
+  // state. This prevents a passing result from stale or in-flight autosaves.
+  for(let poll=0;poll<400&&(audits<8||repairs<4);poll++)await page.waitForTimeout(50);
+  const corrected=await getSaved(page);
+  console.log('AUTO CORRECTION DIAGNOSTIC',JSON.stringify({audits,repairs,stages:corrected.snapshot.report.runs.map(r=>r.stage),correction:corrected.snapshot.report.auto_correction,score:corrected.snapshot.report.verified?.score}));
   await page.waitForFunction(async()=>{
    const req=indexedDB.open('adproof-studio-recovery-v1');
-   return new Promise(resolve=>{
+   return await new Promise(resolve=>{
     req.onsuccess=()=>{
      const db=req.result,tx=db.transaction('snapshot','readonly');
      const get=tx.objectStore('snapshot').get('latest');
@@ -180,9 +185,7 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
      get.onerror=()=>{db.close();resolve(false)};
     };req.onerror=()=>resolve(false);
    });
-  },null,{timeout:35000});
-  const corrected=await getSaved(page);
-  console.log('AUTO CORRECTION DIAGNOSTIC',JSON.stringify({audits,repairs,stages:corrected.snapshot.report.runs.map(r=>r.stage),correction:corrected.snapshot.report.auto_correction,score:corrected.snapshot.report.verified?.score}));
+  },null,{timeout:15000});
   assert.equal(audits,8,'initial + first Verify + exactly one corrective Verify');
   assert.equal(repairs,4,'normal Repair + one corrective image edit');
   assert.equal(corrected.snapshot.history.length,1,'first rejected image retained in archive history');
