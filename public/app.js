@@ -590,10 +590,12 @@ async function attemptAutoCorrectionOnce({manual=false}={}){
  }
  // Set the durable attempt flag BEFORE issuing any further potentially paid request.
  state.autoCorrection={attempted:true,status:'requested',diagnostics:plan.diagnostics,max_extra_image_requests:1,max_extra_audit_requests:1};
+ // Lock the UI before the asynchronous recovery write so repeated taps cannot
+ // start a second paid correction while the attempt flag is being persisted.
+ setBusy(true,'Correcting…');
  await persistMilestone();
  const before={from:'original',report:reportSnapshot(),original:state.original,revised:state.revised};
  const settings=state.repairMetadata?.settings||state.consistency||visualUI.readSettings();
- setBusy(true,'Correcting…');
  let generated=false;
  try{
   const correction=correctionPayload(state.initialAudit,plan);
