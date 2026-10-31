@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {unverifiedPerformanceText,inspectConsistency} from '../public/visual-consistency.js';
+import {unverifiedPerformanceText,inspectConsistency,impliedThermalDurationText} from '../public/visual-consistency.js';
+import {normalizeLocalPlan} from '../public/factual-repair.js';
 import {fitReplacementLines} from '../public/output-system.js';
 
 const inventory=lines=>({lines,coverage:'complete'});
@@ -32,6 +33,23 @@ test('verbatim source-backed thermal duration prevents unsupported backstop',()=
 });
 test('duration warnings in seller facts do not count as duration evidence',()=>{
  assert.deepEqual(unverifiedPerformanceText(['Lebih lama'],'Tidak tersedia bukti dingin hingga 24 jam',initial),['Lebih lama']);
+});
+test('the next repair must localize both the explicit and dependent duration text',()=>{
+ assert.deepEqual(impliedThermalDurationText(initial,facts),['Lebih lama']);
+ const augmented={...initial,issues:[{category:'Claim',evidence:'DINGIN HINGGA 24 JAM'}],
+  claim_ledger:[...initial.claim_ledger,
+   {claim:'Lebih lama',origin:'creative',assessment:'unsupported_by_supplied_facts'}]};
+ const one={coverage:'complete',protected_regions:[{x:.6,y:.2,width:.3,height:.65}],
+  edits:[{before:'DINGIN HINGGA 24 JAM',replacement:'',background:'complex',
+   box:{x:.1,y:.4,width:.35,height:.06}}]};
+ assert.equal(normalizeLocalPlan(one,augmented,facts),null,'cannot approve removal of only one of two coupled claims');
+ const both={...one,edits:[...one.edits,
+  {before:'Lebih lama',replacement:'',background:'complex',box:{x:.1,y:.22,width:.35,height:.06}}]};
+ assert.equal(normalizeLocalPlan(both,augmented,facts)?.edits.length,2);
+ const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+ assert.match(app,/impliedThermalDurationText\(state.initialAudit/);
+ assert.match(app,/needsDependentRegions/);
+ assert.match(app,/localizationAudit/);
 });
 test('bounded word-wrap fits all full words and never clips a long token or creates overlapping lines',()=>{
  const ctx={font:'',measureText(text){const size=Number.parseFloat(this.font.match(/(\d+)px/)?.[1])||12;return {width:text.length*size*.52};}};
