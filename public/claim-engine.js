@@ -41,7 +41,7 @@ export function isClearlySubjectiveSlogan(entry) {
   const phrase=String(entry?.claim||'').trim();
   const explanation=String(entry?.reason||'');
   if(!phrase||phrase.length>100||!/(?:slogan|tagline|motto|catchphrase|ungkapan kreatif|figurative promotional phrase)/i.test(explanation))return false;
-  const objective=/\\d|[%$€]|\\b(?:garansi|jaminan|terbukti|bersertifikat|aman|menyembuhkan|mengobati|melindungi|mencegah|menurunkan|menaikkan|hemat|irit|diskon|gratis|tahan|lebih cepat|lebih lama|paling|terbaik|nomor satu|guaranteed|certified|clinically|safe|cures?|treats?|prevents?|protects?|reduces?|saves?|discount|free|lasts?|faster|longer|best|number one)\\b/i;
+  const objective=/\d|[%$€]|\b(?:garansi|jaminan|terbukti|bersertifikat|aman|menyembuhkan|mengobati|melindungi|mencegah|menurunkan|menaikkan|hemat|irit|sehat|kesehatan|mata|tidur|meningkatkan|memperbaiki|mengurangi|berkhasiat|diskon|gratis|tahan|lebih cepat|lebih lama|paling|terbaik|nomor satu|guaranteed|certified|clinically|safe|healthy|health|eyes?|sleep|improves?|boosts?|heals?|cures?|treats?|prevents?|protects?|reduces?|saves?|discount|free|lasts?|faster|longer|best|number one)\b/i;
   return !objective.test(phrase);
 }
 
