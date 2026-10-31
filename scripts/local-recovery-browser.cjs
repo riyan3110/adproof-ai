@@ -41,7 +41,10 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.route('**/api/audit',r=>{
    audits++;
    if(audits===2)return r.fulfill({status:503,json:{error:'TEST automatic re-audit service temporarily unavailable'}});
-   return r.fulfill({json:{audit:audits===1||audits===4?initial:revisedAudit,model:'MOCK SPARK',tokens:0,original_reference_sent:audits>1,report_language:'en'}});
+   const badCandidate={...revisedAudit,claim_ledger:[...revisedAudit.claim_ledger,{
+     claim:'Efficient LED consumption',origin:'creative',assessment:'unsupported_by_supplied_facts',fact_quote:'',reason:'Invented claim',recommended_action:'Remove'
+   }]};
+   return r.fulfill({json:{audit:audits===1||audits===4||audits===6?initial:audits===7?badCandidate:revisedAudit,model:'MOCK SPARK',tokens:0,original_reference_sent:audits>1,report_language:'en'}});
   });
   let repaired;
   await page.route('**/api/improve',r=>{
@@ -158,7 +161,38 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   assert.equal(await page.locator('#verifyButton').isDisabled(),true,'automatic Verify completed');
   const autoSaved=await getSaved(page);
   assert.equal(autoSaved.snapshot.report.verified.score,83,'successful automatic verification saved');
+  // Third workflow: the re-audit flags a newly invented claim. One corrective
+  // Muse Image attempt is allowed, starting again from the original source;
+  // the rejected candidate is preserved and the corrected image re-audited.
+  await page.locator('#fileInput').setInputFiles({name:'automatic-correction.png',mimeType:'image/png',buffer:Buffer.from(original.split(',')[1],'base64')});
+  await page.locator('#product').fill('LumaDesk Mini');
+  await page.locator('#facts').fill('LumaDesk Mini is a 5 watts desk light.');
+  await page.locator('#auditButton').click();
+  await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
+  await page.locator('#refineButton').click();
+  await page.waitForFunction(async()=>{
+   const req=indexedDB.open('adproof-studio-recovery-v1');
+   return new Promise(resolve=>{
+    req.onsuccess=()=>{
+     const db=req.result,tx=db.transaction('snapshot','readonly');
+     const get=tx.objectStore('snapshot').get('latest');
+     get.onsuccess=()=>{db.close();resolve(get.result?.snapshot?.report?.auto_correction?.status==='verification_completed')};
+     get.onerror=()=>{db.close();resolve(false)};
+    };req.onerror=()=>resolve(false);
+   });
+  },null,{timeout:35000});
+  const corrected=await getSaved(page);
+  assert.equal(audits,8,'initial + first Verify + exactly one corrective Verify');
+  assert.equal(repairs,4,'normal Repair + one corrective image edit');
+  assert.equal(corrected.snapshot.history.length,1,'first rejected image retained in archive history');
+  assert.equal(corrected.snapshot.report.auto_correction.attempted,true);
+  assert.equal(corrected.snapshot.report.auto_correction.max_extra_image_requests,1);
+  assert.equal(corrected.snapshot.report.verified.score,83);
+  await page.reload();
+  await page.locator('#archiveRestoreNotice').filter({hasText:'LOCAL RECOVERY'}).waitFor();
+  assert.equal(audits,8,'reload must never repeat automatic correction');
+  assert.equal(repairs,4,'reload must never repeat costly image edits');
   assert.deepEqual(errors,[]);
-  console.log('PASS: one-click Repair → automatic Verify succeeds, failure recovers safely and retries Verify only, no duplicate image call. MOCK MODEL RESPONSES; NO PAID PROVIDER CALLS.');
+  console.log('PASS: one-click Repair + Verify + one bounded self-correction + second Verify, rejected image retained, refresh safe. ALL MODEL RESPONSES MOCKED.');
  }finally{await browser.close();}
 })().catch(e=>{console.error('FAIL: '+e.stack);process.exitCode=1;});
