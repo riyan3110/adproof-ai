@@ -245,8 +245,8 @@ function syncDeck(){
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
  renderArchiveHistory();
  visualUI.sync();
- put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Compare both images, then verify the revision.':'Re-audit complete, NOT approved. Compare both images and review possible defects before use.');
- put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?'Both audits, risk warnings and claim trajectories. Candidate image needs manual review.':current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
+ put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Automatic verification is pending.':state.consistencyReview?.status==='validated'?'Automatic validation complete. Choose the output size and export.':'Validation incomplete. Export blocked; source and candidate retained.');
+ put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?(state.consistencyReview?.status==='validated'?'Validated revision, corrected caption and audit evidence available.':'Source, candidate and audit evidence retained. Final export awaits validation.'):current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
  for(const [id,active] of [['deckDetect',current>=1],['deckProof',current>=1],['deckDNA',current===3]]){
   const item=document.getElementById(id);if(item)item.classList.toggle('has-result',active);
@@ -424,8 +424,8 @@ function render(a,verified=false){
     ui.repairNotice.dataset.level=risk?.status==='regression_suspected'?'warning':'review';
     const heading=risk?.status==='regression_suspected'
       ? (getLanguage()==='id'?'⚠️ KEMUNGKINAN KUALITAS REVISI MEMBURUK · JANGAN SETUJUI OTOMATIS':'⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE')
-      : (getLanguage()==='id'?'⚠️ HANYA KANDIDAT · PERLU PEMERIKSAAN MANUSIA':'⚠️ CANDIDATE ONLY · MANUAL REVIEW REQUIRED');
-    if(state.consistencyReview?.status==='validated') {ui.repairNotice.textContent=getLanguage()==='id'?'Validasi otomatis selesai: piksel di luar koreksi tetap identik, caption terikat fakta, dan audit ulang tidak menemukan regresi.':'Automatic validation completed: unchanged pixels outside corrections, source-bound caption, and no detected re-audit regression.';} else ui.repairNotice.textContent=heading+' — '+(risk?.reasons||['Compare original and revised before using.']).join(' ')+(risk?.caption_review?.status==='needs_human_review'?(getLanguage()==='id'?' Caption asli tetap belum diperbaiki; periksa klaim secara terpisah.':' Original caption is still unchanged; review it separately.'):'');
+      : (getLanguage()==='id'?'VALIDASI BELUM LENGKAP · EKSPOR DITAHAN':'VALIDATION INCOMPLETE · EXPORT BLOCKED');
+    if(state.consistencyReview?.status==='validated') {ui.repairNotice.textContent=getLanguage()==='id'?'Validasi otomatis selesai: piksel di luar koreksi tetap identik, caption terikat fakta, dan audit ulang tidak menemukan regresi.':'Automatic validation completed: unchanged pixels outside corrections, source-bound caption, and no detected re-audit regression.';} else ui.repairNotice.textContent=heading+' — '+(risk?.status==='review_required'?[getLanguage()==='id'?'Sumber dan kandidat disimpan sampai pemeriksaan otomatis dapat membuktikan kelayakan hasil.':'Source and candidate retained until automatic checks establish output eligibility.']:risk?.reasons||['Compare original and revised before using.']).join(' ')+(risk?.caption_review?.status==='needs_human_review'?(getLanguage()==='id'?' Caption asli tetap belum diperbaiki; periksa klaim secara terpisah.':' Original caption is still unchanged; review it separately.'):'');
   }
  ui.refine.hidden=false;
  ui.verify.hidden=false;
@@ -456,7 +456,7 @@ async function performAudit(image,verify=false){
      visualUI.clear();
      phase(3);
    }else{state.initialAudit=out.audit;state.captionRepair=out.audit.caption_repair||repairCaption({...state.context,original:state.context.caption});state.verified=null;state.repairReview=null;phase(1);}
-  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Compare both images; NOT approved.':'Re-audit complete. Candidate NOT approved without manual comparison.'):'AI audit completed.',verify);
+  render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.consistencyReview?.status==='validated'?(getLanguage()==='id'?'Validasi otomatis selesai. Revisi siap untuk penyiapan output.':'Automatic validation completed. Revision ready for output preparation.'):state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Export blocked.':'Validation incomplete. Candidate retained; export blocked.'):'AI audit completed.',verify&&state.consistencyReview?.status!=='validated');
  }finally{setBusy(false);}
 }
 async function validateCandidateImage(data){
@@ -485,7 +485,7 @@ async function adaptFormat(image,target){
   attempt.deterministic_extension=extended?{...extended,image:undefined}:null;
   attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;
   state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
-  state.imageResponded=true;updateMetaStatus();
+  state.imageResponded=state.imageResponded||!extended;updateMetaStatus();
   await validateCandidateImage(out.image);
   // Compare against the exact selected source, not a different prior revision.
   const referenceImage=await compactOriginalReference(image);

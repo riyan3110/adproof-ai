@@ -44,7 +44,7 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
    const output=await import('/output-system.js');
    const original=document.querySelector('#compareBefore').src,revised=document.querySelector('#compareAfter').src;
    const proof=await output.verifyLocalPixels(original,revised,[{x:60,y:668,width:480,height:80}]);
-   const imageBytes=async data=>[...new Uint8Array(await (await fetch(data)).arrayBuffer())];
+   const imageBytes=async data=>[...Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0))];
    const source=await output.decodeImage(revised);
    const transitions=[];
    for(const [from,to] of [[[1,1],[16,9]],[[1,1],[9,16]],[[16,9],[1,1]]]){
