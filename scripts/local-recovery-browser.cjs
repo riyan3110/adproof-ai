@@ -40,7 +40,8 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.route('**/api/health',r=>r.fulfill({json:{ok:true,configured:true,demoGate:false}}));
   await page.route('**/api/audit',r=>{
    audits++;
-   return r.fulfill({json:{audit:audits===1?initial:revisedAudit,model:'MOCK SPARK',tokens:0,original_reference_sent:audits>1,report_language:'en'}});
+   if(audits===2)return r.fulfill({status:503,json:{error:'TEST automatic re-audit service temporarily unavailable'}});
+   return r.fulfill({json:{audit:audits===1||audits===4?initial:revisedAudit,model:'MOCK SPARK',tokens:0,original_reference_sent:audits>1,report_language:'en'}});
   });
   let repaired;
   await page.route('**/api/improve',r=>{
@@ -80,6 +81,9 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   assert.equal(audits,1);
   await page.locator('#refineButton').click();
   await page.locator('#compareView').waitFor({state:'visible'});
+  // Automatic re-audit starts after Repair, but this first attempt fails.
+  // The already charged-looking image MUST remain saved for retry.
+  await page.locator('#toast').filter({hasText:'Verifikasi otomatis gagal'}).waitFor({timeout:20000});
   await page.waitForFunction(async()=>{
     const req=indexedDB.open('adproof-studio-recovery-v1');
     return await new Promise(resolve=>{
@@ -91,14 +95,14 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
       };req.onerror=()=>resolve(false);
     });
   });
-  assert.equal(audits,1);
+  assert.equal(audits,2,'one post-repair re-audit was attempted, without regenerating the image');
   assert.equal(repairs,1);
   await page.reload();
   await page.locator('#archiveRestoreNotice').filter({hasText:'LOCAL RECOVERY'}).waitFor();
   assert.equal(await page.locator('#compareView').isVisible(),true,'repaired image must survive refresh');
   assert.equal(await page.locator('#verifyButton').isEnabled(),true,'Verify must resume from repaired state');
   assert.equal(await page.locator('#refineButton').isEnabled(),true,'Repair still available only when explicitly clicked');
-  assert.equal(audits,1,'refresh must not redo audit');
+  assert.equal(audits,2,'refresh must not redo audit');
   assert.equal(repairs,1,'refresh must not redo repair');
   assert.equal(await page.locator('#localRecoveryBar').isVisible(),true);
   assert.equal(await page.locator('#archiveContinueActions').isVisible(),false,'recovered LIVE session must not be read only');
@@ -115,12 +119,12 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
       };r.onerror=()=>resolve(false);
     });
   });
-  assert.equal(audits,2);
+  assert.equal(audits,3);
   await page.reload();
   await page.locator('#archiveRestoreNotice').filter({hasText:'LOCAL RECOVERY'}).waitFor();
   assert.equal(await page.locator('#scoreValue').textContent(),'83');
   assert.equal(await page.locator('#verifyButton').isDisabled(),true);
-  assert.equal(audits,2,'recovered verified result must not call Meta again');
+  assert.equal(audits,3,'recovered verified result must not call Meta again');
   assert.equal(repairs,1);
   // User-controlled deletion must stop future automatic restore.
   await page.locator('#clearLocalRecovery').click();
@@ -138,9 +142,23 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
   await page.reload();
   assert.equal(await page.locator('#fileName').textContent(),'NO CREATIVE SELECTED');
   assert.equal(await page.locator('#reportEmpty').isVisible(),true);
-  assert.equal(audits,2);
+  assert.equal(audits,3);
   assert.equal(repairs,1);
+  // New session success case: pressing Repair runs both image generation and
+  // independent re-audit without a second Verify click.
+  await page.locator('#fileInput').setInputFiles({name:'automatic-success.png',mimeType:'image/png',buffer:Buffer.from(original.split(',')[1],'base64')});
+  await page.locator('#product').fill('LumaDesk Mini');
+  await page.locator('#facts').fill('LumaDesk Mini is a 5 watts desk light.');
+  await page.locator('#auditButton').click();
+  await page.locator('#auditPhase').filter({hasText:'AUDIT COMPLETE'}).waitFor();
+  await page.locator('#refineButton').click();
+  await page.locator('#auditPhase').filter({hasText:'RE-CHECK COMPLETE'}).waitFor({timeout:25000});
+  assert.equal(audits,5,'one initial audit, one automatic verification per successful Repair; no duplicate');
+  assert.equal(repairs,2,'only one image request per Repair click');
+  assert.equal(await page.locator('#verifyButton').isDisabled(),true,'automatic Verify completed');
+  const autoSaved=await getSaved(page);
+  assert.equal(autoSaved.snapshot.report.verified.score,83,'successful automatic verification saved');
   assert.deepEqual(errors,[]);
-  console.log('PASS: browser-only recovery for audit, repair, verify, reload, clear; private code excluded; no repeated paid requests. MODEL RESPONSES MOCKED.');
+  console.log('PASS: one-click Repair → automatic Verify succeeds, failure recovers safely and retries Verify only, no duplicate image call. MOCK MODEL RESPONSES; NO PAID PROVIDER CALLS.');
  }finally{await browser.close();}
 })().catch(e=>{console.error('FAIL: '+e.stack);process.exitCode=1;});
