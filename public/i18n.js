@@ -5,6 +5,14 @@ const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
  'Audit package saved: JSON and original/revised images in their actual formats.':'Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.',
+ 'Local recovery saved on this device.':'Pemulihan lokal tersimpan di perangkat ini.',
+ 'Clear local backup':'Hapus cadangan lokal',
+ 'Local recovery saved on this device. No Meta call; use Export ZIP for a separate backup.':'Cadangan pemulihan disimpan hanya di perangkat ini. Tanpa panggilan Meta; ekspor ZIP sebagai cadangan tambahan.',
+ 'Local autosave unavailable on this device. Export ZIP now to protect this audit.':'Penyimpanan otomatis lokal tidak tersedia. Ekspor ZIP sekarang untuk melindungi hasil audit.',
+ 'Unable to clear local browser recovery. Clear website storage in browser settings.':'Gagal menghapus pemulihan lokal. Hapus data situs melalui pengaturan browser.',
+ 'Local recovery backup cleared. The current open Studio session remains visible.':'Cadangan lokal dihapus. Sesi Studio yang terbuka tetap terlihat.',
+ 'Recovered the last completed audit/repair from this browser. No Meta request was made. Review the images and export ZIP.':'Audit/perbaikan terakhir dipulihkan dari browser ini. Tidak ada panggilan Meta. Periksa gambar dan ekspor ZIP.',
+ 'Browser session recovered from local device storage. No paid Meta request.':'Sesi dipulihkan dari penyimpanan perangkat. Tanpa panggilan Meta berbayar.',
  'Access verified ✓':'Akses terverifikasi ✓',
  'Enter the private demo code shared with you.':'Masukkan kode demo privat yang dibagikan kepada Anda.',
  'Verified against this server without a paid Meta request. Saved in this tab only. Never share the code publicly.':'Diverifikasi server tanpa panggilan Meta berbayar. Disimpan hanya di tab ini. Jangan bagikan kode secara publik.',
