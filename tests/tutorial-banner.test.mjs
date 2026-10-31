@@ -22,8 +22,8 @@ test('four tutorial links target actual existing UI controls in the right order'
   assert.deepEqual(targets,['dropzone','auditButton','refineButton','verifyButton']);
   assert.deepEqual([...guide.matchAll(/class="tutorial-number">(\d\d)/g)].map(m=>m[1]),['01','02','03','04']);
   for(const target of targets)assert.ok(html.includes('id="'+target+'"'),'broken tutorial anchor #'+target);
-  assert.ok(guide.includes('AI repairs require human review.'));
-  assert.ok(guide.includes('may use Meta API credit'),'avoid implying paid actions are free');
+  assert.ok(guide.includes('Failed checks block revised export.'));
+  assert.ok(guide.includes('one Muse Image request and one automatic Muse Spark re-audit'),'explicitly disclose both paid provider calls');
   assert.ok(!guide.includes('onclick=')&&!guide.includes('javascript:'),'guide only navigates, never invokes model calls');
 });
 
@@ -41,10 +41,10 @@ test('guide text follows manual English and Indonesian choices without touching 
   assert.equal(t('How to use AdProof AI'),'Cara menggunakan AdProof AI');
   assert.equal(t('Repair if needed'),'Perbaiki jika perlu');
   assert.equal(t('Swipe to view all steps →'),'Geser untuk melihat semua langkah →');
-  assert.equal(t('Only repair a grounded image issue. Keep the original for comparison.'),
-    'Perbaiki hanya masalah gambar yang didukung bukti. Simpan gambar asli untuk perbandingan.');
+  assert.equal(t('Repair a confirmed issue; AI automatically re-checks the revised image.'),
+    'Perbaiki kesalahan yang ditemukan; AI otomatis memeriksa ulang gambar hasilnya.');
   setPreference('en');
-  assert.equal(t('Verify + save'),'Verify + save');
+  assert.equal(t('Review + save'),'Review + save');
   assert.equal(t('Real creative text stays original'),'Real creative text stays original');
   setPreference('auto');
 });
