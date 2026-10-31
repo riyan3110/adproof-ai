@@ -235,7 +235,7 @@ function updateRepairJourney(){
   &&!state.imported&&!state.busy&&state.history.length<8
   &&planOneCorrection({initial:state.initialAudit,verified:state.verified,
     consistencyReview:state.consistencyReview,repairReview:state.repairReview,
-    alreadyAttempted:false}).allowed;
+    alreadyAttempted:Boolean(state.autoCorrection?.attempted)}).allowed;
  const view=repairJourney(state,{canRepair:hasImageRepairTarget(state.initialAudit),
    canRetry:retryEligible,language:getLanguage()});
  ui.journey.hidden=!view.visible;
@@ -450,9 +450,14 @@ function render(a,verified=false){
   :(getLanguage()==='id'?'Hasil audit iklan':'Creative audit results');
  const observed=Array.isArray(a.claim_ledger)?a.claim_ledger.length:0;
  const findings=Array.isArray(a.issues)?a.issues.length:0;
- ui.scoreSummary.textContent=getLanguage()==='id'
-  ?`${observed} klaim tercatat · ${findings} temuan tercatat`
-  :`${observed} claims recorded · ${findings} findings recorded`;
+ const verificationStatus=verified
+  ?(state.consistencyReview?.status==='validated'&&state.repairReview?.status!=='regression_suspected'
+     ?(getLanguage()==='id'?'Konsistensi lolos':'Consistency passed')
+     :(getLanguage()==='id'?'Konsistensi belum lolos':'Consistency not passed'))
+  :'';
+ ui.scoreSummary.textContent=(getLanguage()==='id'
+  ?`${observed} klaim tercatat · ${findings} temuan audit`
+  :`${observed} claims recorded · ${findings} audit findings`)+(verificationStatus?' · '+verificationStatus:'');
  ui.scoreExplanationLabel.textContent=getLanguage()==='id'?'Lihat penjelasan AI':'Show AI explanation';
  const scoreChange=verified&&state.initialAudit
   ?(getLanguage()==='id'
@@ -577,11 +582,11 @@ async function adaptFormat(image,target){
 // Repair's first Muse Spark verification can trigger ONE evidence-grounded
 // corrective Muse Image pass. Failed image attempts never delete the old
 // candidate, and browser reload never triggers any paid request.
-async function attemptAutoCorrectionOnce({manual=false}={}){
+async function attemptAutoCorrectionOnce(){
  const plan=planOneCorrection({
   initial:state.initialAudit,verified:state.verified,
   consistencyReview:state.consistencyReview,repairReview:state.repairReview,
-  alreadyAttempted:manual?false:Boolean(state.autoCorrection?.attempted)
+  alreadyAttempted:Boolean(state.autoCorrection?.attempted)
  });
  if(!plan.allowed||state.imported||state.busy)return false;
  if(state.history.length>=8){
@@ -682,7 +687,7 @@ ui.journeyButton.addEventListener('click',async()=>{
  }
  if(action==='retry'){
   if(!state.verified||state.consistencyReview?.status!=='failed'||state.history.length>=8)return;
-  try{await attemptAutoCorrectionOnce({manual:true});}
+  try{await attemptAutoCorrectionOnce();}
   catch(error){notify(String(error?.message||error).slice(0,180),true);}
  }
 });

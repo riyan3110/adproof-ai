@@ -15,6 +15,8 @@ const mapRisks={
 export function repairJourney(state,{canRepair=false,canRetry=false,language='id'}={}){
  if(!state?.initialAudit)return {visible:false};
  const id=language!=='en',say=(a,b)=>id?a:b;
+ const correctionSpent=state.autoCorrection?.attempted===true;
+ const retryAvailable=canRetry&&!correctionSpent;
  const initial=state.initialAudit, after=state.verified, consistency=state.consistencyReview;
  const unsupportedClaim=(initial.claim_ledger||[]).find(c=>c?.origin==='creative'&&unsupported.has(c.assessment)&&hasValue(c.claim));
  const firstIssue=(initial.issues||[]).find(x=>hasValue(x?.title)||hasValue(x?.evidence));
@@ -54,10 +56,12 @@ export function repairJourney(state,{canRepair=false,canRetry=false,language='id
        :risk?say('Yang perlu diperiksa: ','Check: ')+(mapRisks[risk.code]?.[id?0:1]||say('perubahan yang terdeteksi','observed changes'))
        :say('Bandingkan teks, produk, dan posisi elemen dengan sumber.','Compare text, product and layout against the original.');
      guidance=detail;
-     next=canRetry
-       ?say('Perbaikan tambahan dapat dicoba berdasarkan temuan audit ulang, lalu otomatis diperiksa lagi.','An extra correction can use observed re-audit findings and be checked again.')
-       :say('Lihat perbandingan dan rincian konsistensi; jangan gunakan revisi yang belum lolos.','Review comparison and consistency details; do not use an unapproved revision.');
-     button=canRetry?{action:'retry',label:say('Coba perbaiki lagi','Try another repair')}
+     next=correctionSpent
+       ?say('Koreksi tambahan sudah dicoba. Bandingkan gambar asli dengan revisi untuk melihat bagian yang berubah. Jangan ulangi AI tanpa target baru.','An extra correction was already attempted. Compare original and revised to locate the change; do not repeat AI without a new grounded target.')
+       :retryAvailable
+       ?say('Koreksi tambahan hanya tersedia satu kali berdasarkan temuan terverifikasi, lalu diperiksa ulang.','One extra correction is available for a verified finding, followed by rechecking.')
+       :say('Bandingkan gambar asli dan revisi; jangan gunakan revisi yang belum lolos.','Compare original and revised; do not use an unapproved result.');
+     button=retryAvailable?{action:'retry',label:say('Coba koreksi terarah','Try targeted correction')}
        :{action:'compare',label:say('Bandingkan masalah','Compare issues')};
    }
  }else if(state.revised){
@@ -74,7 +78,7 @@ export function repairJourney(state,{canRepair=false,canRetry=false,language='id
    button={action:'caption',label:say('Lihat saran caption','See caption suggestion')};
  }
  if(state.autoCorrection?.attempted&&state.revised&&after){
-  guidance=[guidance,say('Satu koreksi tambahan sudah dicoba dalam alur ini.','One extra correction was attempted in this run.')].filter(Boolean).join(' · ');
+  guidance=[guidance,say('Batas koreksi otomatis tercapai. Jangan membuat ulang gambar tanpa target yang lebih spesifik.','The automatic correction limit was reached. Do not regenerate without a more specific target.')].filter(Boolean).join(' · ');
  }
  let change='';
  if(state.revised){
@@ -86,5 +90,5 @@ export function repairJourney(state,{canRepair=false,canRetry=false,language='id
  }
  return {visible:true,phase,title:say('Dari temuan ke perbaikan','From finding to repair'),
   issue,action,method,change,result,next,guidance,button,
-  footnote:canRetry?say('Perbaikan ulang memakai permintaan AI tambahan dan dapat menggunakan kuota API.','Retry uses additional AI requests and may consume API quota.'):scoreIndependent};
+  footnote:retryAvailable?say('Koreksi tambahan memakai API Meta dan dapat menggunakan kuota.','An extra correction uses the Meta API and may consume quota.'):scoreIndependent};
 }
