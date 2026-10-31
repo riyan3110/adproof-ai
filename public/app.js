@@ -450,9 +450,14 @@ function render(a,verified=false){
   :(getLanguage()==='id'?'Hasil audit iklan':'Creative audit results');
  const observed=Array.isArray(a.claim_ledger)?a.claim_ledger.length:0;
  const findings=Array.isArray(a.issues)?a.issues.length:0;
- ui.scoreSummary.textContent=getLanguage()==='id'
-  ?`${observed} klaim tercatat · ${findings} temuan tercatat`
-  :`${observed} claims recorded · ${findings} findings recorded`;
+ const verificationStatus=verified
+  ?(state.consistencyReview?.status==='validated'&&state.repairReview?.status!=='regression_suspected'
+     ?(getLanguage()==='id'?'Konsistensi lolos':'Consistency passed')
+     :(getLanguage()==='id'?'Konsistensi belum lolos':'Consistency not passed'))
+  :'';
+ ui.scoreSummary.textContent=(getLanguage()==='id'
+  ?`${observed} klaim tercatat · ${findings} temuan audit`
+  :`${observed} claims recorded · ${findings} audit findings`)+(verificationStatus?' · '+verificationStatus:'');
  ui.scoreExplanationLabel.textContent=getLanguage()==='id'?'Lihat penjelasan AI':'Show AI explanation';
  const scoreChange=verified&&state.initialAudit
   ?(getLanguage()==='id'
