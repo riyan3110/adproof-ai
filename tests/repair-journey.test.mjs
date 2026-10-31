@@ -32,20 +32,37 @@ test('after actual localized repair, report source edit not invented success',()
  assert.match(x.result,/lolos pemeriksaan otomatis/i);
 });
 
-test('blocked visual consistency gets concrete recovery guidance and explicitly paid user retry',()=>{
+test('spent correction budget blocks further AI retries and guides comparison',()=>{
  const x=repairJourney({...base,revised:'image',verified:{score:90},repairReview:{status:'regression_suspected'},
   consistencyReview:{status:'failed',locks:{composition:{locked:true,status:'possible_change'}},risks:[]},
   repairMetadata:{compositing:{method:'generated_region'}},
   autoCorrection:{attempted:true,status:'still_failed'}},
   {canRetry:true,language:'id'});
- assert.equal(x.phase,'blocked');assert.equal(x.button.action,'retry');
+ assert.equal(x.phase,'blocked');assert.equal(x.button.action,'compare');
  assert.match(x.guidance,/ukuran atau posisi objek/);
- assert.match(x.guidance,/koreksi tambahan sudah dicoba/);
- assert.match(x.footnote,/kuota API/);
+ assert.match(x.guidance,/batas koreksi otomatis tercapai/i);
+ assert.match(x.next,/jangan ulangi AI/i);
  assert.match(x.result,/belum lolos/i);
  assert.match(x.result,/ekspor revisi ditahan/i);
 });
 
+test('first correction attempt is still permitted only when a grounded target exists',()=>{
+ const x=repairJourney({...base,revised:'image',verified:{score:75},
+   consistencyReview:{status:'failed',locks:{colors:{locked:true,status:'possible_change'}},risks:[{code:'lock_colors',evidence:'Observed color mismatch'}]}},
+  {canRetry:true,language:'id'});
+ assert.equal(x.button.action,'retry');
+ assert.match(x.guidance,/warna produk/);
+ assert.match(x.footnote,/kuota/);
+});
+test('spent correction budget stays blocked on recovered audit even if caller mistakenly sets canRetry',()=>{
+ const x=repairJourney({...base,revised:'image',verified:{score:99},
+   autoCorrection:{attempted:true,status:'still_failed'},
+   consistencyReview:{status:'failed',locks:{colors:{locked:true,status:'changed'}},risks:[{code:'lock_colors',evidence:'Changed bottle color'}]}},
+  {canRetry:true,language:'en'});
+ assert.equal(x.button.action,'compare');
+ assert.match(x.guidance,/product colors/);
+ assert.match(x.next,/do not repeat AI/);
+});
 test('missing grounded correction target never offers an AI retry',()=>{
  const x=repairJourney({...base,revised:'image',verified:{score:90},consistencyReview:{status:'failed',risks:[]}},
   {canRetry:false,language:'en'});
@@ -70,8 +87,9 @@ test('Studio uses the existing bounded repair and verify flows, with no fake act
  }
  assert.match(js,/ui\.refine\.click\(\)/);
  assert.match(js,/ui\.verify\.click\(\)/);
- assert.match(js,/await attemptAutoCorrectionOnce\(\{manual:true\}\)/);
- assert.match(js,/alreadyAttempted:manual\?false/);
+ assert.match(js,/await attemptAutoCorrectionOnce\(\)/);
+ assert.doesNotMatch(js,/alreadyAttempted:manual\?false/);
+ assert.match(js,/alreadyAttempted:Boolean\(state\.autoCorrection\?\.attempted\)/);
  assert.match(js,/max_extra_image_requests:1/); // source-bound Meta correction budget documented in autoCorrection object
  assert.match(server,/\['\/repair-journey\.js','public\/repair-journey\.js'\]/);
  assert.match(css,/\.studio-body \.repair-journey-steps/);
