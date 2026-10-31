@@ -42,7 +42,7 @@ test('blocked visual consistency gets concrete recovery guidance and explicitly 
  assert.match(x.guidance,/ukuran atau posisi objek/);
  assert.match(x.guidance,/koreksi tambahan sudah dicoba/);
  assert.match(x.footnote,/kuota API/);
- assert.doesNotMatch(x.result,/lolos/i);
+ assert.match(x.result,/belum lolos/i);
  assert.match(x.result,/ekspor revisi ditahan/i);
 });
 
