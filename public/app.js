@@ -4,6 +4,7 @@ import {comparePixels,compositeRegion,dimensions} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
+import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 import {storeRecovery,retrieveRecovery,removeRecovery} from './local-recovery.js';
 import {loadPreference,setPreference,getPreference,getLanguage,t,applyLanguage,observeDynamicLabels,onBrowserLanguageChange} from './i18n.js';
@@ -22,7 +23,7 @@ const ui = {
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
 loadPreference();
-const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
+const state={reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],autoCorrection:null,continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
 const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
 let toastTimer=null;
 
@@ -276,7 +277,7 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
-function resetAudit({preserveHistory=false}={}){state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
+function resetAudit({preserveHistory=false}={}){state.autoCorrection=null;state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
@@ -502,6 +503,67 @@ async function adaptFormat(image,target){
  } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);throw error;}
  finally {setBusy(false);}
 }
+// Repair's first Muse Spark verification can trigger ONE evidence-grounded
+// corrective Muse Image pass. Failed image attempts never delete the old
+// candidate, and browser reload never triggers any paid request.
+async function attemptAutoCorrectionOnce(){
+ const plan=planOneCorrection({
+  initial:state.initialAudit,verified:state.verified,
+  consistencyReview:state.consistencyReview,repairReview:state.repairReview,
+  alreadyAttempted:Boolean(state.autoCorrection?.attempted)
+ });
+ if(!plan.allowed||state.imported||state.busy)return false;
+ if(state.history.length>=8){
+  notify('Koreksi otomatis ditahan agar riwayat yang tersimpan tidak terhapus. Ekspor paket ZIP terlebih dahulu.',true);
+  return false;
+ }
+ // Set the durable attempt flag BEFORE issuing any further potentially paid request.
+ state.autoCorrection={attempted:true,status:'requested',diagnostics:plan.diagnostics,max_extra_image_requests:1,max_extra_audit_requests:1};
+ await persistMilestone();
+ const before={from:'original',report:reportSnapshot(),original:state.original,revised:state.revised};
+ const settings=state.repairMetadata?.settings||state.consistency||visualUI.readSettings();
+ setBusy(true,'Correcting…');
+ let generated=false;
+ try{
+  const correction=correctionPayload(state.initialAudit,plan);
+  const out=await api('/api/improve',{...payload(state.original),consistency:settings,...correction});
+  // Image replacement is atomic only AFTER the provider response is validated.
+  await validateCandidateImage(out.image);
+  const composed=await compositeRegion(state.original,out.image,settings.region);
+  await validateCandidateImage(composed.image);
+  state.history=[...state.history,before]; // first rejected candidate remains in ZIP/history
+  state.runs.push({stage:'auto_correction_image',model:out.model,provenance:out.provenance||null});
+  state.revised=composed.image;state.imageResponded=true;updateMetaStatus();
+  state.repairMetadata={...out.repair_metadata,settings,correction_attempt:1,
+   compositing:{method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},
+   candidate_dimensions:await dimensions(composed.image)};
+  state.autoCorrection={...state.autoCorrection,status:'awaiting_verification'};
+  state.verified=null;state.repairReview=null;state.consistencyReview=null;state.audit=state.initialAudit;
+  visualUI.clear();phase(2);switchView('compare');
+  render(state.initialAudit,false);
+  renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,
+   originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});
+  generated=true;
+  await persistMilestone();
+ }catch(error){
+  state.autoCorrection={...state.autoCorrection,status:'image_failed',error:String(error?.message||error).slice(0,220)};
+  await persistMilestone();
+  notify('Koreksi otomatis tidak berhasil; gambar asli dan kandidat sebelumnya tetap tersimpan. Tidak ada pemanggilan ulang gambar otomatis.',true);
+ }finally{setBusy(false);}
+ if(!generated)return false;
+ try{
+  await performAudit(state.revised,true);
+  state.autoCorrection={...state.autoCorrection,
+   status:state.consistencyReview?.status==='failed'?'still_failed':'verification_completed'};
+  await persistMilestone();
+  if(state.autoCorrection.status==='still_failed')notify('Koreksi tambahan sudah diperiksa, tetapi masih ada masalah yang terdeteksi. Hasil revisi tidak diizinkan untuk ekspor.',true);
+ }catch(error){
+  state.autoCorrection={...state.autoCorrection,status:'verification_failed',error:String(error?.message||error).slice(0,220)};
+  await persistMilestone();
+  notify('Koreksi tersimpan, tetapi audit ulang kedua gagal. Tidak ada Repair ulang otomatis.',true);
+ }
+ return true;
+}
 async function performImprove(){
  if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
@@ -514,7 +576,7 @@ async function performImprove(){
    const composed=await compositeRegion(state.original,out.image,repairSettings.region);
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
    out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=true;updateMetaStatus();
-  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
+  state.verified=null;state.repairReview=null;state.autoCorrection=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
  }finally{setBusy(false);}
  // One user-initiated Repair includes ONE independent Spark re-audit.
  // Do not silently regenerate more paid images. If verification fails, the
@@ -522,8 +584,9 @@ async function performImprove(){
  notify('Gambar revisi diterima. Meta AI memeriksa ulang hasilnya secara otomatis menggunakan satu panggilan audit tambahan.');
  try{
   await performAudit(state.revised,true);
+  await attemptAutoCorrectionOnce(); // no action if Verify passed or no grounded target
  }catch(error){
-  notify('Verifikasi otomatis gagal; kandidat tersimpan. Pilih Verify revision untuk mencoba audit ulang saja, tanpa membayar Repair lagi. '+String(error?.message||'').slice(0,130),true);
+  notify('Verifikasi otomatis tidak tersedia; kandidat tersimpan. Tidak ada pengulangan Repair berbayar. '+String(error?.message||'').slice(0,130),true);
  }
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
@@ -539,7 +602,7 @@ function reportSnapshot(){
   {...state.archivedReport,...proofReport()}:
   {app:'AdProof AI',date:new Date().toISOString(),report_language:state.reportLanguage||'und',product:state.context?.product,context:state.context,
    caption_scope:'The supplied caption is unchanged in both audits; image repair does not edit external caption text.',
-   runs:state.runs,repair_review:state.repairReview,...proofReport(),
+   runs:state.runs,auto_correction:state.autoCorrection,repair_review:state.repairReview,...proofReport(),
    original:state.initialAudit,verified:state.verified,
    disclaimer:'Saved model observations, not independently certified. Image edits always need human review.'};
  // JSON contains metadata only, no image bytes. ZIP adds historical pixels.
@@ -560,7 +623,7 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages},{re
  state.initialAudit=report.original;
  state.verified=report.verified||null;
  state.audit=state.verified||state.initialAudit;
- state.repairReview=report.repair_review||null;
+ state.repairReview=report.repair_review||null;state.autoCorrection=report.auto_correction||null;
  state.consistencyReview=report.visual_consistency?.verification||null;state.repairMetadata=report.visual_consistency?.repair||null;
  visualUI.restore(report.visual_consistency?.settings,report.visual_consistency?.output_requested);
  state.outputActual=report.visual_consistency?.output_actual||null;state.uploadDimensions=report.visual_consistency?.upload_dimensions||null;state.sourceDimensions=report.visual_consistency?.source_dimensions||null;
@@ -620,7 +683,7 @@ function continueArchivedAudit(from){
  state.originalFilename='saved '+from+' · repair baseline';
  state.initialAudit=baseline;
  state.audit=baseline;
- state.verified=null;state.revised=null;state.repairReview=null;state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();
+ state.verified=null;state.revised=null;state.repairReview=null;state.autoCorrection=null;state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();
  state.runs=[{stage:'archive_baseline',origin:'saved_archive',model:priorModel?.model||'Saved audit model (not rerun)',
   tokens:null,provenance:priorModel?.provenance||null}];
  state.sparkResponded=false;state.imageResponded=false;state.reauditResponded=false;
