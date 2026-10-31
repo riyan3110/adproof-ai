@@ -514,8 +514,17 @@ async function performImprove(){
    const composed=await compositeRegion(state.original,out.image,repairSettings.region);
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
    out.image=composed.image;state.consistencyReview=null;visualUI.clear();state.imageResponded=true;updateMetaStatus();
-  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();notify('Muse Image membuat kandidat revisi, bukan hasil yang disetujui. Bandingkan gambar asli dan revisi sebelum digunakan.');
+  state.verified=null;state.repairReview=null;state.runs=state.runs.filter(r=>r.stage==='initial'||r.stage==='archive_baseline');state.runs.push({stage:'repair',model:out.model,provenance:out.provenance||null});state.revised=out.image;renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});ui.revisedTab.disabled=false;ui.compareTab.disabled=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;phase(2);switchView('compare');await persistMilestone();
  }finally{setBusy(false);}
+ // One user-initiated Repair includes ONE independent Spark re-audit.
+ // Do not silently regenerate more paid images. If verification fails, the
+ // saved candidate stays recoverable and the existing Verify button can retry.
+ notify('Gambar revisi diterima. Meta AI memeriksa ulang hasilnya secara otomatis menggunakan satu panggilan audit tambahan.');
+ try{
+  await performAudit(state.revised,true);
+ }catch(error){
+  notify('Verifikasi otomatis gagal; kandidat tersimpan. Pilih Verify revision untuk mencoba audit ulang saja, tanpa membayar Repair lagi. '+String(error?.message||'').slice(0,130),true);
+ }
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
 for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){void forgetMilestone();ui.recoveryBar.hidden=true;resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
