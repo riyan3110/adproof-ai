@@ -1,11 +1,14 @@
 name: Baseten AI - AdProof AI (mobile)
 
-# Create an Issue titled "[baseten] <task>" from your phone.
-# Only the repository owner's Issues can spend Baseten credits.
+# Create an Issue titled "[baseten] <task>" from your phone, or comment
+# starting with "[baseten] " on that same Issue to run a new bounded task.
+# Only the repository owner's Issues and owner-authored comments can spend credits.
 # No automatic production edit, deploy, merge, or Meta Image invocation.
 on:
   issues:
     types: [opened]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -18,7 +21,14 @@ concurrency:
 
 jobs:
   propose-fix:
-    if: github.event.issue.user.login == 'riyan3110' && startsWith(github.event.issue.title, '[baseten] ')
+    if: >-
+      ${{ github.event.issue.user.login == 'riyan3110' &&
+          startsWith(github.event.issue.title, '[baseten] ') &&
+          ((github.event_name == 'issues') ||
+           (github.event_name == 'issue_comment' &&
+            !github.event.issue.pull_request &&
+            github.event.comment.user.login == 'riyan3110' &&
+            startsWith(github.event.comment.body, '[baseten] '))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -55,7 +65,7 @@ jobs:
       - name: Prepare owner instruction safely
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body || github.event.issue.body }}
         shell: bash
         run: |
           python - <<'PY'
@@ -75,6 +85,10 @@ jobs:
           Keep the original artwork, claims, consistency-lock, and export safeguards.
           Add targeted regression tests where feasible. The repository CI will run
           npm run check after edits. Only a proposed PR may be created, never merged.
+          Read docs/HACKATHON-READINESS.md and docs/VISUAL-CONSISTENCY.md as
+          relevant; separate source-only validations from authentic production
+          evidence. This is one bounded task, not a claim that the complete Work
+          mission has finished. Leave unresolved blockers clearly documented.
           USER TASK:
           """
           Path("/tmp/adproof-baseten-task.txt").write_text(
