@@ -17,7 +17,7 @@ const ui = {
   originalTab:$('#viewOriginal'), revisedTab:$('#viewRevised'), compareTab:$('#viewCompare'),
   compare:$('#compareView'),before:$('#compareBefore'),after:$('#compareAfter'), beforeWrap:$('#compareBeforeWrap'),bar:$('#compareBar'),range:$('#compareRange'),
   form:$('#projectForm'),product:$('#product'),facts:$('#facts'),caption:$('#caption'),captionSafety:$('#captionSafetyNotice'),auditButton:$('#auditButton'),auditText:$('#auditButtonText'),
-  auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),
+  auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),scoreExplanation:$('#scoreExplanation'),scoreExplanationLabel:$('#scoreExplanationLabel'),scoreExplanationContent:$('#scoreExplanationContent'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
@@ -405,8 +405,25 @@ function render(a,verified=false){
  ui.reportEmpty.hidden=true;ui.reportContent.hidden=false;
  ui.auditPhase.textContent=verified?'RE-CHECK COMPLETE':'AUDIT COMPLETE';
  ui.scoreRing.style.setProperty('--score',String(a.score)); ui.scoreValue.textContent=String(a.score);
- ui.scoreHeadline.textContent=a.headline || 'Creative reviewed';
- ui.scoreSummary.textContent=a.summary || '';
+ // Compact, factual overview; full Meta prose stays available on demand
+ // and in the saved audit. Scores/ledger/export decisions remain unchanged.
+ ui.scoreHeadline.textContent=verified
+  ?(getLanguage()==='id'?'Hasil audit revisi':'Revised audit results')
+  :(getLanguage()==='id'?'Hasil audit iklan':'Creative audit results');
+ const observed=Array.isArray(a.claim_ledger)?a.claim_ledger.length:0;
+ const findings=Array.isArray(a.issues)?a.issues.length:0;
+ ui.scoreSummary.textContent=getLanguage()==='id'
+  ?`${observed} klaim tercatat · ${findings} temuan tercatat`
+  :`${observed} claims recorded · ${findings} findings recorded`;
+ ui.scoreExplanationLabel.textContent=getLanguage()==='id'?'Lihat penjelasan AI':'Show AI explanation';
+ const scoreChange=verified&&state.initialAudit
+  ?(getLanguage()==='id'
+    ?`Perubahan skor: ${a.score-state.initialAudit.score>=0?'+':''}${a.score-state.initialAudit.score}. Skor lebih tinggi BUKAN bukti gambar membaik.`
+    :`Score change: ${a.score-state.initialAudit.score>=0?'+':''}${a.score-state.initialAudit.score}. A higher score is NOT proof the image improved.`)
+  :'';
+ ui.scoreExplanationContent.textContent=[a.headline,a.summary,scoreChange].filter(Boolean).join('\n\n');
+ ui.scoreExplanation.hidden=!ui.scoreExplanationContent.textContent;
+ ui.scoreExplanation.open=false;
  ui.breakdown.replaceChildren();
  for(const [label,key] of [['Claims','claim'],['Clarity','clarity'],['Layout','hierarchy'],['Action','action']]){
   const metric=el('div','metric');metric.append(el('span','',label),el('b','',String(a.checks?.[key]??'--')));ui.breakdown.append(metric);
@@ -423,7 +440,7 @@ function render(a,verified=false){
   wrapper.append(button,details);ui.issues.append(wrapper);
  }
  ui.suggested.textContent=state.captionRepair?.final||a.recommended_caption||t('No caption suggestion available.');
- if(verified && state.initialAudit) ui.scoreSummary.textContent=getLanguage()==='id'?`${a.summary||''} · Perkiraan skor ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} dibanding sebelumnya. Skor lebih tinggi BUKAN bukti gambar membaik.`:`${a.summary||''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
+
   ui.repairNotice.hidden=!verified;
   if(verified){
     const notice=describeRepairNotice(state.repairReview,state.consistencyReview,getLanguage());
