@@ -16,7 +16,7 @@ const input={image,product:'Lamp',facts:'Lamp uses 5 W',issues};
 test('12 style contracts are distinct with all five explicit dimensions; stable versioned digest',()=>{
  assert.equal(Object.keys(STYLES).length,12);const prompts=Object.keys(STYLES).map(style=>policyPrompt({style}));assert.equal(new Set(prompts).size,12);
  for(const p of Object.values(STYLES))for(const key of ['color','lighting','texture','composition','boundary'])assert.ok(p[key].length>25);
- assert.equal(POLICY_VERSION,'visual-consistency-1');
+ assert.equal(POLICY_VERSION,'visual-consistency-2');
  assert.equal(createHash('sha256').update(JSON.stringify(STYLES)).digest('hex'),'eb49dc7ee7618e9e523fb10c17d469c5d7503bc6740c1d2bd80b24a40fc58cbd');
 });
 test('every lock changes actual backend payload, is recorded, and lock priority is explicit',async()=>{
@@ -25,6 +25,19 @@ test('every lock changes actual backend payload, is recorded, and lock priority 
   assert.equal(r.status,200);assert.match(sent.prompt,new RegExp(key+': OFF'));assert.ok(sent.prompt.includes('Locked properties override conflicting style'));assert.equal(r.data.repair_metadata.settings.locks[key],false);
   assert.equal(sent.tool_enablement.enable_web_search,false);assert.equal(sent.mask,undefined);assert.deepEqual(r.data.repair_metadata.model_dimensions,{width:1,height:1});
  }
+});
+test('fully locked styles omit conflicting treatment from the actual Meta edit request',async()=>{
+ for(const style of ['photorealistic','natural','studio','minimalist']){
+  let sent;
+  const r=await invoke({...input,consistency:{style}},async(url,opts)=>{sent=JSON.parse(opts.body);return Response.json({data:[{b64_json:image.split(',')[1]}]});});
+  assert.equal(r.status,200);
+  assert.equal(r.data.repair_metadata.settings.style,style,'requested style remains auditable');
+  assert.ok(sent.prompt.includes('Style transformation is disabled'));
+  assert.ok(sent.prompt.includes('STYLE Auto / Preserve Original:'));
+  assert.ok(!sent.prompt.includes(STYLES[style].texture),'conflicting texture instructions must not reach the provider');
+ }
+ const unlocked=policyPrompt({style:'photorealistic',locks:{lighting:false}});
+ assert.ok(unlocked.includes('STYLE Photorealistic:'));
 });
 test('server rejects empty/caption-only repair and invalid image before paid calls',async()=>{
  for(const body of [{...input,issues:[]},{...input,issues:[{...issues[0],evidence:'Caption: savings'}]},{...input,image:'data:image/png;base64,'+'A'.repeat(128)}]){

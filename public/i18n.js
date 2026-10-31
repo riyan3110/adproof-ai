@@ -4,6 +4,7 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'Audit package saved: JSON and original/revised images in their actual formats.':'Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.',
  'Access verified ✓':'Akses terverifikasi ✓',
  'Enter the private demo code shared with you.':'Masukkan kode demo privat yang dibagikan kepada Anda.',
  'Verified against this server without a paid Meta request. Saved in this tab only. Never share the code publicly.':'Diverifikasi server tanpa panggilan Meta berbayar. Disimpan hanya di tab ini. Jangan bagikan kode secara publik.',

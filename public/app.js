@@ -566,7 +566,7 @@ ui.downloadPackage.addEventListener('click',()=>{
  try{
   const pkg=createAuditPackage(reportSnapshot(),state.original,state.revised,state.history);
   download(pkg.blob,'adproof-audit-package.zip','application/zip');
-  notify('Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.');
+  notify('Audit package saved: JSON and original/revised images in their actual formats.');
  }catch(e){notify(e.message,true);}
 });
 ui.downloadImage.addEventListener('click',()=>visualUI.export());
