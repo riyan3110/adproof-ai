@@ -549,6 +549,10 @@ async function performAudit(image,verify=false){
      phase(3);
    }else{state.initialAudit=out.audit;state.captionRepair=out.audit.caption_repair||repairCaption({...state.context,original:state.context.caption});state.verified=null;state.repairReview=null;phase(1);}
   render(out.audit,verify);renderProofStudio({before:state.initialAudit,after:state.verified,facts:state.context.facts,caption:state.context.caption,originalImage:state.original,revisedImage:state.revised,onInspect:stage=>switchView(stage==='revised'?'revised':'original')});syncDeck();await persistMilestone();notify(verify?(state.consistencyReview?.status==='validated'?(getLanguage()==='id'?'Validasi otomatis selesai. Revisi siap untuk penyiapan output.':'Automatic validation completed. Revision ready for output preparation.'):state.repairReview.status==='regression_suspected'?'Possible repair regression detected. Export blocked.':'Validation incomplete. Candidate retained; export blocked.'):'AI audit completed.',verify&&state.consistencyReview?.status!=='validated');
+  workStep(verify?(getLanguage()==='id'?'Verifikasi selesai':'Verification completed'):(getLanguage()==='id'?'Audit selesai':'Audit completed'));
+ }catch(error){
+  workStep(verify?(getLanguage()==='id'?'Verifikasi belum selesai':'Verification incomplete'):(getLanguage()==='id'?'Audit belum selesai':'Audit incomplete'));
+  throw error;
  }finally{setBusy(false);}
 }
 async function validateCandidateImage(data){

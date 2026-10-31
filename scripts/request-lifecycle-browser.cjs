@@ -21,7 +21,7 @@ const audit={score:80,headline:'TEST FIXTURE',summary:'Synthetic browser regress
     window.setInterval=(fn,...args)=>{const id=start(fn,...args);active.add(id);return id;};
     window.clearInterval=id=>{active.delete(id);return stop(id);};
    });
-   const page=await context.newPage(),errors=[];let accessChecks=0,auditCalls=0;
+   const page=await context.newPage(),errors=[];let accessChecks=0,auditCalls=0,completeAudit;
    page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/api/health',r=>r.fulfill({json:{configured:true,demoGate:true}}));
    await page.route('**/api/access',r=>{
@@ -33,7 +33,7 @@ const audit={score:80,headline:'TEST FIXTURE',summary:'Synthetic browser regress
    await page.route('**/api/audit',async r=>{
     auditCalls++;
     assert.equal(r.request().headers()['x-demo-code'],'SYNTHETIC-TEST-CODE');
-    await new Promise(resolve=>setTimeout(resolve,1300));
+    await new Promise(resolve=>completeAudit=resolve);
     await r.fulfill({json:{audit,model:'TEST MOCK Spark',report_language:'en'}});
    });
    await page.route('**/api/improve',()=>{throw Error('Unexpected paid-looking image request');});
@@ -57,7 +57,9 @@ const audit={score:80,headline:'TEST FIXTURE',summary:'Synthetic browser regress
    await page.locator('#facts').fill('LumaDesk Mini. Power consumption: 5 watts.');
    await page.locator('#auditButton').click();
    await page.getByText(/Muse Spark checking image · Elapsed \d+ seconds/).waitFor();
+   completeAudit();
    await page.waitForFunction(()=>document.querySelector('#auditButton').disabled&&document.querySelector('#downloadReport').disabled===false);
+   await page.locator('#liveRepairProgress').filter({hasText:'Audit completed'}).waitFor();
    const activeIntervals=await page.evaluate(()=>window.__testActiveIntervals.size);
    assert.equal(activeIntervals,0,'no progress timer may survive a completed request');
    assert.equal(auditCalls,1,'no duplicate model request');
