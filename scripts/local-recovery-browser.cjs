@@ -182,6 +182,7 @@ const getSaved=async page=>page.evaluate(()=>new Promise((resolve,reject)=>{
    });
   },null,{timeout:35000});
   const corrected=await getSaved(page);
+  console.log('AUTO CORRECTION DIAGNOSTIC',JSON.stringify({audits,repairs,stages:corrected.snapshot.report.runs.map(r=>r.stage),correction:corrected.snapshot.report.auto_correction,score:corrected.snapshot.report.verified?.score}));
   assert.equal(audits,8,'initial + first Verify + exactly one corrective Verify');
   assert.equal(repairs,4,'normal Repair + one corrective image edit');
   assert.equal(corrected.snapshot.history.length,1,'first rejected image retained in archive history');
