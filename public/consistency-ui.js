@@ -5,10 +5,10 @@ export function matchesFormatCandidate(candidate,image,plan){
  return !!candidate&&candidate.input===image&&
   candidate.width*plan.height===candidate.height*plan.width;
 }
-export function createConsistencyUI({state,language,onSettingsChange,download,notify,adaptFormat}){
+export function createConsistencyUI({state,language,onSettingsChange,download,notify,adaptFormat,applyStyle}){
  const id=()=>language()==='id',say=(en,indo)=>id()?indo:en;
  const panel=document.createElement('section');panel.className='consistency-controls';panel.id='visualControls';panel.setAttribute('data-no-translate','');
- panel.innerHTML=`<div class="visual-style"><label for="visualStyle" data-en="Visual Style" data-id="Gaya Visual"></label><select id="visualStyle"></select><p id="styleConflict" class="control-note"></p></div><fieldset class="lock-fieldset"><legend>Consistency Lock</legend><div id="consistencyLocks" class="lock-list"></div><p class="control-note" data-en="Locks guide the model; Verify checks the result. Preservation is not guaranteed." data-id="Lock mengarahkan model; Verify memeriksa hasil. Keutuhan elemen tidak dijamin."></p></fieldset><details class="region-settings"><summary data-en="Target a repair area (optional)" data-id="Batasi area perbaikan (opsional)"></summary><label class="check-label"><input type="checkbox" id="useRepairRegion"><span data-en="Keep original pixels outside this rectangle" data-id="Pertahankan piksel asli di luar kotak ini"></span></label><div class="region-fields"><label>X %<input id="regionX" type="number" min="0" max="99" value="0"></label><label>Y %<input id="regionY" type="number" min="0" max="99" value="0"></label><label><span data-en="Width %" data-id="Lebar %"></span><input id="regionW" type="number" min="1" max="100" value="100"></label><label><span data-en="Height %" data-id="Tinggi %"></span><input id="regionH" type="number" min="1" max="100" value="100"></label></div><p class="control-note" data-en="Coordinates from top-left. Only this rectangle is pasted back after editing. Check seams and placement; this is local compositing, not a model mask." data-id="Koordinat dari kiri atas. Hanya kotak ini ditempel kembali setelah edit. Periksa sambungan dan posisi; ini komposit lokal, bukan mask model."></p><div class="region-preview"><img id="regionPreview" alt=""><div id="regionBox"></div></div></details>`;
+ panel.innerHTML=`<div class="visual-style"><label for="visualStyle" data-en="Visual Style" data-id="Gaya Visual"></label><select id="visualStyle"></select><p id="styleConflict" class="control-note"></p><button type="button" id="applyVisualStyle" class="btn btn-subtle" data-no-translate disabled></button></div><fieldset class="lock-fieldset"><legend>Consistency Lock</legend><div id="consistencyLocks" class="lock-list"></div><p class="control-note" data-en="Locks guide the model; Verify checks the result. Preservation is not guaranteed." data-id="Lock mengarahkan model; Verify memeriksa hasil. Keutuhan elemen tidak dijamin."></p></fieldset><details class="region-settings"><summary data-en="Target a repair area (optional)" data-id="Batasi area perbaikan (opsional)"></summary><label class="check-label"><input type="checkbox" id="useRepairRegion"><span data-en="Keep original pixels outside this rectangle" data-id="Pertahankan piksel asli di luar kotak ini"></span></label><div class="region-fields"><label>X %<input id="regionX" type="number" min="0" max="99" value="0"></label><label>Y %<input id="regionY" type="number" min="0" max="99" value="0"></label><label><span data-en="Width %" data-id="Lebar %"></span><input id="regionW" type="number" min="1" max="100" value="100"></label><label><span data-en="Height %" data-id="Tinggi %"></span><input id="regionH" type="number" min="1" max="100" value="100"></label></div><p class="control-note" data-en="Coordinates from top-left. Only this rectangle is pasted back after editing. Check seams and placement; this is local compositing, not a model mask." data-id="Koordinat dari kiri atas. Hanya kotak ini ditempel kembali setelah edit. Periksa sambungan dan posisi; ini komposit lokal, bukan mask model."></p><div class="region-preview"><img id="regionPreview" alt=""><div id="regionBox"></div></div></details>`;
  document.querySelector('.pipeline-bar').before(panel);
  const q=s=>document.querySelector(s),style=q('#visualStyle');
  for(const [key,preset] of Object.entries(STYLES)){const o=document.createElement('option');o.value=key;o.textContent=preset.label;style.append(o);}
@@ -74,8 +74,12 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   for(const e of [...panel.querySelectorAll('[data-en]'),...output.querySelectorAll('[data-en]')]){const value=id()?e.dataset.id:e.dataset.en;if(e.textContent!==value)e.textContent=value;}
   const styleId={preserve:'Otomatis / Pertahankan Asli',photorealistic:'Fotorealistis',natural:'Natural',studio:'Studio Produk',lifestyle:'Gaya Hidup',cinematic:'Sinematik',luxury:'Mewah',minimalist:'Minimalis',editorial:'Editorial',vibrant:'Warna Cerah',cgi:'3D / CGI',illustration:'Ilustrasi'};for(const o of style.options)o.textContent=id()?styleId[o.value]:STYLES[o.value].label;
   if(prepared)q('#outputActual').textContent=say('Actual PNG: ','PNG aktual: ')+`${prepared.metadata.actual.width} × ${prepared.metadata.actual.height} px · ${Math.round(prepared.blob.size/1024)} KB. `+say('Inspect the preview, then export.','Periksa pratinjau, lalu ekspor.');output.querySelector('h3').textContent=say('Output Size','Ukuran Output');
-  q('#styleConflict').textContent=style.value==='preserve'?say('Preserve the source; correct only evidenced issues.','Pertahankan sumber; perbaiki hanya masalah dengan bukti.'):say('Locks take priority. Conflicting style changes are skipped.','Lock diprioritaskan. Perubahan gaya yang bertentangan dilewati.');
-  for(const e of panel.querySelectorAll('input,select'))e.disabled=state.busy||state.imported||!!state.revised;
+  q('#styleConflict').textContent=style.value==='preserve'
+    ?say('Original image is preserved unless you choose an edit.','Gambar asli tetap terjaga sampai kamu memilih perubahan.')
+    :say('Select the style, then Apply style. It uses Muse Image and an independent verification.','Pilih gaya lalu Terapkan Gaya. Ini memanggil Muse Image dan memeriksa ulang hasilnya.'); 
+  q('#applyVisualStyle').textContent=say('Apply visual style ↗ (unlocks color, lighting & background)','Terapkan gaya ↗ (buka lock warna, cahaya & latar)');
+  for(const e of panel.querySelectorAll('input,select'))e.disabled=state.busy||state.imported||(!!state.revised&&e!==style);
+  q('#applyVisualStyle').disabled=state.busy||state.imported||!state.original||!state.initialAudit||style.value==='preserve';
   for(const e of output.querySelectorAll('input,select,button'))e.disabled=state.busy;
   q('#confirmOutput').closest('label').hidden=true;
   q('#outputSource').options[1].disabled=!candidateAllowed();
@@ -87,6 +91,17 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   const box=q('#regionBox');box.style.left=q('#regionX').value+'%';box.style.top=q('#regionY').value+'%';box.style.width=q('#regionW').value+'%';box.style.height=q('#regionH').value+'%';
   renderResult();void estimate();
  }
+ q('#applyVisualStyle').addEventListener('click',async()=>{
+  if(!applyStyle||state.busy||state.imported||!state.original||!state.initialAudit||style.value==='preserve')return;
+  const chosen=readSettings();
+  // The button explicitly discloses these three style-related unlocks;
+  // core product/brand/text/layout locks remain enabled.
+  const adjusted={...chosen,locks:{...chosen.locks,colors:false,lighting:false,background:false,
+    product_shape:true,branding:true,typography:true,composition:true}};
+  setSettings(adjusted);state.consistency=adjusted;
+  try{localStorage.setItem(localKey,JSON.stringify(adjusted));sync();await applyStyle(adjusted);}
+  catch(e){notify(e?.message||String(e),true);sync();}
+ });
  panel.addEventListener('change',()=>{try{state.consistency=readSettings();localStorage.setItem(localKey,JSON.stringify(state.consistency));onSettingsChange();clearPrepared();sync();}catch(e){notify(e.message,true);}});
  output.addEventListener('change',e=>{
   if(e.target.id==='outputCategory')setPixelOptions();

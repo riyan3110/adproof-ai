@@ -1157,3 +1157,16 @@ button:disabled{cursor:not-allowed;opacity:.42}
 /* Caption is never silently rewritten by Muse Image. Warn next to the exact input. */
 .caption-safety-notice{padding:12px 14px;border-left:4px solid #aa743d;background:#fff4dc;color:#54391f;font-size:13px;line-height:1.5;margin:10px 0 16px}
 .caption-safety-notice[hidden]{display:none}
+
+
+/* Explicit visual styling + honest current-stage status. No faux progress %. */
+.studio-body #applyVisualStyle{margin-top:9px;max-width:100%;white-space:normal;text-align:left;line-height:1.45}
+.studio-body .live-repair-progress{
+ padding:11px 15px;margin:10px 0;border:1px solid #9eaf98;
+ background:#e5efe0;color:#243a2c;font-size:12px;font-weight:650;line-height:1.55;
+}
+.studio-body .live-repair-progress[hidden]{display:none!important}
+@media(max-width:760px){
+ .studio-body #applyVisualStyle{width:100%}
+ .studio-body .live-repair-progress{padding:10px 12px;font-size:12px}
+}

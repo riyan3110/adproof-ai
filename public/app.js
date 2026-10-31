@@ -29,7 +29,7 @@ const ui = {
 };
 loadPreference();
 const state={captionRepair:null,reportLanguage:null,original:null,originalFilename:null,revised:null,audit:null,initialAudit:null,verified:null,view:'original',busy:false,configured:false,demoGate:false,phase:0,context:null,runs:[],formatHistory:[],repairReview:null,imported:false,importing:false,archivedReport:null,history:[],autoCorrection:null,continuedFrom:null,accessVerified:false,sparkResponded:false,imageResponded:false,reauditResponded:false};
-const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat});
+const visualUI=createConsistencyUI({state,language:getLanguage,onSettingsChange:()=>{},download,notify,adaptFormat,applyStyle:performVisualRestyle});
 let toastTimer=null;
 
 // Persist completed milestones in THIS browser only, never the access code.
@@ -311,6 +311,17 @@ function renderArchiveHistory(){
 }
 function phase(n){state.phase=n; document.querySelectorAll('.stage').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('complete',i<n);});syncDeck();}
 function setBusy(b,label='Run audit'){state.busy=b;ui.auditButton.disabled=b;ui.refine.disabled=b;ui.verify.disabled=b;ui.auditText.textContent=b?label:'Run audit';ui.scan.hidden=!b;ui.drop.setAttribute('aria-busy',String(b));for(const field of [ui.product,ui.facts,ui.caption])field.disabled=b;syncDeck();}
+// Show the actual in-flight stage, never a made-up percentage or countdown.
+const workStage=document.createElement('div');
+workStage.id='liveRepairProgress';workStage.className='live-repair-progress';
+workStage.setAttribute('role','status');workStage.setAttribute('aria-live','polite');
+workStage.hidden=true;
+document.querySelector('.pipeline-bar').before(workStage);
+function workStep(label,detail=''){
+ if(!label){workStage.hidden=true;workStage.textContent='';return;}
+ workStage.hidden=false;
+ workStage.textContent=(getLanguage()==='id'?'Tahap aktif: ':'Current stage: ')+label+(detail?' · '+detail:'');
+}
 function resetAudit({preserveHistory=false}={}){state.captionRepair=null;state.autoCorrection=null;state.formatHistory=[];state.consistencyReview=null;state.repairMetadata=null;visualUI.clear();resetProofStudio();state.reportLanguage=null;ui.archiveLanguageNote.hidden=true;ui.archiveLanguageNote.textContent='';if(!preserveHistory)state.history=[];state.continuedFrom=null;state.imported=false;state.archivedReport=null;ui.archiveNotice.hidden=true;ui.archiveNotice.textContent='';for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;state.context=null;state.runs=[];state.repairReview=null;state.audit=null;state.initialAudit=null;state.verified=null;state.revised=null;ui.repairNotice.hidden=true;ui.repairNotice.textContent='';ui.reportEmpty.hidden=false;ui.reportContent.hidden=true;ui.auditPhase.textContent='AWAITING INPUT';ui.refine.hidden=false;ui.verify.hidden=false;ui.downloadImage.hidden=false;ui.revisedTab.disabled=true;ui.compareTab.disabled=true;for(const image of [ui.before,ui.after])image.removeAttribute('src');phase(0);selectReportView('claims');}
 async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
@@ -642,17 +653,58 @@ async function attemptAutoCorrectionOnce(){
  }
  return true;
 }
+// Visual styling is intentionally explicit and separate from factual repair.
+// A dropdown change alone cannot spend Meta quota or mutate the artwork.
+async function performVisualRestyle(settings){
+ if(state.busy||state.imported)throw Error('Studio sedang digunakan atau arsip belum dilanjutkan.');
+ if(!state.configured||!state.original||!state.initialAudit||!state.context)throw Error('Audit gambar diperlukan sebelum menerapkan gaya.');
+ if(state.history.length>=8)throw Error('Riwayat penuh. Ekspor paket ZIP sebelum membuat kandidat visual baru.');
+ const useRevised=!!state.revised&&!!state.verified&&state.consistencyReview?.status==='validated';
+ const source=useRevised?state.revised:state.original;
+ const baseline=useRevised?state.verified:state.initialAudit;
+ const snapshot={from:useRevised?'revised':'original',report:reportSnapshot(),original:state.original,revised:state.revised};
+ setBusy(true,'Applying style…');
+ workStep(getLanguage()==='id'?'Menerapkan gaya visual':'Applying visual style','Muse Image');
+ try{
+  const out=await api('/api/improve',{...payload(source),mode:'restyle',consistency:settings,issues:[],claims:[]});
+  await validateCandidateImage(out.image);
+  const diff=await comparePixels(source,out.image);
+  if(diff.changed_sample_fraction<.01)throw Error('Muse Image belum mengubah gaya secara terlihat. Tidak ada hasil yang diterima sebagai revisi.');
+  state.history=[...state.history,snapshot];
+  if(useRevised){state.original=source;state.initialAudit=baseline;}
+  state.revised=out.image;state.repairMetadata={...out.repair_metadata,settings,
+    compositing:{method:'muse_visual_restyle_no_mask',limitations:['Product and brand locks are instructions, not source-pixel proof.']},
+    candidate_dimensions:await dimensions(out.image)};
+  state.verified=null;state.consistencyReview=null;state.repairReview=null;state.autoCorrection=null;
+  state.imageResponded=true;state.runs.push({stage:'visual_style',model:out.model,provenance:out.provenance||null});
+  updateMetaStatus();visualUI.clear();phase(2);switchView('compare');
+  render(state.initialAudit,false);
+  renderProofStudio({before:state.initialAudit,after:null,facts:state.context.facts,caption:state.context.caption,
+    originalImage:state.original,revisedImage:state.revised,onInspect:()=>switchView('original')});
+  await persistMilestone();
+ }catch(e){workStep(getLanguage()==='id'?'Gaya belum diterapkan':'Style not applied');throw e;}
+ finally{setBusy(false);}
+ workStep(getLanguage()==='id'?'Memeriksa hasil gaya':'Checking styled result','Muse Spark');
+ try{
+  await performAudit(state.revised,true);
+  workStep(state.consistencyReview?.status==='validated'
+   ?(getLanguage()==='id'?'Gaya diterapkan; verifikasi lolos':'Style applied; verification passed')
+   :(getLanguage()==='id'?'Gaya diterapkan; periksa konsistensi sebelum ekspor':'Style applied; review consistency before export'));
+ }catch(e){workStep(getLanguage()==='id'?'Gaya dibuat, verifikasi belum selesai':'Style generated; verification incomplete');notify(e.message,true);}
+}
 async function performImprove(){
  if(state.imported)throw Error('Arsip bersifat read-only. Unggah gambar baru sebelum membuat revisi.');
  if(!state.audit || !state.original)throw Error('Jalankan audit dulu.');
   if(!hasImageRepairTarget(state.initialAudit))throw Error('Tidak ada temuan gambar yang jelas untuk diperbaiki. Jangan paksa AI membuat ulang gambar tanpa alasan.');
  setBusy(true,'Refining…');
+ workStep(getLanguage()==='id'?'Memulai perbaikan':'Starting repair');
  try{
   const repairSettings=visualUI.readSettings();
   // The first audit may have found the unsupported copy but omitted accurate
   // bounds. For copy-only defects, request Spark localization rather than
   // letting an unmasked Muse Image edit redraw the product or entire scene.
   if(!repairSettings.region&&!state.initialAudit.local_text_repair&&isTextOnlyRepair(state.initialAudit)){
+   workStep(getLanguage()==='id'?'Menentukan area teks':'Locating text region','Muse Spark');
    const localized=await api('/api/localize',{...payload(state.original),audit:{
     issues:state.initialAudit.issues,claim_ledger:state.initialAudit.claim_ledger,
     text_inventory:state.initialAudit.text_inventory}});
@@ -666,10 +718,13 @@ async function performImprove(){
    state.initialAudit.local_text_repair=localized.plan;
    await persistMilestone();
   }
+  workStep(getLanguage()==='id'?'Memeriksa opsi edit teks lokal':'Checking local text edits');
   const local=!repairSettings.region&&await repairTextLocally(state.original,state.initialAudit.local_text_repair);
+  workStep(local?(getLanguage()==='id'?'Memperbaiki teks dari piksel sumber':'Editing source text pixels'):(getLanguage()==='id'?'Memperbaiki area gambar':'Editing image region'),local?'': 'Muse Image');
   const out=local?{image:local.image,model:'deterministic-source-pixel-repair',repair_metadata:{local_repair:local,method:local.method},provenance:null}:await api('/api/improve',{...payload(state.original),consistency:repairSettings,issues:state.initialAudit.issues,claims:state.initialAudit.claim_ledger});
   if(local)delete out.repair_metadata.local_repair.image;
    await validateCandidateImage(out.image);
+   workStep(getLanguage()==='id'?'Melindungi bagian gambar asli':'Preserving source-image areas');
    const composed=local?{image:out.image,method:local.method}:!repairSettings.region&&state.initialAudit.local_text_repair?await compositePlannedRegions(state.original,out.image,state.initialAudit.local_text_repair):await compositeRegion(state.original,out.image,repairSettings.region);
    if(composed.pixel_proof)out.repair_metadata={...out.repair_metadata,local_repair:{...composed,image:undefined}};
    state.repairMetadata={...out.repair_metadata,settings:repairSettings,compositing:{provider_output_hash_scope:'unmodified_provider_image_before_local_compositing',method:composed.method,rectangle:composed.rectangle||null,limitations:composed.limitations||[]},candidate_dimensions:await dimensions(composed.image),output_requested:state.outputRequested||null,upload_dimensions:state.uploadDimensions||null};
@@ -681,16 +736,24 @@ async function performImprove(){
  // saved candidate stays recoverable and the existing Verify button can retry.
  notify('Gambar revisi diterima. Meta AI memeriksa ulang hasilnya secara otomatis menggunakan satu panggilan audit tambahan.');
  try{
+  workStep(getLanguage()==='id'?'Memverifikasi hasil':'Verifying result','Muse Spark');
   await performAudit(state.revised,true);
+  if(state.consistencyReview?.status==='failed'){
+   workStep(getLanguage()==='id'?'Memeriksa kebutuhan koreksi tambahan':'Checking grounded follow-up correction');
+  }
   await attemptAutoCorrectionOnce(); // no action if Verify passed or no grounded target
+  workStep(state.consistencyReview?.status==='validated'
+   ?(getLanguage()==='id'?'Selesai, pemeriksaan lolos':'Done, validation passed')
+   :(getLanguage()==='id'?'Selesai, hasil masih perlu ditinjau':'Done, result needs review'));
  }catch(error){
+  workStep(getLanguage()==='id'?'Verifikasi tidak tersedia; kandidat disimpan':'Verification unavailable; candidate saved');
   notify('Verifikasi otomatis tidak tersedia; kandidat tersimpan. Tidak ada pengulangan Repair berbayar. '+String(error?.message||'').slice(0,130),true);
  }
 }
 function download(data,name,type){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2500);}
 for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){void forgetMilestone();ui.recoveryBar.hidden=true;resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
 ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy||state.imported)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
-ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){notify(e.message,true);}});
+ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){workStep(getLanguage()==='id'?'Perbaikan terhenti':'Repair stopped');notify(e.message,true);}});
 ui.journeyButton.addEventListener('click',async()=>{
  if(state.busy||state.imported)return;
  const action=ui.journeyButton.dataset.action;
