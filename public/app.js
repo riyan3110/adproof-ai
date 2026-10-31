@@ -358,7 +358,7 @@ function switchView(view){
 }
 function setCompare(value){ui.beforeWrap.style.clipPath=`inset(0 ${100-value}% 0 0)`;ui.bar.style.left=`${value}%`;}
 function inputContext(){return {product:ui.product.value.trim(),facts:ui.facts.value.trim(),caption:ui.caption.value.trim()};}
-function payload(image){return {image,consistency:state.repairMetadata?.settings||visualUI.readSettings(),language:getLanguage(),...(state.context||inputContext())};}
+function payload(image){const context=state.context||inputContext();if(state.initialAudit&&!state.captionRepair)state.captionRepair=repairCaption({...context,original:context.caption});return {image,consistency:state.repairMetadata?.settings||visualUI.readSettings(),language:getLanguage(),...context,caption:state.captionRepair?.final??context.caption};}
 function el(tag,cl,text){const e=document.createElement(tag);if(cl)e.className=cl;if(text!==undefined)e.textContent=text;return e;}
 function renderClaimEvidence(a, verified=false){
  const ledger=Array.isArray(a.claim_ledger)?a.claim_ledger.slice(0,8):[];
