@@ -231,3 +231,8 @@
 }
 @media(max-width:380px){.deck-module{grid-template-columns:minmax(0,1fr) 88px;padding:11px}.deck-module strong{font-size:19px}.deck-module .deck-graphic{transform:scale(.85);transform-origin:center right}.deck-module .deck-bottom{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.deck-module{transition:none}.deck-module:hover,.deck-module:focus-visible{transform:none}}
+
+/* On-device crash/reload recovery. No private code or API keys are persisted. */
+.local-recovery-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 18px;border:1px solid #496753;background:#1a2a21;color:#c5e6c3;padding:12px 14px;margin:12px 0;border-radius:10px;font-size:12px;line-height:1.5}
+.local-recovery-bar .text-button{color:var(--lime);font-size:12px;min-height:38px;text-decoration:underline}
+.local-recovery-bar[data-warning=true]{border-color:#977a4e;color:#ffd7a2}

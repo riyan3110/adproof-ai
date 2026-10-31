@@ -7,7 +7,7 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 export const assets={
   '/':'index.html','/app':'app.html','/docs':'docs.html',
   '/styles.css':'styles.css','/studio.css':'studio.css','/app.js':'app.js',
-  '/i18n.js':'i18n.js','/claim-engine.js':'claim-engine.js',
+  '/i18n.js':'i18n.js','/local-recovery.js':'local-recovery.js','/claim-engine.js':'claim-engine.js',
   '/proof-studio.js':'proof-studio.js','/repair-guard.js':'repair-guard.js',
   '/audit-archive.js':'audit-archive.js','/visual-consistency.js':'visual-consistency.js','/output-system.js':'output-system.js','/consistency-ui.js':'consistency-ui.js'
 };
