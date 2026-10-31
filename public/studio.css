@@ -1076,11 +1076,6 @@ button:disabled{cursor:not-allowed;opacity:.42}
   grid-column:3;grid-row:1;align-self:center;
   font-size:14px;font-weight:900;
 }
-.studio-body .tutorial-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.studio-body .tutorial-footer p{
-  color:#58695c;font-size:10px;line-height:1.45;margin:11px 0 0;
-}
-.studio-body .tutorial-swipe{display:none}
 @media(max-width:1100px){
  .studio-body .tutorial-chain{grid-template-columns:repeat(2,minmax(0,1fr))}
  .studio-body .tutorial-chain li:nth-child(2)::after{display:none}
@@ -1104,9 +1099,6 @@ button:disabled{cursor:not-allowed;opacity:.42}
  .studio-body .tutorial-chain li{scroll-snap-align:start}
  .studio-body .tutorial-chain li:nth-child(2)::after{display:block}
  .studio-body .tutorial-step{min-height:146px;padding:12px}
- .studio-body .tutorial-footer{align-items:flex-start;flex-direction:column;gap:4px;padding:0 12px}
- .studio-body .tutorial-footer p{font-size:9px;line-height:1.5;margin:7px 0 0}
- .studio-body .tutorial-swipe{display:block;color:#36553d;font-size:10px;font-weight:800}
 }
 @media(prefers-reduced-motion:reduce){
  .studio-body .tutorial-step{transition:none}
