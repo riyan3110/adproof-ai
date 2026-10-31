@@ -36,6 +36,12 @@ async function examinePage(page, route, width, errors) {
       const context = await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce',acceptDownloads:true});
       const page = await context.newPage();
       const pageErrors = [], paidAttempts = [];
+      // Pull-request check uses the proposed CSS against live production HTML/API.
+      // This is NOT an unchanged production-byte test. Push/main runs use only production assets.
+      if (process.env.ADPROOF_CANDIDATE_CSS === '1') {
+        const candidateCSS = await fs.readFile(path.join(__dirname, '..', 'public/styles.css'), 'utf8');
+        await page.route('**/styles.css', route => route.fulfill({status:200,contentType:'text/css',body:candidateCSS}));
+      }
       page.on('pageerror', e => pageErrors.push(limitedText(e.message)));
       // Fail closed: the browser must never run a paid model during these checks.
       await page.route(/\/api\/(audit|improve)(\?|$)/, route => {
@@ -91,7 +97,7 @@ async function examinePage(page, route, width, errors) {
       await context.close();
     }
     await fs.writeFile(reportPath,JSON.stringify({
-      checked_at:new Date().toISOString(),origin,scope:'REAL PRODUCTION BROWSER, NO META PAID REQUESTS, NO MOCKED ENDPOINTS',
+      checked_at:new Date().toISOString(),origin,scope:process.env.ADPROOF_CANDIDATE_CSS === '1' ? 'REAL PRODUCTION HTML/API WITH LOCAL CANDIDATE CSS (not final deployed version), NO PAID CALLS' : 'REAL PRODUCTION BROWSER, NO META PAID REQUESTS, NO MOCKED ENDPOINTS',
       results,limitations:['Private Judge Access cannot be authenticated without the owner-only code.','No new Muse Spark/Muse Image paid calls or visual generation performed.','Prior saved JSON is historical evidence; not a fresh inference.','Check live reframe pixel quality and submission credentials separately.']
     },null,2));
     console.log('PASS: real production browser /, /docs, /app, 5 viewport widths, locale toggle, authentic JSON archive import, original upload, no paid calls.');
