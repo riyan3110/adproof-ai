@@ -4,6 +4,7 @@ import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPi
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
+import {describeRepairNotice} from './repair-notice.js';
 import {repairCaption,reviewRepairedCaption} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
@@ -420,12 +421,9 @@ function render(a,verified=false){
  if(verified && state.initialAudit) ui.scoreSummary.textContent=getLanguage()==='id'?`${a.summary||''} · Perkiraan skor ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} dibanding sebelumnya. Skor lebih tinggi BUKAN bukti gambar membaik.`:`${a.summary||''} · Estimated score ${a.score>=state.initialAudit.score?'+':''}${a.score-state.initialAudit.score} vs original. A higher score is NOT proof the image improved.`;
   ui.repairNotice.hidden=!verified;
   if(verified){
-    const risk=state.repairReview;
-    ui.repairNotice.dataset.level=risk?.status==='regression_suspected'?'warning':'review';
-    const heading=risk?.status==='regression_suspected'
-      ? (getLanguage()==='id'?'⚠️ KEMUNGKINAN KUALITAS REVISI MEMBURUK · JANGAN SETUJUI OTOMATIS':'⚠️ POSSIBLE REPAIR REGRESSION · DO NOT AUTO-APPROVE')
-      : (getLanguage()==='id'?'VALIDASI BELUM LENGKAP · EKSPOR DITAHAN':'VALIDATION INCOMPLETE · EXPORT BLOCKED');
-    if(state.consistencyReview?.status==='validated') {ui.repairNotice.textContent=getLanguage()==='id'?'Validasi otomatis selesai: piksel di luar koreksi tetap identik, caption terikat fakta, dan audit ulang tidak menemukan regresi.':'Automatic validation completed: unchanged pixels outside corrections, source-bound caption, and no detected re-audit regression.';} else ui.repairNotice.textContent=heading+' — '+(risk?.status==='review_required'?[getLanguage()==='id'?'Sumber dan kandidat disimpan sampai pemeriksaan otomatis dapat membuktikan kelayakan hasil.':'Source and candidate retained until automatic checks establish output eligibility.']:risk?.reasons||['Compare original and revised before using.']).join(' ')+(risk?.caption_review?.status==='needs_human_review'?(getLanguage()==='id'?' Caption asli tetap belum diperbaiki; periksa klaim secara terpisah.':' Original caption is still unchanged; review it separately.'):'');
+    const notice=describeRepairNotice(state.repairReview,state.consistencyReview,getLanguage());
+    ui.repairNotice.dataset.level=notice.level;
+    ui.repairNotice.textContent=notice.text;
   }
  ui.refine.hidden=false;
  ui.verify.hidden=false;

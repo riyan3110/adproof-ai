@@ -892,10 +892,10 @@ button:disabled{cursor:not-allowed;opacity:.42}
   overflow-wrap:anywhere;
 }
 .studio-body .repair-guard-notice[data-level=warning]{
-  background:#f7ebe4;
-  border-color:#c79c85;
-  border-left-color:#b76543;
-  color:#713d29;
+  background:#eff1ec;
+  border-color:#aab7ad;
+  border-left-color:#607b6b;
+  color:#293e32;
 }
 .studio-body .repair-guard-notice[hidden]{display:none!important}
 @media(max-width:600px){

@@ -361,7 +361,7 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
 
   const files = new Map([
     ['/', 'public/index.html'], ['/app','public/app.html'], ['/docs','public/docs.html'],
-    ['/factual-repair.js','public/factual-repair.js'], ['/visual-consistency.js','public/visual-consistency.js'], ['/output-system.js','public/output-system.js'], ['/consistency-ui.js','public/consistency-ui.js'], ['/styles.css','public/styles.css'], ['/studio.css','public/studio.css'], ['/app.js','public/app.js'], ['/claim-engine.js','public/claim-engine.js'], ['/proof-studio.js','public/proof-studio.js'], ['/repair-guard.js','public/repair-guard.js'], ['/audit-archive.js','public/audit-archive.js'], ['/local-recovery.js','public/local-recovery.js'], ['/auto-correction.js','public/auto-correction.js'], ['/i18n.js','public/i18n.js']
+    ['/factual-repair.js','public/factual-repair.js'], ['/visual-consistency.js','public/visual-consistency.js'], ['/output-system.js','public/output-system.js'], ['/consistency-ui.js','public/consistency-ui.js'], ['/styles.css','public/styles.css'], ['/studio.css','public/studio.css'], ['/app.js','public/app.js'], ['/claim-engine.js','public/claim-engine.js'], ['/proof-studio.js','public/proof-studio.js'], ['/repair-guard.js','public/repair-guard.js'], ['/repair-notice.js','public/repair-notice.js'], ['/audit-archive.js','public/audit-archive.js'], ['/local-recovery.js','public/local-recovery.js'], ['/auto-correction.js','public/auto-correction.js'], ['/i18n.js','public/i18n.js']
   ]);
   const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8'};
 

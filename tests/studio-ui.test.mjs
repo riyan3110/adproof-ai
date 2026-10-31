@@ -206,7 +206,9 @@ test('existing verification dossier warns when AI repair is unapproved despite h
  assert.ok(js.includes("originalReferenceSent:out.original_reference_sent===true"));
  assert.ok(js.includes("auditPayload.referenceImage=await compactOriginalReference(state.original)"));
  assert.ok(js.includes("A higher score is NOT proof the image improved."));
- assert.ok(js.includes("POSSIBLE REPAIR REGRESSION"));
+ assert.ok(js.includes("import {describeRepairNotice} from './repair-notice.js'"));
+ assert.ok(js.includes("describeRepairNotice(state.repairReview,state.consistencyReview,getLanguage())"));
+ assert.ok(!js.includes("KEMUNGKINAN KUALITAS REVISI MEMBURUK"));
  assert.ok(js.includes("repair_review:state.repairReview"));
  assert.ok(js.includes("Candidate NOT approved"));
  assert.ok(studioCSS.includes('.repair-guard-notice[data-level=warning]'));
