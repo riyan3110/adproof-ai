@@ -164,7 +164,7 @@ async function verifyCode(code,{restoring=false}={}) {
   try{
    res=await fetch('/api/access',{method:'POST',headers:{'x-demo-code':code},signal:controller.signal});
    reply=await res.json().catch(()=>({}));
-  }finally{clearTimeout(timer);}
+  }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
   if(generation!==accessCheckGeneration)return false;
   if(res.ok && reply.ok===true && reply.access==='verified') {
    setCode(code);
@@ -327,6 +327,16 @@ async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ // Only report measured elapsed time, never invented completion percentages.
+ // This continues visibly updating while a long Muse Image request awaits.
+ const progressEndpoint=['/api/improve','/api/localize','/api/audit'].includes(endpoint);
+ const started=Date.now();
+ const stageName=endpoint==='/api/improve'?(getLanguage()==='id'?'Muse Image mengedit gambar':'Muse Image editing image')
+  :endpoint==='/api/localize'?(getLanguage()==='id'?'Muse Spark mencari area teks':'Muse Spark finding text bounds')
+  :(getLanguage()==='id'?'Muse Spark memeriksa gambar':'Muse Spark checking image');
+ const pulse=progressEndpoint?setInterval(()=>{
+  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+' detik');
+ },4500):null;
  let r,result;
  try {
   const headers={'content-type':'application/json'};
