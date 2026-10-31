@@ -401,6 +401,8 @@ async function validateCandidateImage(data){
 async function adaptFormat(image,target){
  if(state.imported||state.busy)throw Error('The Studio is read-only or busy.');
  if(!state.configured||!state.initialAudit)throw Error('Complete an authentic audit before AI format adaptation.');
+ const allowed=new Set(['1080x1080','1080x1350','1080x1920','1600x900','1920x1080','2560x1440']);
+ if(!target||!Number.isInteger(target.width)||!Number.isInteger(target.height)||!allowed.has(target.width+'x'+target.height))throw Error('Target AI hanya mendukung enam ukuran Sosial Media dan Website.');
  const baseline=image===state.revised?state.verified:state.initialAudit;
  if(!baseline||!state.context)throw Error('No verified source audit is available for this image.');
  if(state.formatHistory.length>=16)throw Error('Export this session before starting more format adaptations.');

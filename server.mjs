@@ -244,8 +244,8 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
 
   function validation(body) {
     if(!body || !imageValid(body.image, BODY_LIMIT)) { const e=new Error(`Unggah PNG, JPG, atau WebP di bawah ${sizeLabel}.`); e.status=400; throw e; }
-    if(typeof body.product !== 'string' || !body.product.trim() || body.product.length>130) { const e=new Error('Nama produk wajib diisi (maks. 130 karakter).'); e.status=400; throw e; }
-    if(typeof body.facts !== 'string' || body.facts.trim().length<8 || body.facts.length>2500) { const e=new Error('Isi fakta produk minimal 8 karakter, maksimal 2.500.'); e.status=400; throw e; }
+    if(typeof body.product !== 'string' || !body.product.trim() || body.product.trim().length>130) { const e=new Error('Nama produk wajib diisi (maks. 130 karakter).'); e.status=400; throw e; }
+    if(typeof body.facts !== 'string' || body.facts.trim().length<8 || body.facts.trim().length>2500) { const e=new Error('Isi fakta produk minimal 8 karakter, maksimal 2.500.'); e.status=400; throw e; }
     if(body.caption && (typeof body.caption!=='string' || body.caption.length>1000)) { const e=new Error('Teks iklan terlalu panjang.'); e.status=400; throw e; }
     if(body.language!==undefined && !['en','id'].includes(body.language)) { const e=new Error('Bahasa laporan tidak didukung. Pilih English atau Bahasa Indonesia.'); e.status=400; throw e; }
     // The original is a small, server-validated comparison reference.
