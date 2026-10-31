@@ -1,0 +1,50 @@
+name: AdProof local refresh recovery regression (MOCK Meta)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'public/app.js'
+      - 'public/app.html'
+      - 'public/local-recovery.js'
+      - 'public/i18n.js'
+      - 'public/styles.css'
+      - 'scripts/local-recovery-browser.cjs'
+      - '.github/workflows/local-recovery-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recover-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependency only
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local application without Meta credentials
+        run: |
+          node server.mjs >/tmp/adproof-server.log 2>&1 &
+          echo $! >/tmp/adproof-server.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/app >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/adproof-server.log
+          exit 1
+      - name: Test recovery without paid provider calls
+        run: node scripts/local-recovery-browser.cjs
+      - name: Upload safe diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-recovery-server-logs
+          path: /tmp/adproof-server.log
+          retention-days: 3
