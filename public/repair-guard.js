@@ -5,7 +5,20 @@ import {normalizeClaim} from './claim-engine.js';
 const RISK_CATEGORIES=new Set(['Visual','Readability','Consistency']);
 const UNSUPPORTED=new Set(['unsupported_by_supplied_facts','contradicted_by_supplied_facts']);
 
-export function reviewRepairCandidate(initial, revised, {originalReferenceSent=false,language='id'}={}){
+// The supplied caption is NOT edited by Muse Image. Repeated or omitted
+// caption observations in the eight-item ledger are not proof of removal.
+export function reviewUnchangedCaption(initial,revised,caption=''){
+ const supplied=String(caption||'').trim();
+ if(!supplied)return {status:'not_supplied',issues:[],unchanged:true};
+ const entries=[...(Array.isArray(initial?.claim_ledger)?initial.claim_ledger:[]),
+  ...(Array.isArray(revised?.claim_ledger)?revised.claim_ledger:[])];
+ const risks=new Set(entries.filter(c=>c?.origin==='caption'&&UNSUPPORTED.has(c.assessment))
+  .map(c=>String(c.claim||'').trim()).filter(Boolean));
+ return {status:'needs_human_review',issues:[...risks].slice(0,8),unchanged:true,
+  limitation:'Image repair cannot change the original user-provided caption. A truncated model claim ledger is not a complete review.'};
+}
+
+export function reviewRepairCandidate(initial, revised, {originalReferenceSent=false,language='id',caption=''}={}){
   const en=language==='en';
   const reasons=[];
   const before=Array.isArray(initial?.claim_ledger)?initial.claim_ledger:[];
@@ -38,6 +51,7 @@ export function reviewRepairCandidate(initial, revised, {originalReferenceSent=f
     reasons,
     original_reference_sent:Boolean(originalReferenceSent),
     basis:'model_selected_observations_not_pixel_certification',
+    caption_review:reviewUnchangedCaption(initial,revised,caption),
     auto_approved:false,
   };
 }

@@ -58,7 +58,21 @@ export function normalizeInspection(value,facts=''){
   }))};
 }
 const norm=s=>String(s).normalize('NFKC').replace(/\s+/g,' ').trim().toLowerCase();
-export function inspectConsistency(initial,revised,settings,measurements=null){
+
+// A narrow, deterministic backstop for measurable or comparative efficiency
+// promises that a model's eight-claim sample may miss. This is NOT OCR or
+// a general-purpose truth/entailment engine; unknown wording remains manual.
+// Only match assertions in model-extracted REVISED image text, never user
+// facts or original caption as if they were visible revised pixels.
+const PERFORMANCE_COPY=/\b(?:efficient|efficiency|energy[ -]?saving|power[ -]?saving|less electricity|low[ -]?consumption|eco[ -]?friendly|efisien|efisiensi|hemat (?:energi|listrik)|ramah lingkungan)\b/i;
+const DENIAL=/\b(?:no|not|without|unverified|unsupported|unproven|tidak|belum|tanpa|bukan|tak|non)\b/i;
+export function unverifiedPerformanceText(lines,facts=''){
+ const statements=String(facts).split(/[\n.!?;]/).map(s=>s.trim()).filter(Boolean);
+ const evidenced=statements.some(s=>PERFORMANCE_COPY.test(s)&&!DENIAL.test(s));
+ if(evidenced)return [];
+ return (Array.isArray(lines)?lines:[]).filter(s=>typeof s==='string'&&PERFORMANCE_COPY.test(s)).slice(0,12);
+}
+export function inspectConsistency(initial,revised,settings,measurements=null,facts=''){
  const s=normalizeSettings(settings),i=revised?.consistency;
  const original=i?.original_text||initial?.text_inventory;
  const next=i?.revised_text||revised?.text_inventory;
@@ -66,6 +80,13 @@ export function inspectConsistency(initial,revised,settings,measurements=null){
  const added=newLines.filter(x=>!oldLines.some(y=>norm(x)===norm(y)));
  const removed=oldLines.filter(x=>!newLines.some(y=>norm(x)===norm(y)));
  const risks=[];
+ // A model can mark a claim as supported just because 5W or LED appears
+ // in the supplied facts. That does not establish an "efficient" promise.
+ const inspectedText=[...new Set([...newLines,...(next?.lines||[]),...(i?.new_claims||[]).map(x=>x?.text).filter(Boolean)])];
+ for(const text of unverifiedPerformanceText(inspectedText,facts)){
+  risks.push({code:'unsupported_performance_copy',evidence:text});
+ }
+ // If text extraction is partial, missing a phrase here is not proof of safety.
  const coverage=original?.coverage==='complete'&&next?.coverage==='complete'&&oldLines.length<128&&newLines.length<128?'model_reports_complete':'partial_or_unknown';
  const locks=Object.fromEntries(Object.keys(LOCKS).map(k=>{
   const observation=i?.visual?.[k];
@@ -100,10 +121,10 @@ export function inspectConsistency(initial,revised,settings,measurements=null){
  * regressions. All product/claim/typography/brand locks remain conservative.
  * A model-only inspection never authorizes automatic approval.
  */
-export function inspectFormatCandidate(baseline,adapted,settings){
+export function inspectFormatCandidate(baseline,adapted,settings,facts=''){
  const normalized=normalizeSettings(settings);
  const adaptedLocks={...normalized.locks,background:false,composition:false};
- const check=inspectConsistency(baseline,adapted,{...normalized,locks:adaptedLocks});
+ const check=inspectConsistency(baseline,adapted,{...normalized,locks:adaptedLocks},null,facts);
  const observedIssues=(Array.isArray(adapted?.issues)?adapted.issues:[])
   .filter(x=>['Visual','Readability','Consistency'].includes(x?.category)&&['high','medium'].includes(x?.severity));
  if(observedIssues.length){
