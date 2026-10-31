@@ -1,4 +1,4 @@
-import {buildEvolution, buildConstellation} from './claim-engine.js';
+import {buildEvolution, buildConstellation, isClearlySubjectiveSlogan} from './claim-engine.js';
 import {t,getLanguage} from './i18n.js';
 const $=id=>document.getElementById(id);
 const labels={pending:'Awaiting re-audit',retained:'Retained',still_problematic:'Still problematic',uncertain:'Review needed',changed_candidate:'Possible wording change',not_redetected:'Not in re-audit list',newly_detected:'First seen in re-audit',cross_source_observed:'Recorded in another source',ambiguous:'Ambiguous match'};
@@ -64,10 +64,17 @@ function inspectClaim(index){
  $('xrayCaption').hidden=claim.origin!=='caption';$('xrayCaption').textContent=claim.origin==='caption'?(context.caption||'Caption source was not supplied.') : '';
 
  $('xrayTitle').textContent=getLanguage()==='id'?`${selectedStage==='revised'?'Revisi':'Asli'} · klaim ${claim.origin==='caption'?'caption':claim.origin==='creative'?'gambar':'sumber belum pasti'} ${index+1}`:`${selectedStage==='revised'?'Revised':'Original'} · ${claim.origin==='caption'?'caption':claim.origin==='creative'?'image':'source uncertain'} claim ${index+1}`;
- $('xrayClaim').textContent=claim.claim;$('xrayReason').textContent=claim.reason||t('No explanation returned.');
- $('xrayEvidence').textContent=claim.fact_quote?`${t('Input excerpt')}: “${claim.fact_quote}”`:t('No validated input excerpt.');
- $('xrayStatus').textContent=t(assessmentLabels[claim.assessment]||assessmentLabels.needs_human_review);
- $('xrayAction').textContent=claim.recommended_action||t('Review the source manually.');
+ const expressive=isClearlySubjectiveSlogan(claim);
+ $('xrayClaim').textContent=claim.claim;
+ $('xrayReason').textContent=expressive?(getLanguage()==='id'
+   ?'Ini slogan kreatif, bukan spesifikasi produk yang perlu dibuktikan.'
+   :'This is creative advertising language, not a product specification requiring proof.'):
+   (claim.reason||t('No explanation returned.'));
+ $('xrayEvidence').hidden=expressive||!claim.fact_quote;
+ $('xrayEvidence').textContent=!expressive&&claim.fact_quote?`${t('Input excerpt')}: “${claim.fact_quote}”`:'';
+ $('xrayStatus').textContent=expressive?(getLanguage()==='id'?'Slogan kreatif':'Creative slogan'):
+   t(assessmentLabels[claim.assessment]||assessmentLabels.needs_human_review);
+ $('xrayAction').textContent=expressive?'':(claim.recommended_action||t('Review the source manually.'));
  context.onInspect?.(selectedStage);
 }
 function renderGraph(){
