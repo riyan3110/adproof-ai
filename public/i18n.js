@@ -302,7 +302,7 @@ const id={
  'Incomplete claim data. Matching is provisional; inspect both audits.':'Data klaim tidak lengkap. Pencocokan bersifat sementara; periksa kedua audit.',
  'Limited view: each audit supplies at most 8 selected claims. Missing from the list does NOT mean missing from the image or caption. Same wording may appear across both sources.':'Tampilan terbatas: tiap audit hanya memuat maksimal 8 klaim terpilih. Tidak tercantum BUKAN berarti hilang dari gambar atau caption. Teks yang sama bisa muncul di dua sumber.',
  'This compares selected audit observations, not exhaustive image text. Missing from a list does not prove removal; inspect both image and caption.':'Ini membandingkan pengamatan audit terpilih, bukan semua teks gambar. Hilang dari daftar bukan bukti penghapusan; periksa gambar dan caption.',
- 'Image repair does not edit the caption. Its unsupported claims still need manual revision.':'Perbaikan gambar tidak mengubah caption. Klaim yang tidak didukung di caption masih perlu diedit manual.',
+ 'The source-bound caption suggestion is included with export; the original caption remains in the archive.':'Saran caption berbasis fakta disertakan dalam ekspor; caption asli tetap tersimpan di arsip.',
  'No claims returned for comparison. This does not prove the absence of claims.':'Tidak ada klaim untuk dibandingkan. Ini bukan bukti bahwa tidak ada klaim.',
  'Unreadable claim':'Klaim tidak terbaca',
  'Not evidence of removal':'Bukan bukti penghapusan',

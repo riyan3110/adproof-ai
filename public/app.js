@@ -1,6 +1,6 @@
 import {createConsistencyUI} from './consistency-ui.js';
 import {inspectConsistency,impliedThermalDurationText} from './visual-consistency.js';
-import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame} from './output-system.js';
+import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame,prepareFormatReference} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
@@ -587,7 +587,8 @@ async function adaptFormat(image,target){
  setBusy(true,'AI format…');
  try {
   const extended=await extendFlatBackground(image,target);
-  const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
+  const framed=extended?null:await prepareFormatReference(image,target);
+  const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(framed.image),mode:'reframe',target:{...target,source_framed:true,reference_rect:framed.source_rect},issues:[],claims:[]});
   attempt.deterministic_extension=extended?{...extended,image:undefined}:null;
   attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;
   state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
@@ -610,8 +611,9 @@ async function adaptFormat(image,target){
    review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));
   }
   attempt.status=review.status;attempt.review=review;
+  workStep(getLanguage()==='id'?'Komposisi selesai diperiksa':'Composition comparison complete');
   return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.status!=='validated',reference_frame:{...frame,image:undefined},deterministic_extension:extended?{...extended,image:undefined}:null}};
- } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);throw error;}
+ } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);workStep(getLanguage()==='id'?'Komposisi belum selesai':'Composition incomplete');throw error;}
  finally {setBusy(false);}
 }
 // Repair's first Muse Spark verification can trigger ONE evidence-grounded
@@ -741,17 +743,15 @@ async function performImprove(){
    }))],
    text_inventory:state.initialAudit.text_inventory
   };
-  if(!repairSettings.region&&!state.initialAudit.local_text_repair&&isTextOnlyRepair(localizationAudit)){
+  if(!repairSettings.region&&(!state.initialAudit.local_text_repair||(state.initialAudit.local_text_repair.coordinates_basis!=='source_ocr'&&state.initialAudit.local_text_repair.edits?.some(e=>e.background==='complex')))&&isTextOnlyRepair(localizationAudit)){
    workStep(getLanguage()==='id'?'Menentukan area teks':'Locating text region','Muse Spark');
    const localized=await api('/api/localize',{...payload(state.original),audit:localizationAudit});
    state.runs.push({stage:'localize',model:localized.model,tokens:localized.tokens,provenance:localized.provenance||null});
    if(!localized.plan){
     await persistMilestone();
-    throw Error(getLanguage()==='id'
-      ?'AI belum bisa menemukan area teks yang aman. Buka "Batasi area perbaikan", pilih kotak yang hanya mencakup teks salah tanpa produk/logo, lalu klik Perbaiki lagi. Gambar asli tidak diubah.'
-      :'AI could not locate a safe text box. Open "Target a repair area", set the rectangle over wrong copy only (not product/logo), then press Repair again. Original retained.');
+    workStep(getLanguage()==='id'?'Menggunakan edit referensi dan pemeriksaan independen':'Using a reference edit and independent comparison','Muse Image');
    }
-   state.initialAudit.local_text_repair=localized.plan;
+   state.initialAudit.local_text_repair=localized.plan||null;
    await persistMilestone();
   }
   workStep(getLanguage()==='id'?'Memeriksa opsi edit teks lokal':'Checking local text edits');

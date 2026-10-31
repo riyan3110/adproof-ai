@@ -21,6 +21,9 @@ on:
       - 'scripts/request-lifecycle-browser.cjs'
       - 'scripts/i18n-smoke.cjs'
       - 'scripts/style-browser.cjs'
+      - 'scripts/ocr-repair-browser.cjs'
+      - 'ocr-localization.mjs'
+      - 'package-lock.json'
       - '.github/workflows/local-recovery-check.yml'
   workflow_dispatch:
 
@@ -61,6 +64,8 @@ jobs:
           retention-days: 7
       - name: Test source-bound repair, caption, pixel locks and three ratio transitions (MOCK Meta)
         run: node scripts/factual-repair-browser.cjs
+      - name: Test actual OCR geometry and photographic source pixel preservation (NO Meta calls)
+        run: node scripts/ocr-repair-browser.cjs
       - name: Upload deterministic pixel evidence (not live Meta)
         if: always()
         uses: actions/upload-artifact@v4

@@ -1,0 +1,158 @@
+{
+  "production_commit": "ecb5d8bd3b87c934154a49c7a35175741cd6142e",
+  "format_history": [
+    {
+      "requested": {
+        "width": 1240,
+        "height": 1754,
+        "print": true
+      },
+      "status": "failed",
+      "image": {
+        "provider": "Meta Model API",
+        "model": "muse-image-1.0",
+        "requested_model": "muse-image-1.0",
+        "returned_model": null,
+        "response_id": null,
+        "stage": "repair",
+        "completed_at": "2026-10-31T20:42:22.958Z",
+        "input_sha256": "e489ab0d8906f41b18ce28823a8ab2a21dd8d0c8ce471a5669491eea9b42eb4e",
+        "output_sha256": "bb4265e8f832ff804e6899d90863851c621602d2c05071fdfebeebd54d3c6226"
+      },
+      "audit": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193b3-8fe7-710c-aa6b-3ef7096a3eb0",
+        "stage": "reaudit",
+        "completed_at": "2026-10-31T20:43:01.130Z",
+        "input_sha256": "d85f447af01a7d21c5c6a60334f2c5d0a867d761f56d1debfa5d5192172537f5",
+        "report_language": "id"
+      },
+      "review": {
+        "version": "visual-consistency-2",
+        "status": "failed",
+        "validation_basis": null,
+        "auto_approved": false,
+        "coverage": "model_reports_complete",
+        "locks": {
+          "product_shape": {
+            "locked": true,
+            "status": "unable_to_verify",
+            "evidence": "Siluet botol silinder dengan leher dan tutup hitam di tengah terlihat utuh dan sama, tanpa bagian hilang atau berubah bentuk. [Model reports preserved; no independent pixel/semantic proof.]"
+          },
+          "colors": {
+            "locked": false,
+            "status": "unable_to_verify",
+            "evidence": "Bodi hijau tua dan tutup hitam serta latar krem terlihat sama pada kedua gambar. [Model reports preserved; no independent pixel/semantic proof.]"
+          },
+          "lighting": {
+            "locked": false,
+            "status": "unable_to_verify",
+            "evidence": "Cahaya lembut dari kanan dan bayangan ke kiri pada dasar botol terlihat sama. [Model reports preserved; no independent pixel/semantic proof.]"
+          },
+          "background": {
+            "locked": false,
+            "status": "unable_to_verify",
+            "evidence": "Dinding bertekstur krem terlihat sama pada kedua gambar, tanpa perubahan warna atau motif. [Model reports preserved; no independent pixel/semantic proof.]"
+          },
+          "composition": {
+            "locked": false,
+            "status": "changed",
+            "evidence": "Kanvas revisi lebih tinggi dengan pengulangan judul di atas dan keterangan kapasitas di bawah, sehingga skala botol relatif lebih kecil dibanding referensi."
+          },
+          "typography": {
+            "locked": true,
+            "status": "changed",
+            "evidence": "Revisi menampilkan dua pasang judul dan dua pasang keterangan kapasitas yang bertumpuk, sedangkan referensi hanya satu pasang."
+          },
+          "branding": {
+            "locked": true,
+            "status": "unable_to_verify",
+            "evidence": "Tulisan Nori Bottle dengan ejaan sama, tanpa logo tambahan atau perubahan identitas. [Model reports preserved; no independent pixel/semantic proof.]"
+          }
+        },
+        "text": {
+          "added": [],
+          "removed": [],
+          "changed": [],
+          "limitations": [
+            "Tidak ada; seluruh teks terbaca.",
+            "Tidak ada; seluruh teks terbaca walau ganda."
+          ]
+        },
+        "risks": [
+          {
+            "code": "lock_typography",
+            "evidence": "Revisi menampilkan dua pasang judul dan dua pasang keterangan kapasitas yang bertumpuk, sedangkan referensi hanya satu pasang."
+          },
+          {
+            "code": "format_visual_issue",
+            "evidence": "Duplikasi teks judul dan kapasitas"
+          },
+          {
+            "code": "model_regression",
+            "evidence": "Audit revisi masih menemukan potensi masalah visual/struktur/keterbacaan: Duplikasi teks judul dan kapasitas."
+          },
+          {
+            "code": "model_regression",
+            "evidence": "Perkiraan skor keterbacaan turun 33 poin."
+          },
+          {
+            "code": "model_regression",
+            "evidence": "Perkiraan skor tata letak turun 34 poin."
+          }
+        ],
+        "measurements": null,
+        "limitations": [
+          "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.",
+          "Some locks could not be independently verified.",
+          "Expected scene extension and canvas ratio changes are not preservation proof. Inspect product edges, copy and logos at 100%."
+        ],
+        "format_relayout": true,
+        "exempt_from_lock_comparison": [
+          "background_extension",
+          "canvas_aspect_ratio"
+        ],
+        "original_locks": {
+          "product_shape": true,
+          "colors": false,
+          "lighting": false,
+          "background": false,
+          "composition": true,
+          "typography": true,
+          "branding": true
+        }
+      },
+      "deterministic_extension": null,
+      "model_native_dimensions": {
+        "width": 1312,
+        "height": 1856
+      },
+      "reference_frame": {
+        "method": "source_reference_restored_over_generated_surroundings",
+        "source_pixels_preserved": true,
+        "source_rect": {
+          "x": 0,
+          "y": 272,
+          "width": 1312,
+          "height": 1312
+        },
+        "reference_scale": 0.82,
+        "source_dimensions": {
+          "width": 1600,
+          "height": 1600
+        },
+        "native_dimensions": {
+          "width": 1312,
+          "height": 1856
+        },
+        "seam_mean_delta": 0.06069165471066848,
+        "source_upscaled": false,
+        "detail_added_by_ai": false
+      },
+      "tokens": 18606
+    }
+  ]
+}
