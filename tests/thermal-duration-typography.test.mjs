@@ -34,7 +34,7 @@ test('duration warnings in seller facts do not count as duration evidence',()=>{
  assert.deepEqual(unverifiedPerformanceText(['Lebih lama'],'Tidak tersedia bukti dingin hingga 24 jam',initial),['Lebih lama']);
 });
 test('bounded word-wrap fits all full words and never clips a long token or creates overlapping lines',()=>{
- const ctx={font:'',measureText(text){const size=Number.parseFloat(this.font.match(/\d+/)?.[0])||12;return {width:text.length*size*.52};}};
+ const ctx={font:'',measureText(text){const size=Number.parseFloat(this.font.match(/(\d+)px/)?.[1])||12;return {width:text.length*size*.52};}};
  const width=200,height=78,text='STAINLESS STEEL 600 mL TUTUP ULIR';
  const fit=fitReplacementLines(ctx,text,width,height,11);
  assert.ok(fit, 'multiline badge text fits');
