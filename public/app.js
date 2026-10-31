@@ -4,7 +4,7 @@ import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPi
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
-import {repairCaption} from './factual-repair.js';
+import {repairCaption,reviewRepairedCaption} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
 import {storeRecovery,retrieveRecovery,removeRecovery} from './local-recovery.js';
@@ -446,12 +446,20 @@ async function performAudit(image,verify=false){
      state.verified=out.audit;
      if(state.captionRepair)state.captionRepair.independent_audit={provenance:out.provenance||null,caption_sent:state.captionRepair.final,observed_claims:out.audit.claim_ledger.filter(c=>c.origin==='caption')};
      state.repairReview=reviewRepairCandidate(state.initialAudit,out.audit,{originalReferenceSent:out.original_reference_sent===true,language:state.reportLanguage,caption:state.captionRepair?.final||state.context?.caption});
-     if(state.captionRepair)state.repairReview.caption_review={status:'source_bound',unchanged:false,issues:[]};
+     if(state.captionRepair)state.repairReview.caption_review=reviewRepairedCaption(state.captionRepair,out.audit);
      const measurements=await comparePixels(state.original,state.revised);
      const local=state.repairMetadata?.local_repair;
      if(local)measurements.local_repair=await verifyLocalPixels(state.original,state.revised,local.pixel_proof.rectangles);
      state.consistencyReview=inspectConsistency(state.initialAudit,out.audit,state.repairMetadata?.settings||state.consistency,measurements,state.context?.facts||'');
-     if(state.repairReview.status==='regression_suspected'){state.consistencyReview.status='failed';state.consistencyReview.risks.push(...state.repairReview.reasons.map(evidence=>({code:'legacy_guard',evidence})));}
+     if(state.repairReview.caption_review?.status==='failed'){
+      const flagged=state.repairReview.caption_review.issues;
+      state.consistencyReview.status='failed';
+      state.consistencyReview.auto_approved=false;
+      state.consistencyReview.risks.push(...flagged.map(evidence=>({code:'verified_caption_claim_regression',evidence})));
+      state.repairReview.status='regression_suspected';
+      state.repairReview.reasons.push('Independent re-audit marked corrected caption claims unsupported: '+flagged.join('; '));
+     }
+     if(state.repairReview.status==='regression_suspected'){state.consistencyReview.status='failed';state.consistencyReview.auto_approved=false;state.consistencyReview.risks.push(...state.repairReview.reasons.map(evidence=>({code:'legacy_guard',evidence})));}
      if(state.consistencyReview.status==='failed'){state.repairReview.status='regression_suspected';state.repairReview.reasons=state.consistencyReview.risks.map(r=>r.evidence).filter(Boolean).slice(0,8);switchView('original');}
      visualUI.clear();
      phase(3);
