@@ -7,6 +7,8 @@ on:
       - 'public/app.js'
       - 'public/factual-repair.js'
       - 'public/visual-consistency.js'
+      - 'public/proof-studio.js'
+      - 'public/repair-notice.js'
       - 'public/output-system.js'
       - 'public/consistency-ui.js'
       - 'scripts/factual-repair-browser.cjs'
@@ -18,6 +20,7 @@ on:
       - 'scripts/local-recovery-browser.cjs'
       - 'scripts/request-lifecycle-browser.cjs'
       - 'scripts/i18n-smoke.cjs'
+      - 'scripts/style-browser.cjs'
       - '.github/workflows/local-recovery-check.yml'
   workflow_dispatch:
 
@@ -69,6 +72,15 @@ jobs:
         run: node scripts/local-recovery-browser.cjs
       - name: Test automatic language and unchanged report evidence at six widths (MOCK Meta)
         run: node scripts/i18n-smoke.cjs
+      - name: Replay recorded Meta style reports through comparison and actual PNG export (NO fresh inference)
+        run: node scripts/style-browser.cjs
+      - name: Upload recorded style replay evidence (not fresh Meta)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recorded-style-browser-evidence
+          path: qa-artifacts/style-replay
+          retention-days: 7
       - name: Upload safe diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4

@@ -7,14 +7,14 @@ const make=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.classNa
 function svg(tag,attrs,text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));if(text!==undefined)e.textContent=text;return e;}
 let context=null, selectedStage='initial', selectedNode=null, detailNode=null, currentView='xray';
 const viewTitles={xray:'Inspect the source.',constellation:'Follow the evidence.',evolution:'Trace every change.'};
-export function activateProofView(view,focus=false){
+export function activateProofView(view,focus=false,{navigate=true}={}){
  if(!Object.hasOwn(viewTitles,view))return;
  currentView=view;
  for(const key of Object.keys(viewTitles))$(key+'Workspace').hidden=key!==view;
  for(const button of document.querySelectorAll('[data-proof-view]'))button.setAttribute('aria-pressed',String(button.dataset.proofView===view));
  $('proofHeading').textContent=t(viewTitles[view]);
- if(context&&view==='xray'&&$('xrayResults').hidden){const first=buildConstellation(activeAudit(),context.facts).nodes.find(n=>n.type==='claim');if(first){selectedNode=first.id;detailNode=null;renderGraph();}}
- if(context&&view==='constellation')renderGraph();
+ if(context&&view==='xray'&&$('xrayResults').hidden){const first=buildConstellation(activeAudit(),context.facts).nodes.find(n=>n.type==='claim');if(first){selectedNode=first.id;detailNode=null;renderGraph({navigate});}}
+ if(context&&view==='constellation')renderGraph({navigate});
  if(focus){$('proofWorkspace').scrollIntoView({block:'start',behavior:'auto'});$('proofHeading').focus({preventScroll:true});}
 }
 for(const button of document.querySelectorAll('[data-proof-view]'))button.addEventListener('click',()=>activateProofView(button.dataset.proofView,true));
@@ -49,10 +49,10 @@ export function renderProofStudio(next){
  $('constellationResults').hidden=false;$('evolutionResults').hidden=false;
  $('proofStage').disabled=false;$('proofStage').value=selectedStage;$('proofStage').options[1].disabled=!next.after;
  $('proofStage').onchange=()=>{selectedStage=$('proofStage').value;selectedNode=null;detailNode=null;renderGraph();};
- renderGraph();renderEvolution();
+ renderGraph({navigate:false});renderEvolution();
 }
 function activeAudit(){return selectedStage==='revised'?context.after:context.before;}
-function inspectClaim(index){
+function inspectClaim(index,{navigate=true}={}){
  const claim=activeAudit()?.claim_ledger?.[index];if(!claim)return;
  $('xrayPanel').hidden=false;$('xrayEmpty').hidden=true;$('xrayResults').hidden=false;
  const select=$('xrayClaimSelect');select.replaceChildren();
@@ -75,9 +75,9 @@ function inspectClaim(index){
  $('xrayStatus').textContent=expressive?(getLanguage()==='id'?'Slogan kreatif':'Creative slogan'):
    t(assessmentLabels[claim.assessment]||assessmentLabels.needs_human_review);
  $('xrayAction').textContent=expressive?'':(claim.recommended_action||t('Review the source manually.'));
- context.onInspect?.(selectedStage);
+ if(navigate)context.onInspect?.(selectedStage);
 }
-function renderGraph(){
+function renderGraph({navigate=true}={}){
  const audit=activeAudit(),graph=buildConstellation(audit,context.facts);
  context.graph=graph;
  const list=$('proofNodeList');list.replaceChildren();
@@ -110,7 +110,7 @@ function renderGraph(){
   g.append(svg('title',{},label));g.onclick=()=>showDetail(node);g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();showDetail(node);}};canvas.append(g);
  }
  showDetail(nodes.find(n=>n.id===detailNode)||root);
- const index=claimNodes.findIndex(n=>n.id===root.id);if(index>=0)inspectClaim(Number(root.source.match(/\[(\d+)\]/)?.[1]??index));else clearXray(true);$('proofToXray').disabled=index<0;
+ const index=claimNodes.findIndex(n=>n.id===root.id);if(index>=0)inspectClaim(Number(root.source.match(/\[(\d+)\]/)?.[1]??index),{navigate});else clearXray(true);$('proofToXray').disabled=index<0;
 }
 function localizedEvolutionExplanation(item){
  switch(item.status){
@@ -165,10 +165,10 @@ export function openClaimInspector(index,stage,focus=true){
  $('proofStage').value=stage;renderGraph();activateProofView('xray',focus);
 }
 
-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(context&&currentView==='constellation')renderGraph();},100);});
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(context&&currentView==='constellation')renderGraph({navigate:false});},100);});
 
 // No model call: rebuild only derived UI wording when the browser language changes.
 export function refreshProofLanguage(){
- activateProofView(currentView);
- if(context){renderGraph();renderEvolution();}
+  activateProofView(currentView,false,{navigate:false});
+ if(context){renderGraph({navigate:false});renderEvolution();}
 }

@@ -143,8 +143,29 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  const unresolved=Object.values(locks).some(x=>x.locked&&x.status==='unable_to_verify');
  const localValidated=!risks.length&&coverage==='model_reports_complete'&&measurements?.local_repair?.verified===true&&
   !(revised?.issues||[]).some(x=>!/^caption\s*:/i.test(x.evidence||'')&&['high','medium'].includes(x.severity));
- return {version:POLICY_VERSION,status:risks.length?'failed':localValidated?'validated':'review_required',auto_approved:localValidated,coverage,locks,text:{added,removed,changed:i?.changed_text||[],limitations:[original?.limitations,next?.limitations].filter(Boolean)},risks,measurements,
-  limitations:['Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.',...(unresolved?['Some locks could not be independently verified.']:[])]};
+ // A complete, independent reference-based Meta comparison is useful evidence
+ // for generative edits. It is NOT exact source-pixel preservation. Require
+ // distinct provider receipts, readable inventories, explicit observations for
+ // every active lock, sane dimensions and no factual/visual finding. Scores
+ // alone never make this path eligible for output.
+ const receipt=measurements?.independent_review;
+ const independent=receipt?.reference_sent===true&&receipt.provider==='Meta Model API'&&receipt.stage==='reaudit'&&
+  typeof receipt.source_response_id==='string'&&receipt.source_response_id.length>4&&
+  typeof receipt.response_id==='string'&&receipt.response_id.length>4&&receipt.response_id!==receipt.source_response_id&&
+  /^[a-f0-9]{64}$/.test(receipt.input_sha256||'');
+ const measured=measurements&&[measurements.original,measurements.revised].every(d=>d?.width>0&&d?.height>0)&&
+  Number.isFinite(measurements.aspect_delta)&&measurements.aspect_delta<=.02&&Number.isFinite(measurements.changed_sample_fraction);
+ const findings=(revised?.issues||[]).some(x=>!/^caption\s*:/i.test(x.evidence||'')&&['high','medium'].includes(x.severity));
+ const modelValidated=!localValidated&&!risks.length&&coverage==='model_reports_complete'&&independent&&measured&&!findings&&
+  Object.entries(s.locks).filter(([,locked])=>locked).every(([key])=>i?.visual?.[key]?.status==='preserved'&&i.visual[key].evidence?.trim());
+ if(modelValidated)for(const [key,lock] of Object.entries(locks))if(lock.locked){
+  lock.status='preserved_by_model';lock.evidence=i.visual[key].evidence+' [Independent Meta comparison; not an exact-pixel guarantee.]';
+ }
+ return {version:POLICY_VERSION,status:risks.length?'failed':localValidated||modelValidated?'validated':'review_required',
+  validation_basis:localValidated?'source_pixel_comparison':modelValidated?'independent_meta_comparison':null,
+  auto_approved:localValidated,coverage,locks,text:{added,removed,changed:i?.changed_text||[],limitations:[original?.limitations,next?.limitations].filter(Boolean)},risks,measurements,
+  limitations:['Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.',
+   ...(modelValidated?['Output eligibility is based on independent AI comparison and pixel sanity checks, not certified product identity or exact preservation.']:unresolved?['Some locks could not be independently verified.']:[])]};
 }
 
 /**

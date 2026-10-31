@@ -5,6 +5,9 @@ export function describeRepairNotice(repairReview, consistencyReview, language='
   const id=language!=='en';
   const regression=repairReview?.status==='regression_suspected';
   if(consistencyReview?.status==='validated'&&!regression){
+    if(consistencyReview.validation_basis==='independent_meta_comparison')return {level:'review',text:id
+      ?'Perbandingan Meta AI selesai tanpa temuan penghambat. Hasil siap diekspor; ini bukan jaminan piksel identik.'
+      :'Meta AI comparison completed without blocking findings. Output is available; this is not an exact-pixel guarantee.'};
     return {level:'review',text:id
       ?'Pemeriksaan otomatis selesai. Area di luar koreksi tetap terjaga.'
       :'Automatic checks completed. Areas outside the correction remained unchanged.'};

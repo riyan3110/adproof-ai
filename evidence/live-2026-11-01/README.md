@@ -11,3 +11,13 @@ The owner-provided photographic LumaDesk source and its historical product facts
 - This evidence is application-recorded provenance, not a cryptographically signed billing receipt. Model scores do not establish image quality. Fresh post-fix image output and independent verification must still be inspected and recorded.
 
 The unit/API regressions in `tests/multiline-localization.test.mjs` deliberately mock their provider response; they do not represent additional live calls.
+
+## Nori — actual Muse Image style and independent Verify
+
+`nori/original.png` is an explicitly labelled fictional QA input with a flat background. Actual production Audit → Cinematic style → automatic Verify completed using the configured Meta endpoints. `nori/revised.webp` is the actual 1600×1600 Muse Image output; `nori/styled.json` is the actual downloaded report. No upstream response was intercepted. Muse Image did not return a model name or response ID; those remain null, while its requested model and output SHA-256 are recorded. Both Spark calls returned `muse-spark-1.3` and distinct response IDs.
+
+The output was visually inspected: artwork changed to a photographic textured scene, source copy stayed readable, capacity remained 500 mL, and the green bottle/black cap remained recognizable. The independent Meta comparison reported complete text, preserved active locks, no new/removed copy, no visual issues, and no blocking risks. Baseline export nevertheless remained blocked because the application accepted only exact source-pixel proofs. Its Revisions/Compare tabs also stayed disabled, and automatic evidence-panel rendering could switch the main canvas away from the selected view.
+
+The correction distinguishes two validation bases: decoded source-pixel comparison, and complete independent reference-based Meta comparison backed by distinct model receipts plus measured dimensions. Only the former claims source-pixel preservation. The latter leaves `auto_approved` false, labels matching locks as model observations, retains limitations, and permits output only without factual/visual findings, missing text, changed active locks or malformed dimensions. No score-only approval is added. Imported archives still cannot restore automatic approval.
+
+Style results now enable Revisions/Compare, passive proof/language/resize rendering preserves the main canvas view, and a passing verification selects the revision for export. `scripts/style-browser.cjs` replays the recorded Nori images/reports in actual Chromium at desktop/mobile widths and checks a real 1080×1080 PNG download with the styled background. This is explicitly replay evidence, not fresh inference. A fresh post-release verification and production PNG export remain part of the live test.
