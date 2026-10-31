@@ -235,7 +235,7 @@ function updateRepairJourney(){
   &&!state.imported&&!state.busy&&state.history.length<8
   &&planOneCorrection({initial:state.initialAudit,verified:state.verified,
     consistencyReview:state.consistencyReview,repairReview:state.repairReview,
-    alreadyAttempted:false}).allowed;
+    alreadyAttempted:Boolean(state.autoCorrection?.attempted)}).allowed;
  const view=repairJourney(state,{canRepair:hasImageRepairTarget(state.initialAudit),
    canRetry:retryEligible,language:getLanguage()});
  ui.journey.hidden=!view.visible;
@@ -577,11 +577,11 @@ async function adaptFormat(image,target){
 // Repair's first Muse Spark verification can trigger ONE evidence-grounded
 // corrective Muse Image pass. Failed image attempts never delete the old
 // candidate, and browser reload never triggers any paid request.
-async function attemptAutoCorrectionOnce({manual=false}={}){
+async function attemptAutoCorrectionOnce(){
  const plan=planOneCorrection({
   initial:state.initialAudit,verified:state.verified,
   consistencyReview:state.consistencyReview,repairReview:state.repairReview,
-  alreadyAttempted:manual?false:Boolean(state.autoCorrection?.attempted)
+  alreadyAttempted:Boolean(state.autoCorrection?.attempted)
  });
  if(!plan.allowed||state.imported||state.busy)return false;
  if(state.history.length>=8){
@@ -682,7 +682,7 @@ ui.journeyButton.addEventListener('click',async()=>{
  }
  if(action==='retry'){
   if(!state.verified||state.consistencyReview?.status!=='failed'||state.history.length>=8)return;
-  try{await attemptAutoCorrectionOnce({manual:true});}
+  try{await attemptAutoCorrectionOnce();}
   catch(error){notify(String(error?.message||error).slice(0,180),true);}
  }
 });
