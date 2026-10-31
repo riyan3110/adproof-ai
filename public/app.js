@@ -578,7 +578,7 @@ async function adaptFormat(image,target){
  if(state.imported||state.busy)throw Error('The Studio is read-only or busy.');
  if(!state.configured||!state.initialAudit)throw Error('Complete an authentic audit before AI format adaptation.');
  const allowed=new Set(['1080x1080','1080x1350','1080x1920','1600x900','1920x1080','2560x1440']);
- if(!target||!Number.isInteger(target.width)||!Number.isInteger(target.height)||(!target.print&&!allowed.has(target.width+'x'+target.height))||target.width<1||target.height<1||target.width>8192||target.height>8192||target.width*target.height>32e6)throw Error('Target AI hanya mendukung enam ukuran Sosial Media dan Website.');
+ if(!target||!Number.isInteger(target.width)||!Number.isInteger(target.height)||(target.print!==true&&!allowed.has(target.width+'x'+target.height))||target.width<64||target.height<64||target.width>8192||target.height>8192||target.width*target.height>32e6)throw Error('Pilih ukuran Sosial Media/Website atau ukuran cetak 64–8192 piksel (maksimal 32 MP).');
  const baseline=image===state.revised?state.verified:state.initialAudit;
  if(!baseline||!state.context)throw Error('No verified source audit is available for this image.');
  if(state.formatHistory.length>=16)throw Error('Export this session before starting more format adaptations.');
@@ -587,7 +587,6 @@ async function adaptFormat(image,target){
  setBusy(true,'AI format…');
  try {
   const extended=await extendFlatBackground(image,target);
-  if(target.print&&!extended)throw Error('Latar kompleks untuk rasio cetak memerlukan komposisi tervalidasi. Ekspor ditahan; sumber tetap tersimpan.');
   const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(image),mode:'reframe',target,issues:[],claims:[]});
   attempt.deterministic_extension=extended?{...extended,image:undefined}:null;
   attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;

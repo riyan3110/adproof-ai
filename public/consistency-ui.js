@@ -85,7 +85,7 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   q('#outputSource').options[1].disabled=!candidateAllowed();
   if(candidateAllowed()&&!prepared&&q('#outputSource').value==='original'&&!originalAllowed())q('#outputSource').value='revised';if(!candidateAllowed()&&q('#outputSource').value==='revised'){q('#outputSource').value='original';clearPrepared();}
   q('#downloadImage').disabled=state.busy||!prepared;q('#prepareOutput').disabled=state.busy||!state.original;
-  q('#adaptOutput').disabled=state.busy||state.imported||!state.original||!state.initialAudit||options().category==='print'||(options().source==='revised'&&!candidateAllowed());
+  q('#adaptOutput').disabled=state.busy||state.imported||!state.original||!state.initialAudit||(options().source==='revised'&&!candidateAllowed());
   if(state.original&&q('#regionPreview').getAttribute('src')!==state.original)q('#regionPreview').src=state.original;
   q('.region-preview').hidden=!state.original||!q('#useRepairRegion').checked;
   const box=q('#regionBox');box.style.left=q('#regionX').value+'%';box.style.top=q('#regionY').value+'%';box.style.width=q('#regionW').value+'%';box.style.height=q('#regionH').value+'%';
@@ -116,7 +116,7 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  q('#adaptOutput').addEventListener('click',async()=>{
   const image=source(),opts=options(),token=++generation;
   try{
-   if(!image||opts.category==='print'||state.imported)throw Error(say('AI format adaptation is available only for Social Media and Website.','Adaptasi format AI hanya tersedia untuk Sosial Media dan Website.'));
+   if(!image||state.imported)throw Error(say('Choose an active audited source before format adaptation.','Pilih sumber audit aktif sebelum menyesuaikan format.'));
    if(opts.source==='revised'&&!candidateAllowed())throw Error(say('Verify and review the repair first.','Periksa dan verifikasi revisi terlebih dahulu.'));
    const size=await dimensions(image),plan=outputPlan(size,opts);
    if(!plan.aspect_changed)throw Error(say('This image already matches the selected aspect ratio.','Gambar sudah sesuai rasio yang dipilih.'));
@@ -124,7 +124,7 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
    clearPrepared();
    q('#adaptOutput').disabled=true;
    q('#formatReview').textContent=say('Requesting an AI composition and a separate paid verification; source stays intact.','Membuat komposisi AI dan audit verifikasi terpisah (berbayar); sumber tetap utuh.');
-   const out=await adaptFormat(image,{width:plan.width,height:plan.height});
+   const out=await adaptFormat(image,{width:plan.width,height:plan.height,print:opts.category==='print'});
    if(source()!==image||options().category!==opts.category||options().preset!==opts.preset)return;
    formatCandidate={input:image,image:out.image,width:plan.width,height:plan.height,review:out.review,metadata:out.metadata};
    q('#formatBefore').src=image;q('#formatAfter').src=out.image;q('#formatPreview').hidden=false;

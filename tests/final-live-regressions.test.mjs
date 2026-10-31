@@ -30,6 +30,14 @@ test('paid image evidence remains exportable when separate audit fails; busy cle
  assert.equal(calls,2);assert.equal(state.runs.length,1);assert.equal(state.runs[0].stage,'format_image');
  assert.equal(state.formatHistory[0].status,'error');assert.equal(state.formatHistory[0].image.provider,'Meta Model API');assert.equal(state.busy,false);
 });
+test('complex print background follows the same Muse image and independent verification path',async()=>{
+ const requests=[];
+ const {state,run}=liveAdapter(async(path,body)=>{requests.push({path,body});return path==='/api/improve'?{image:'result',model:'muse-image-1.0'}:{audit:{score:70},original_reference_sent:true};});
+ const result=await run('source',{width:1240,height:1754,print:true});
+ assert.equal(requests.length,2);assert.equal(requests[0].path,'/api/improve');assert.equal(requests[0].body.target.print,true);
+ assert.equal(requests[1].body.referenceImage,'source');assert.equal(state.formatHistory[0].status,'failed');
+ assert.equal(result.review.status,'failed','print keeps all consistency findings');assert.equal(state.busy,false);
+});
 test('failed format review and both paid responses survive JSON export, with secrets stripped',async()=>{
  let calls=0;
  const {state,run}=liveAdapter(async()=>++calls===1?{image:'result',model:'muse-image-1.0',provenance:{provider:'Meta Model API'}}:{audit:{score:70},original_reference_sent:true,model:'muse-spark-1.3',tokens:321,provenance:{provider:'Meta Model API'}});
