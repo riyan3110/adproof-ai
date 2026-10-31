@@ -325,13 +325,18 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     let plan=normalizeLocalPlan(parsed.local_text_repair,observations,body.facts);
     const size=imageDimensions(Buffer.from(body.image.split(',')[1],'base64'));
     if(plan&&size&&Math.min(size.width,size.height)>=300){
-      const refined=refineOcrPlan(plan,await recognizeSource(body.image),size.width,size.height);
-      const checked=normalizeLocalPlan(refined,observations,body.facts);
-      if(checked){
+      const uncertainFallback=plan.edits.some(edit=>edit.background==='complex')?null:plan;
+      try{
+       const refined=refineOcrPlan(plan,await recognizeSource(body.image),size.width,size.height);
+       const checked=normalizeLocalPlan(refined,observations,body.facts);
+       plan=uncertainFallback;
+       if(checked){
         const facts=factLines(body.facts).filter(line=>line.length<=90&&!/^(?:product|category|appearance|warranty)\s*:/i.test(line)&&!/(?:\bno\b|not |unknown|unspecified|unverified|ignore|instructions?|tidak|belum)/i.test(line));
         const filled={...checked,edits:checked.edits.map((edit,i)=>({...edit,replacement:edit.replacement||facts[i]||''}))};
-        plan={...normalizeLocalPlan(filled,observations,body.facts),coordinates_basis:'source_ocr',geometry_version:1};
-      }
+        const sourceBound=normalizeLocalPlan(filled,observations,body.facts);
+        if(sourceBound)plan={...sourceBound,coordinates_basis:'source_ocr',geometry_version:1};
+       }
+      }catch{plan=uncertainFallback;}
     }
     return {plan,model:data.model||MODEL,tokens:data.usage?.total_tokens||null,
       provenance:provenance(data,MODEL,'localize',payload),

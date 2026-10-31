@@ -158,12 +158,12 @@ export async function repairTextLocally(original,plan){
   if(ink<4||ink>w*h*.4||!inkColor)return null;
   if(bg){ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(x,y,w,h);}
   else {
-   // Keep the original badge texture and rounded boundary. Only replace dark
+   // Keep the original badge texture and rounded boundary. Only replace contrasting
    // source glyphs (plus their anti-aliased fringe), rather than pasting a
    // rectangular reconstructed surface over the complete photographic patch.
    const mask=new Uint8Array(w*h),cleaned=new Uint8ClampedArray(pixels);
    for(let py=1;py<h-1;py++)for(let px=1;px<w-1;px++){
-    const i=(py*w+px)*4,drop=[0,1,2].reduce((sum,k)=>sum+smooth[i+k]-pixels[i+k],0);
+    const i=(py*w+px)*4,drop=[0,1,2].reduce((sum,k)=>sum+Math.abs(smooth[i+k]-pixels[i+k]),0);
     if(drop<45)continue;
     for(let yy=Math.max(0,py-2);yy<=Math.min(h-1,py+2);yy++)for(let xx=Math.max(0,px-2);xx<=Math.min(w-1,px+2);xx++)mask[yy*w+xx]=1;
    }
@@ -261,7 +261,7 @@ export async function prepareFormatReference(data,target){
  const img=await decodeImage(data),sw=img.naturalWidth,sh=img.naturalHeight,ratio=target.width/target.height;
  const width=sw/sh<ratio?Math.ceil(sh*ratio):sw,height=sw/sh<ratio?sh:Math.ceil(sw/ratio);
  if(width>8192||height>8192||width*height>32e6)throw Error('Format reference exceeds the canvas limit.');
- const {c,ctx}=canvas(width,height),source=canvas(sw,sh);source.ctx.drawImage(img,0,0);
+ const {c,ctx}=canvas(width,height);
  // Stretch only a one-pixel source edge into each added margin. No copy,
  // product or artificial white/transparent bars are introduced in the guide.
  const x=Math.floor((width-sw)/2),y=Math.floor((height-sh)/2);
