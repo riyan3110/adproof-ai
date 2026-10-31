@@ -442,6 +442,9 @@ button:disabled{cursor:not-allowed;opacity:.42}
 .studio-body .score-caption{color:#536b46}
 .studio-body .score-info h3{font:400 clamp(24px,2.7vw,34px)/1.15 Georgia,serif;color:var(--proof-ink);letter-spacing:-.6px}
 .studio-body .score-info p{color:#53625a;font-size:13px}
+.studio-body .score-explanation{margin-top:10px;max-width:850px}
+.studio-body .score-explanation summary{display:list-item;cursor:pointer;color:#446449;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:700}
+.studio-body .score-explanation-content{margin-top:8px;padding:12px;border-left:2px solid #b9c7b4;color:#53625a;font-size:12px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}
 .studio-body .breakdown{border-top:1px solid var(--proof-rule);gap:0;grid-template-columns:repeat(4,minmax(0,1fr));padding:12px 0}
 .studio-body .metric{background:transparent;border-right:1px solid var(--proof-rule);padding:13px 15px;border-radius:0}
 .studio-body .metric:last-child{border-right:0}
