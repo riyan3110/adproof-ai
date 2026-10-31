@@ -82,10 +82,37 @@ export async function verifyLocalPixels(original,revised,rectangles){
  return {basis:'all_decoded_rgba_pixels',outside_changed_pixels:outside,inside_changed_pixels:inside,
   source_dimensions:{width:w,height:a.naturalHeight},rectangles,verified:outside===0&&inside>0};
 }
+// Build a complete, readable text block before touching source pixels.
+// Never allow canvas fillText to draw beyond the region or clip a long word.
+export function fitReplacementLines(ctx,text,width,height,minimumFont=10){
+ const words=String(text||'').trim().split(/\s+/).filter(Boolean);
+ if(!words.length)return {lines:[],size:0,lineHeight:0};
+ const pad=Math.max(4,Math.min(12,Math.round(Math.min(width,height)*.1)));
+ const usableWidth=width-pad*2,usableHeight=height-pad*2;
+ if(usableWidth<14||usableHeight<10)return null;
+ const maxFont=Math.min(64,Math.floor(usableHeight));
+ for(let size=maxFont;size>=minimumFont;size--){
+  ctx.font=`600 ${size}px Arial, sans-serif`;
+  if(words.some(word=>ctx.measureText(word).width>usableWidth))continue;
+  const lines=[];let line='';
+  for(const word of words){
+   const attempt=line?line+' '+word:word;
+   if(ctx.measureText(attempt).width<=usableWidth)line=attempt;
+   else {if(line)lines.push(line);line=word;}
+  }
+  if(line)lines.push(line);
+  const lineHeight=Math.ceil(size*1.2);
+  if(lines.length>4||lines.length*lineHeight>usableHeight)continue;
+  return {lines,size,lineHeight};
+ }
+ return null;
+}
 // Automatic text-only route: retain the original raster everywhere except
 // source-grounded text rectangles on independently measured solid backgrounds.
 export async function repairTextLocally(original,plan){
- if(!plan?.edits?.length||plan.edits.some(e=>e.background==='complex'))return null;
+ if(!plan?.edits?.length)return null;
+ // A photographic scene can contain a locally uniform product badge. Trust
+ // measured perimeter pixels, not a scene-level background classification.
  const a=await decodeImage(original),{c,ctx}=canvas(a.naturalWidth,a.naturalHeight);ctx.drawImage(a,0,0);
  const rectangles=[];
  for(const edit of plan.edits){
@@ -103,11 +130,17 @@ export async function repairTextLocally(original,plan){
   if(ink<4||ink>w*h*.4||!inkColor)return null;
   ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(x,y,w,h);
   if(edit.replacement){
-   let size=Math.floor((bottom-top+1)*1.25);const min=Math.max(9,Math.floor(c.width/200));
-   do{ctx.font=`${size}px Arial, sans-serif`;if(ctx.measureText(edit.replacement).width<=w-6)break;size--;}while(size>=min);
-   if(size<min||size>h-4)return null;
-   ctx.fillStyle=`rgb(${inkColor.rgb.join(',')})`;ctx.textBaseline='middle';
-   ctx.fillText(edit.replacement,x+3,y+h/2);
+   const minimumFont=Math.max(10,Math.min(18,Math.round(c.width/105)));
+   const fitted=fitReplacementLines(ctx,edit.replacement,w,h,minimumFont);
+   // Reject impossible words, unreadable tiny text or overflow instead of
+   // clipping and stacking malformed glyphs on top of the source badge.
+   if(!fitted)return null;
+   ctx.fillStyle=`rgb(${inkColor.rgb.join(',')})`;
+   ctx.font=`600 ${fitted.size}px Arial, sans-serif`;
+   ctx.textBaseline='middle';ctx.textAlign='center';
+   const first=y+h/2-(fitted.lines.length-1)*fitted.lineHeight/2;
+   fitted.lines.forEach((line,j)=>ctx.fillText(line,x+w/2,first+j*fitted.lineHeight));
+   ctx.textAlign='start';
   }
   rectangles.push({x,y,width:w,height:h});
  }
