@@ -76,6 +76,15 @@ export function repairJourney(state,{canRepair=false,canRetry=false,language='id
  if(state.autoCorrection?.attempted&&state.revised&&after){
   guidance=[guidance,say('Satu koreksi tambahan sudah dicoba dalam alur ini.','One extra correction was attempted in this run.')].filter(Boolean).join(' · ');
  }
+ let change='';
+ if(state.revised){
+  const applied=state.repairMetadata?.local_repair?initial.local_text_repair?.edits?.[0]:null;
+  const dropped=(consistency?.text?.removed||[]).find(hasValue);
+  if(applied)change=say('Teks yang diedit: ','Edited text: ')+snippet(applied.before,85)+' → '+(snippet(applied.replacement,85)||say('[dihapus]','[removed]'));
+  else if(dropped)change=say('Audit ulang tidak lagi membaca: ','Re-audit did not read: ')+snippet(dropped,100);
+  else change=say('Revisi tersedia. Periksa perubahan visual di Bandingkan.','Revised image available. Inspect visual changes in Compare.');
+ }
  return {visible:true,phase,title:say('Dari temuan ke perbaikan','From finding to repair'),
-  issue,action,method,result,next,guidance,button,footnote:scoreIndependent};
+  issue,action,method,change,result,next,guidance,button,
+  footnote:canRetry?say('Perbaikan ulang memakai permintaan AI tambahan dan dapat menggunakan kuota API.','Retry uses additional AI requests and may consume API quota.'):scoreIndependent};
 }
