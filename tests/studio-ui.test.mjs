@@ -191,7 +191,7 @@ test('Claim DNA explicitly differentiates capped samples and claims seen across 
   assert.ok(proof.includes('First seen in re-audit'));
   assert.ok(proof.includes("item.after?.origin==='caption'"));
   assert.ok(proof.includes('No matched observation'));
-  assert.ok(proof.includes('Image repair does not edit the caption.'), 'unchanged caption with unsupported claims must remain an explicit warning');
+  assert.ok(proof.includes('The source-bound caption suggestion is included with export; the original caption remains in the archive.'), 'caption guidance must match the current source-bound export behavior');
   assert.ok(css.includes('.dna-origin-shift'));
   assert.ok(css.includes('#evolutionNote'));
   assert.ok(!proof.includes('Not re-detected'), 'misleading old label must not appear');
@@ -301,7 +301,7 @@ test('Output Size requires user-triggered, verified AI composition before aspect
  assert.ok(visual.includes("out.review.status==='failed'"),'failed AI candidates cannot export');
  assert.ok(visual.includes('aiAdapted:mustAdapt'),'only verified AI candidates may use cover export');
  assert.ok(output.includes("plan.fit='ai_adapted_full_bleed'"),'full bleed must depend on AI candidate');
- assert.ok(js.includes("mode:'reframe',target,issues:[],claims:[]"),'AI adaptation must be distinct from ordinary repair');
+ assert.ok(js.includes("mode:'reframe',target:{...target,source_framed:true,reference_rect:framed.source_rect},issues:[],claims:[]"),'AI adaptation must be distinct from ordinary repair');
  assert.ok(js.includes("api('/api/audit'"),'same Meta audit endpoint must independently check new composition');
  assert.ok(server.includes("reframe?{size:target.width+'x'+target.height}"),'ask model for target aspect ratio');
 });

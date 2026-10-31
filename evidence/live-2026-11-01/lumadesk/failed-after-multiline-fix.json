@@ -1,0 +1,611 @@
+{
+  "production_commit": "8390045f95ba4ab84fe77892d1e4866f41157dc7",
+  "runs": [
+    {
+      "stage": "archive_baseline",
+      "model": "muse-spark-1.3",
+      "tokens": null,
+      "origin": "saved_archive",
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "output_sha256": null,
+        "stage": "audit",
+        "completed_at": "2026-10-31T20:06:05.150Z",
+        "input_sha256": "f05ddf354e57f6732cf1c2ce38f167588e74fa1df400b3e1b18c930fd7a4ff9c",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "localize",
+      "model": "muse-spark-1.3",
+      "tokens": 5210,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193ab-bb78-77c5-88cc-63babbac014f",
+        "output_sha256": null,
+        "stage": "localize",
+        "completed_at": "2026-10-31T20:34:27.987Z",
+        "input_sha256": "deecd783a77e910da51e041958dc7daa4bc6af62416c9d8f941d042cd4b1f105",
+        "report_language": "und"
+      }
+    },
+    {
+      "stage": "repair",
+      "model": "muse-image-1.0",
+      "tokens": null,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-image-1.0",
+        "requested_model": "muse-image-1.0",
+        "returned_model": null,
+        "response_id": null,
+        "output_sha256": "1751cb05a0ce1c983139aa4d85129e30466578bab09a39cefc54b0bf68cf1ead",
+        "stage": "repair",
+        "completed_at": "2026-10-31T20:34:43.299Z",
+        "input_sha256": "76453b2810991551f37e042b20eb1ee1601d73a8505cdcf65b1d059612818708",
+        "report_language": "und"
+      }
+    },
+    {
+      "stage": "reaudit",
+      "model": "muse-spark-1.3",
+      "tokens": 16867,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193ac-8529-7329-bbd0-fe2d45f1a700",
+        "output_sha256": null,
+        "stage": "reaudit",
+        "completed_at": "2026-10-31T20:35:19.687Z",
+        "input_sha256": "d8244b1749c5c15a0beb5b8f424946a2575a139833e144a62631e62646daec52",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "auto_correction_image",
+      "model": "muse-image-1.0",
+      "tokens": null,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-image-1.0",
+        "requested_model": "muse-image-1.0",
+        "returned_model": null,
+        "response_id": null,
+        "output_sha256": "73d4512dae7879a9a32a4ae64e59f050fd5588bf8e0897ce65eb5b3e2b3c5457",
+        "stage": "repair",
+        "completed_at": "2026-10-31T20:35:38.906Z",
+        "input_sha256": "3876bc601c734205765b726fb5f770fc571030176b0df31bc9bb45bfd3911531",
+        "report_language": "und"
+      }
+    },
+    {
+      "stage": "reaudit",
+      "model": "muse-spark-1.3",
+      "tokens": 17049,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193ad-6aba-726c-bf01-8c789ff70b2a",
+        "output_sha256": null,
+        "stage": "reaudit",
+        "completed_at": "2026-10-31T20:36:18.412Z",
+        "input_sha256": "0bb9b94fc9742e8cf93ffff76a1ec3df93091d1f701d91ed422cd048b1a8890a",
+        "report_language": "id"
+      }
+    }
+  ],
+  "original_plan": {
+    "version": "source-bound-1",
+    "coverage": "complete",
+    "edits": [
+      {
+        "before": "Save up to 90% Electricity",
+        "replacement": "",
+        "background": "complex",
+        "box": {
+          "height": 0.078,
+          "width": 0.27,
+          "x": 0.18,
+          "y": 0.337
+        }
+      },
+      {
+        "before": "Protect Your Eyes",
+        "replacement": "",
+        "background": "complex",
+        "box": {
+          "height": 0.067,
+          "width": 0.165,
+          "x": 0.182,
+          "y": 0.472
+        }
+      },
+      {
+        "before": "Better Sleep in 7 Days",
+        "replacement": "",
+        "background": "complex",
+        "box": {
+          "height": 0.07,
+          "width": 0.218,
+          "x": 0.182,
+          "y": 0.552
+        }
+      }
+    ],
+    "protected_regions": [
+      {
+        "height": 0.115,
+        "width": 0.692,
+        "x": 0.058,
+        "y": 0.06
+      },
+      {
+        "height": 0.626,
+        "width": 0.407,
+        "x": 0.508,
+        "y": 0.214
+      }
+    ]
+  },
+  "verified": {
+    "text_inventory": {
+      "coverage": "partial",
+      "limitations": "Baris label bullet kedua dan ketiga bertumpuk sehingga bacaan atas tidak pasti. Teks kecil pada alas lampu dan sampul buku terlalu kecil untuk dipastikan.",
+      "lines": [
+        "LumaDesk Mini",
+        "LED DESK LAMP",
+        "Brighter Days. Calmer Nights.",
+        "A Smarter Light for a Healthier You.",
+        "Power consumption:",
+        "5 watts",
+        "Light color:",
+        "Warm white",
+        "Power source:",
+        "in 7 Days",
+        "Shop Now ->",
+        "The Better Home",
+        "A Brighter You"
+      ]
+    },
+    "consistency": {
+      "original_text": {
+        "coverage": "complete",
+        "limitations": "Transkripsi bacaan sendiri, bukan OCR sempurna. Teks sangat kecil pada alas lampu tidak terbaca.",
+        "lines": [
+          "LumaDesk Mini",
+          "LED DESK LAMP",
+          "Brighter Days. Calmer Nights.",
+          "A Smarter Light for a Healthier You.",
+          "Save up to",
+          "90% Electricity",
+          "Protect",
+          "Your Eyes",
+          "Better Sleep",
+          "in 7 Days",
+          "Shop Now ->",
+          "The Better Home",
+          "A Brighter You"
+        ]
+      },
+      "revised_text": {
+        "coverage": "partial",
+        "limitations": "Baris label pada bullet kedua dan ketiga bertumpuk dua lapisan sehingga bacaan atas tidak pasti. Teks sangat kecil pada alas lampu tidak terbaca.",
+        "lines": [
+          "LumaDesk Mini",
+          "LED DESK LAMP",
+          "Brighter Days. Calmer Nights.",
+          "A Smarter Light for a Healthier You.",
+          "Power consumption:",
+          "5 watts",
+          "Light color:",
+          "Warm white",
+          "Power source:",
+          "in 7 Days",
+          "Shop Now ->",
+          "The Better Home",
+          "A Brighter You"
+        ]
+      },
+      "changed_text": [
+        {
+          "before": "Save up to 90% Electricity",
+          "after": "Power consumption: 5 watts",
+          "evidence": "Bullet pertama pada IMAGE 2 berisi klaim hemat persen, pada IMAGE 1 sudah diganti dengan spesifikasi daya sesuai fakta."
+        },
+        {
+          "before": "Protect Your Eyes",
+          "after": "Light color: Warm white [dengan lapisan ganda tidak terbaca]",
+          "evidence": "Bullet kedua pada IMAGE 2 berisi klaim mata, pada IMAGE 1 diganti warna cahaya tetapi terlihat tumpang tindih dua lapisan teks."
+        },
+        {
+          "before": "Better Sleep in 7 Days",
+          "after": "Power source: in 7 Days",
+          "evidence": "Bullet ketiga pada IMAGE 2 berisi klaim tidur, pada IMAGE 1 label diganti sumber daya tetapi frasa in 7 Days masih tersisa dan nilai USB 5V tidak tampil."
+        }
+      ],
+      "new_claims": [
+        {
+          "text": "Power consumption: 5 watts",
+          "assessment": "supported",
+          "fact_quote": "Power consumption: 5 watts",
+          "evidence": "Nilai sama persis dengan fakta pemasok tentang konsumsi daya."
+        },
+        {
+          "text": "Light color: Warm white",
+          "assessment": "supported",
+          "fact_quote": "Light color: Warm white (3000K)",
+          "evidence": "Kata Warm white terbaca jelas dan sesuai fakta warna cahaya, walau baris labelnya bertumpuk."
+        },
+        {
+          "text": "Power source: in 7 Days",
+          "assessment": "unsupported",
+          "fact_quote": "",
+          "evidence": "Label sumber daya berubah tetapi tidak menampilkan nilai USB 5V dan masih menyisakan frasa durasi dari klaim tidur yang tidak didukung fakta."
+        }
+      ],
+      "visual": {
+        "product_shape": {
+          "status": "preserved",
+          "evidence": "Siluet kepala bundar, lengan bersendi, tiang dan alas bundar lampu terlihat utuh dan sama proporsinya."
+        },
+        "colors": {
+          "status": "preserved",
+          "evidence": "Putih lampu, cahaya hangat, hijau ikon dan aksen kayu terlihat sama palet dan saturasinya."
+        },
+        "lighting": {
+          "status": "preserved",
+          "evidence": "Arah cahaya hangat dari kepala lampu, bayangan di meja dan dinding terlihat sama."
+        },
+        "background": {
+          "status": "preserved",
+          "evidence": "Meja kayu, tanaman pot, buku, laptop dan bingkai di dinding tampak sama posisi dan ketajamannya."
+        },
+        "composition": {
+          "status": "preserved",
+          "evidence": "Tata letak judul kiri atas, bullet kiri tengah, lampu kanan, dan sudut kamera tidak berubah."
+        },
+        "typography": {
+          "status": "changed",
+          "evidence": "Judul dan CTA sama, tetapi teks bullet kedua dan ketiga di IMAGE 1 menunjukkan lapisan ganda dan bayangan huruf, berbeda dari teks bersih di IMAGE 2."
+        },
+        "branding": {
+          "status": "preserved",
+          "evidence": "Judul LumaDesk Mini dengan kombinasi hitam dan hijau tampak sama bentuk dan posisinya."
+        }
+      }
+    },
+    "score": 54,
+    "headline": "Klaim sensitif sudah diganti, tetapi teks bertumpuk harus dirapikan",
+    "summary": "IMAGE 1 sebagai revisi sudah menghapus klaim 90% dan klaim mata dari referensi dan menggantinya dengan spesifikasi 5 watts dan Warm white sesuai fakta. Namun render teks pada dua bullet bawah bertumpuk sehingga sulit dibaca, dan bullet sumber daya kehilangan nilai USB 5V serta masih menyisakan frasa in 7 Days yang tidak didukung. Visual produk, warna, cahaya",
+    "recommended_caption": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "issues": [
+      {
+        "id": "issue-1",
+        "title": "Teks warna cahaya bertumpuk dan sulit dibaca",
+        "category": "Readability",
+        "severity": "high",
+        "evidence": "Area bullet tengah kiri dengan ikon mata pada IMAGE 1 menunjukkan dua lapisan huruf saling menumpuk pada baris label, sehingga baris atas tidak terbaca bersih sedangkan IMAGE 2 terbaca jelas.",
+        "suggestion": "Render ulang area bullet kedua dengan satu lapisan teks Light color: Warm white di atas latar polos."
+      },
+      {
+        "id": "issue-2",
+        "title": "Info sumber daya tidak lengkap dan sisa klaim durasi",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Area bullet bawah kiri dengan ikon bulan pada IMAGE 1 hanya menampilkan Power source: tanpa nilai USB 5V yang jelas dan masih menyisakan frasa in 7 Days dari klaim Better Sleep in 7 Days di IMAGE 2, tanpa dukungan fakta.",
+        "suggestion": "Hapus sisa frasa in 7 Days dan tampilkan spesifikasi lengkap Power source: USB 5V sesuai fakta."
+      },
+      {
+        "id": "issue-3",
+        "title": "Revisi belum bersih dibanding referensi",
+        "category": "Consistency",
+        "severity": "medium",
+        "evidence": "Perbandingan menunjukkan niat perbaikan sudah tepat untuk menghapus klaim persen listrik dan mata, namun eksekusi revisi menimbulkan regresi keterbacaan pada dua bullet bawah.",
+        "suggestion": "Periksa ulang seluruh lapisan teks hasil revisi agar bersih sebelum publikasi."
+      }
+    ],
+    "strengths": [
+      "Nama produk dan kategori sesuai fakta dan terbaca jelas",
+      "Nilai 5 watts sudah tepat menggantikan klaim persen",
+      "Bentuk lampu, warna, pencahayaan dan latar terjaga sama",
+      "Tombol Shop Now jelas dan tidak menutupi produk"
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "LumaDesk Mini",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Product: LumaDesk Mini",
+        "reason": "Nama produk terbaca jelas di judul dan sama dengan fakta pemasok.",
+        "recommended_action": "Pertahankan tanpa perubahan."
+      },
+      {
+        "id": "claim-2",
+        "claim": "LED DESK LAMP",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Category: LED desk lamp",
+        "reason": "Kategori terbaca jelas di bawah judul dan sesuai fakta pemasok.",
+        "recommended_action": "Pertahankan tanpa perubahan."
+      },
+      {
+        "id": "claim-3",
+        "claim": "Power consumption: 5 watts",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Power consumption: 5 watts",
+        "reason": "Nilai daya terbaca jelas pada bullet pertama dan sama persis dengan fakta.",
+        "recommended_action": "Pertahankan tanpa perubahan."
+      },
+      {
+        "id": "claim-4",
+        "claim": "Warm white",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Light color: Warm white (3000K)",
+        "reason": "Frasa Warm white terbaca jelas pada bullet kedua dan sesuai fakta warna cahaya, walau baris atasnya bertumpuk.",
+        "recommended_action": "Pertahankan kata Warm white, tetapi rapikan lapisan teks yang bertumpuk."
+      },
+      {
+        "id": "claim-5",
+        "claim": "in 7 Days",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Frasa durasi terbaca pada bullet ketiga sebagai sisa klaim tidur dan tidak ada fakta pemasok tentang manfaat tidur atau durasi 7 hari.",
+        "recommended_action": "Hapus frasa in 7 Days dari gambar."
+      },
+      {
+        "id": "claim-6",
+        "claim": "Power source: USB 5V",
+        "origin": "caption",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Power source: USB 5V",
+        "reason": "Nilai sumber daya pada caption sama persis dengan fakta pemasok.",
+        "recommended_action": "Pertahankan dan gunakan sebagai pengganti teks bullet ketiga yang rusak."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 6,
+      "supported_by_supplied_facts": 5,
+      "unsupported_by_supplied_facts": 1,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 58,
+      "clarity": 42,
+      "hierarchy": 75,
+      "action": 85
+    },
+    "caption_repair": {
+      "version": "source-bound-1",
+      "original": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+      "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+      "status": "source_bound",
+      "method": "meta_selected_verbatim_facts",
+      "product_identity": "LumaDesk Mini — LED Desk Lamp",
+      "statements": [
+        {
+          "text": "Category: LED desk lamp",
+          "fact_quote": "Category: LED desk lamp"
+        },
+        {
+          "text": "Power consumption: 5 watts",
+          "fact_quote": "Power consumption: 5 watts"
+        },
+        {
+          "text": "Light color: Warm white (3000K)",
+          "fact_quote": "Light color: Warm white (3000K)"
+        },
+        {
+          "text": "Power source: USB 5V",
+          "fact_quote": "Power source: USB 5V"
+        }
+      ],
+      "verification": {
+        "status": "passed",
+        "basis": "complete_source_lines_and_exact_rendered_values",
+        "unsupported_sentences": 0
+      },
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "local_text_repair": null
+  },
+  "auto_correction": {
+    "attempted": true,
+    "status": "still_failed",
+    "max_extra_image_requests": 1,
+    "max_extra_audit_requests": 1
+  },
+  "verification": {
+    "version": "visual-consistency-2",
+    "status": "failed",
+    "validation_basis": null,
+    "auto_approved": false,
+    "coverage": "partial_or_unknown",
+    "locks": {
+      "product_shape": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Siluet kepala bundar, lengan bersendi, tiang dan alas bundar lampu terlihat utuh dan sama proporsinya."
+      },
+      "colors": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Putih lampu, cahaya hangat, hijau ikon dan aksen kayu terlihat sama palet dan saturasinya."
+      },
+      "lighting": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Arah cahaya hangat dari kepala lampu, bayangan di meja dan dinding terlihat sama."
+      },
+      "background": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Meja kayu, tanaman pot, buku, laptop dan bingkai di dinding tampak sama posisi dan ketajamannya."
+      },
+      "composition": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Tata letak judul kiri atas, bullet kiri tengah, lampu kanan, dan sudut kamera tidak berubah."
+      },
+      "typography": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Judul dan CTA sama, tetapi teks bullet kedua dan ketiga di IMAGE 1 menunjukkan lapisan ganda dan bayangan huruf, berbeda dari teks bersih di IMAGE 2."
+      },
+      "branding": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Judul LumaDesk Mini dengan kombinasi hitam dan hijau tampak sama bentuk dan posisinya."
+      }
+    },
+    "text": {
+      "added": [
+        "Power consumption:",
+        "5 watts",
+        "Light color:",
+        "Warm white",
+        "Power source:"
+      ],
+      "removed": [
+        "Save up to",
+        "90% Electricity",
+        "Protect",
+        "Your Eyes",
+        "Better Sleep"
+      ],
+      "changed": [
+        {
+          "before": "Save up to 90% Electricity",
+          "after": "Power consumption: 5 watts",
+          "evidence": "Bullet pertama pada IMAGE 2 berisi klaim hemat persen, pada IMAGE 1 sudah diganti dengan spesifikasi daya sesuai fakta."
+        },
+        {
+          "before": "Protect Your Eyes",
+          "after": "Light color: Warm white [dengan lapisan ganda tidak terbaca]",
+          "evidence": "Bullet kedua pada IMAGE 2 berisi klaim mata, pada IMAGE 1 diganti warna cahaya tetapi terlihat tumpang tindih dua lapisan teks."
+        },
+        {
+          "before": "Better Sleep in 7 Days",
+          "after": "Power source: in 7 Days",
+          "evidence": "Bullet ketiga pada IMAGE 2 berisi klaim tidur, pada IMAGE 1 label diganti sumber daya tetapi frasa in 7 Days masih tersisa dan nilai USB 5V tidak tampil."
+        }
+      ],
+      "limitations": [
+        "Transkripsi bacaan sendiri, bukan OCR sempurna. Teks sangat kecil pada alas lampu tidak terbaca.",
+        "Baris label pada bullet kedua dan ketiga bertumpuk dua lapisan sehingga bacaan atas tidak pasti. Teks sangat kecil pada alas lampu tidak terbaca."
+      ]
+    },
+    "risks": [
+      {
+        "code": "unresolved_creative_claim",
+        "evidence": "in 7 Days"
+      },
+      {
+        "code": "new_claim",
+        "evidence": "Power source: in 7 Days"
+      },
+      {
+        "code": "unverified_added_text",
+        "evidence": "Power source:"
+      },
+      {
+        "code": "legacy_guard",
+        "evidence": "Klaim produk pada gambar revisi belum didukung fakta input: in 7 Days."
+      },
+      {
+        "code": "legacy_guard",
+        "evidence": "Audit revisi masih menemukan potensi masalah visual/struktur/keterbacaan: Teks warna cahaya bertumpuk dan sulit dibaca; Revisi belum bersih dibanding referensi."
+      },
+      {
+        "code": "legacy_guard",
+        "evidence": "Perkiraan skor keterbacaan turun 46 poin."
+      },
+      {
+        "code": "legacy_guard",
+        "evidence": "Perkiraan skor tata letak turun 10 poin."
+      }
+    ],
+    "measurements": {
+      "basis": "64x64_normalized_pixel_heuristic_not_object_detection",
+      "identical": false,
+      "original": {
+        "width": 1254,
+        "height": 1254
+      },
+      "revised": {
+        "width": 1254,
+        "height": 1254
+      },
+      "aspect_delta": 0,
+      "mean_color_delta": 0.0011753855187908496,
+      "luminance_delta": 0.0009837982536765263,
+      "border_delta": 0,
+      "mean_pixel_delta": 0.004840367136437901,
+      "changed_sample_fraction": 0.015625,
+      "independent_review": {
+        "reference_sent": true,
+        "provider": "Meta Model API",
+        "stage": "reaudit",
+        "source_response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "response_id": "chatcmpl-01a193ad-6aba-726c-bf01-8c789ff70b2a",
+        "input_sha256": "0bb9b94fc9742e8cf93ffff76a1ec3df93091d1f701d91ed422cd048b1a8890a"
+      },
+      "local_repair": {
+        "basis": "all_decoded_rgba_pixels",
+        "outside_changed_pixels": 0,
+        "inside_changed_pixels": 68770,
+        "source_dimensions": {
+          "width": 1254,
+          "height": 1254
+        },
+        "rectangles": [
+          {
+            "x": 225,
+            "y": 422,
+            "width": 339,
+            "height": 98
+          },
+          {
+            "x": 228,
+            "y": 591,
+            "width": 207,
+            "height": 85
+          },
+          {
+            "x": 228,
+            "y": 692,
+            "width": 274,
+            "height": 88
+          }
+        ],
+        "verified": true
+      }
+    },
+    "limitations": [
+      "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits."
+    ]
+  }
+}

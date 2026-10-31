@@ -69,6 +69,33 @@ function solidPerimeter(data,width,height){
  }
  return count?rgb:null;
 }
+// A smooth printed badge can have a gradient even on a photographic scene.
+// Reconstruct only from its measured perimeter; do not smear a textured scene
+// or an object crossing the edit boundary. Coons interpolation meets all four
+// edges, avoiding rectangular flat-color holes on curved/lighted badges.
+export function smoothTextBackground(data,width,height){
+ const edges=[];
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(x<2||y<2||x>=width-2||y>=height-2){
+  const i=(y*width+x)*4;if(data[i+3]!==255)return null;edges.push([data[i],data[i+1],data[i+2]]);
+ }
+ if(!edges.length)return null;
+ for(let k=0;k<3;k++){
+  const values=edges.map(p=>p[k]),mean=values.reduce((a,b)=>a+b,0)/values.length;
+  if(Math.max(...values)-Math.min(...values)>65||Math.sqrt(values.reduce((a,v)=>a+(v-mean)**2,0)/values.length)>12)return null;
+ }
+ const color=(x,y,k)=>data[(y*width+x)*4+k],out=new Uint8ClampedArray(data.length);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const u=x/(width-1),v=y/(height-1),i=(y*width+x)*4;
+  for(let k=0;k<3;k++){
+   const horizontal=color(0,y,k)*(1-u)+color(width-1,y,k)*u;
+   const vertical=color(x,0,k)*(1-v)+color(x,height-1,k)*v;
+   const corners=(color(0,0,k)*(1-u)+color(width-1,0,k)*u)*(1-v)+(color(0,height-1,k)*(1-u)+color(width-1,height-1,k)*u)*v;
+   out[i+k]=horizontal+vertical-corners;
+  }
+  out[i+3]=255;
+ }
+ return out;
+}
 export async function verifyLocalPixels(original,revised,rectangles){
  const [a,b]=await Promise.all([decodeImage(original),decodeImage(revised)]);
  if(a.naturalWidth!==b.naturalWidth||a.naturalHeight!==b.naturalHeight)throw Error('Local repair changed source dimensions.');
@@ -119,16 +146,39 @@ export async function repairTextLocally(original,plan){
   const b=edit.box,x=Math.floor(b.x*c.width),y=Math.floor(b.y*c.height),w=Math.ceil(b.width*c.width),h=Math.ceil(b.height*c.height);
   if(w<8||h<8||x+w>c.width||y+h>c.height)return null;
   const pixels=ctx.getImageData(x,y,w,h).data,bg=solidPerimeter(pixels,w,h);
-  if(!bg)return null; // no erasing photographs, gradients or intersecting objects
+  const smooth=!bg&&plan.coordinates_basis==='source_ocr'?smoothTextBackground(pixels,w,h):null;
+  if(!bg&&!smooth)return null;
   let left=w,top=h,right=0,bottom=0,ink=0,inkColor=null;
   for(let py=2;py<h-2;py++)for(let px=2;px<w-2;px++){
-   const i=(py*w+px)*4,d=bg.reduce((n,v,k)=>n+Math.abs(v-pixels[i+k]),0);
+   const i=(py*w+px)*4,d=[0,1,2].reduce((n,k)=>n+Math.abs((bg?bg[k]:smooth[i+k])-pixels[i+k]),0);
    if(d<60)continue;
    ink++;left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);
    if(!inkColor||d>inkColor.d)inkColor={d,rgb:[pixels[i],pixels[i+1],pixels[i+2]]};
   }
   if(ink<4||ink>w*h*.4||!inkColor)return null;
-  ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(x,y,w,h);
+  if(bg){ctx.fillStyle=`rgb(${bg.join(',')})`;ctx.fillRect(x,y,w,h);}
+  else {
+   // Keep the original badge texture and rounded boundary. Only replace dark
+   // source glyphs (plus their anti-aliased fringe), rather than pasting a
+   // rectangular reconstructed surface over the complete photographic patch.
+   const mask=new Uint8Array(w*h),cleaned=new Uint8ClampedArray(pixels);
+   for(let py=1;py<h-1;py++)for(let px=1;px<w-1;px++){
+    const i=(py*w+px)*4,drop=[0,1,2].reduce((sum,k)=>sum+smooth[i+k]-pixels[i+k],0);
+    if(drop<45)continue;
+    for(let yy=Math.max(0,py-2);yy<=Math.min(h-1,py+2);yy++)for(let xx=Math.max(0,px-2);xx<=Math.min(w-1,px+2);xx++)mask[yy*w+xx]=1;
+   }
+   const points=[];
+   for(let py=1;py<h-1;py++)for(let px=1;px<w-1;px++)if(mask[py*w+px]){
+    const i=(py*w+px)*4;points.push(i);for(let k=0;k<3;k++)cleaned[i+k]=smooth[i+k];
+   }
+   // Harmonic fill uses the actual surrounding badge, so glyph-shaped flat
+   // ghosts do not remain when a smooth surface contains a subtle gradient.
+   const values=Float32Array.from(cleaned);
+   for(let pass=0;pass<160;pass++)for(const i of points)for(let k=0;k<3;k++)
+    values[i+k]=(values[i-4+k]+values[i+4+k]+values[i-w*4+k]+values[i+w*4+k])/4;
+   for(const i of points)for(let k=0;k<3;k++)cleaned[i+k]=values[i+k];
+   ctx.putImageData(new ImageData(cleaned,w,h),x,y);
+  }
   if(edit.replacement){
    const minimumFont=Math.max(10,Math.min(18,Math.round(c.width/105)));
    const fitted=fitReplacementLines(ctx,edit.replacement,w,h,minimumFont);
@@ -204,6 +254,23 @@ export async function extendFlatBackground(data,target){
  return {image,method:'measured_solid_background_extension',
   source_rect:{x,y,width:sw,height:sh},native_dimensions:{width:w,height:h},background_rgb:bg,
   source_pixels_preserved:true,detail_added_by_ai:false};
+}
+// Give Muse the already framed artwork, rather than asking it to relocate a
+// square ad onto a different ratio and then overlaying a second copy of it.
+export async function prepareFormatReference(data,target){
+ const img=await decodeImage(data),sw=img.naturalWidth,sh=img.naturalHeight,ratio=target.width/target.height;
+ const width=sw/sh<ratio?Math.ceil(sh*ratio):sw,height=sw/sh<ratio?sh:Math.ceil(sw/ratio);
+ if(width>8192||height>8192||width*height>32e6)throw Error('Format reference exceeds the canvas limit.');
+ const {c,ctx}=canvas(width,height),source=canvas(sw,sh);source.ctx.drawImage(img,0,0);
+ // Stretch only a one-pixel source edge into each added margin. No copy,
+ // product or artificial white/transparent bars are introduced in the guide.
+ const x=Math.floor((width-sw)/2),y=Math.floor((height-sh)/2);
+ ctx.drawImage(img,0,0,sw,1,x,0,sw,Math.max(1,y));
+ ctx.drawImage(img,0,sh-1,sw,1,x,y+sh,sw,Math.max(1,height-y-sh));
+ ctx.drawImage(img,0,0,1,sh,0,y,Math.max(1,x),sh);
+ ctx.drawImage(img,sw-1,0,1,sh,x+sw,y,Math.max(1,width-x-sw),sh);
+ ctx.drawImage(img,x,y);
+ return {image:c.toDataURL('image/jpeg',.93),source_rect:{x:x/width,y:y/height,width:sw/width,height:sh/height},dimensions:{width,height}};
 }
 // Muse supplies surrounding scene pixels only. Restore the complete reference
 // into that scene so reframing cannot redraw any source product/copy/logo.

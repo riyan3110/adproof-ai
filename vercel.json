@@ -18,14 +18,15 @@
       "maxDuration": 150
     },
     "server.mjs": {
-      "includeFiles": "public/**",
+      "includeFiles": "{public/**,node_modules/{tesseract.js,tesseract.js-core,@tesseract.js-data/eng}/**}",
       "maxDuration": 150
     },
     "api/access.mjs": {
       "maxDuration": 10
     },
     "api/localize.mjs": {
-      "maxDuration": 100
+      "maxDuration": 100,
+      "includeFiles": "node_modules/{tesseract.js,tesseract.js-core,@tesseract.js-data/eng}/**"
     }
   },
   "headers": [

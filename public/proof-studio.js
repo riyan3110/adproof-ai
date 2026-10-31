@@ -133,7 +133,7 @@ function renderEvolution(){
    evolution.sample_limited?t('Limited view: each audit supplies at most 8 selected claims. Missing from the list does NOT mean missing from the image or caption. Same wording may appear across both sources.'):
    t('This compares selected audit observations, not exhaustive image text. Missing from a list does not prove removal; inspect both image and caption.');
  const captionNote=context.after&&context.caption?.trim()
-   ? ' '+t('Image repair does not edit the caption. Its unsupported claims still need manual revision.') : '';
+   ? ' '+t('The source-bound caption suggestion is included with export; the original caption remains in the archive.') : '';
  $('evolutionNote').textContent=samplingNote+captionNote;
  if(!evolution.entries.length){list.append(make('p','proof-empty',t('No claims returned for comparison. This does not prove the absence of claims.')));return;}
  for(const [i,item]of evolution.entries.entries()){
