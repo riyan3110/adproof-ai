@@ -82,7 +82,8 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  const risks=[];
  // A model can mark a claim as supported just because 5W or LED appears
  // in the supplied facts. That does not establish an "efficient" promise.
- for(const text of unverifiedPerformanceText(newLines,facts)){
+ const inspectedText=[...new Set([...newLines,...(next?.lines||[]),...(i?.new_claims||[]).map(x=>x?.text).filter(Boolean)])];
+ for(const text of unverifiedPerformanceText(inspectedText,facts)){
   risks.push({code:'unsupported_performance_copy',evidence:text});
  }
  // If text extraction is partial, missing a phrase here is not proof of safety.
