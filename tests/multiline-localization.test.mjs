@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {observedTextGroup,normalizeLocalPlan} from '../public/factual-repair.js';
+import {observedTextGroup,normalizeLocalPlan,inventoryDelta} from '../public/factual-repair.js';
+import {inspectConsistency} from '../public/visual-consistency.js';
 import {createHandler} from '../server.mjs';
 
 const report=JSON.parse(readFileSync(new URL('../evidence/live-2026-11-01/lumadesk/initial.json',import.meta.url)));
@@ -38,6 +39,46 @@ test('correctly grouped text still cannot cross product rectangles, invent repla
  assert.equal(normalizeLocalPlan({...plan,edits:plan.edits.slice(0,2)},audit,report.context.facts),null);
  assert.equal(normalizeLocalPlan({...plan,edits:[{...plan.edits[0],box:plan.protected_regions[0]},...plan.edits.slice(1)]},audit,report.context.facts),null);
  assert.equal(normalizeLocalPlan({...plan,edits:[{...plan.edits[0],replacement:'Energy-efficient LED'},...plan.edits.slice(1)]},audit,report.context.facts),null);
+});
+
+test('Verify recognizes removal of complete multiline erroneous claims instead of rejecting their individual source lines',()=>{
+ const discarded=new Set(['Save up to','90% Electricity','Protect','Your Eyes','Better Sleep','in 7 Days']);
+ const text={...audit.text_inventory,lines:audit.text_inventory.lines.filter(line=>!discarded.has(line))};
+ const revised={issues:[],claim_ledger:[],text_inventory:text,consistency:{
+  original_text:audit.text_inventory,revised_text:text,new_claims:[],changed_text:[],visual:{}}};
+ const proof={local_repair:{verified:true,outside_changed_pixels:0,inside_changed_pixels:300}};
+ const checked=inspectConsistency(audit,revised,{},proof,report.context.facts);
+ assert.equal(checked.status,'validated',JSON.stringify(checked.risks));
+ const withoutBrand={...text,lines:text.lines.filter(line=>line!=='LumaDesk Mini')};
+ const bad=inspectConsistency(audit,{...revised,text_inventory:withoutBrand,consistency:{...revised.consistency,revised_text:withoutBrand}},{},proof,report.context.facts);
+ assert.equal(bad.status,'failed');
+ assert.ok(bad.risks.some(r=>r.code==='removed_text_review'&&r.evidence.includes('LumaDesk Mini')));
+});
+
+test('line wrapping alone is not new copy; changing a number, order or negation remains a real content change',()=>{
+ assert.deepEqual(inventoryDelta(['Nori Bottle','Capacity: 500 mL'],['Nori','Bottle','Capacity:','500 mL']).added,[]);
+ assert.deepEqual(inventoryDelta(['Nori','Bottle','Capacity:','500 mL'],['Nori Bottle','Capacity: 500 mL']).removed,[]);
+ for(const [before,after] of [
+  [['Capacity: 500 mL'],['Capacity:','350 mL']],
+  [['Not safe for hot liquids'],['safe for hot liquids']],
+  [['Nori Bottle'],['Bottle Nori']]
+ ]){
+  const change=inventoryDelta(before,after);assert.ok(change.added.length);assert.ok(change.removed.length);
+ }
+});
+
+test('a supported new fact can wrap across visual lines without hiding extra unsupported copy',()=>{
+ const original={text_inventory:{coverage:'complete',lines:['Lamp']},claim_ledger:[]};
+ const text={coverage:'complete',lines:['Lamp','Power consumption:','5 watts']};
+ const revised={text_inventory:text,claim_ledger:[],issues:[],consistency:{
+  original_text:original.text_inventory,revised_text:text,visual:{},
+  new_claims:[{text:'Power consumption: 5 watts',assessment:'supported',fact_quote:'Power consumption: 5 watts'}]}};
+ const proof={local_repair:{verified:true,outside_changed_pixels:0,inside_changed_pixels:100}};
+ assert.equal(inspectConsistency(original,revised,{},proof,report.context.facts).status,'validated');
+ const extra={...text,lines:[...text.lines,'90% savings']};
+ const unsafe=inspectConsistency(original,{...revised,text_inventory:extra,consistency:{...revised.consistency,revised_text:extra}},{},proof,report.context.facts);
+ assert.equal(unsafe.status,'failed');
+ assert.ok(unsafe.risks.some(r=>r.code==='unverified_added_text'&&r.evidence==='90% savings'));
 });
 
 test('localize endpoint accepts the whole-line plan from Spark in one call and retains genuine provenance shape',async()=>{

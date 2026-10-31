@@ -5,19 +5,38 @@ const norm=s=>clean(s).normalize('NFKC').replace(/\s+/g,' ').toLowerCase();
 // OCR inventories contain visual lines, while the factual ledger contains
 // complete assertions. Match only whole, consecutive source lines. Never use
 // fuzzy words/substrings: numbers, negation and non-adjacent text must agree.
-export function observedTextGroup(text,lines){
+export function observedTextSpans(text,lines){
  const target=norm(text),source=(Array.isArray(lines)?lines:[]).map(norm);
- if(!target)return false;
+ const spans=[];
+ if(!target)return spans;
  for(let start=0;start<source.length;start++){
   let group='';
   for(let end=start;end<Math.min(source.length,start+8);end++){
    if(!source[end])break;
    group+=(group?' ':'')+source[end];
-   if(group===target)return true;
+   if(group===target){spans.push({start,end:end+1});break;}
    if(group.length>=target.length)break;
   }
  }
- return false;
+ return spans;
+}
+export const observedTextGroup=(text,lines)=>observedTextSpans(text,lines).length>0;
+// Compare content independently of the model's visual line wrapping. A match
+// still requires exactly the same complete source words in the same order.
+export function inventoryDelta(original,revised){
+ const preserved=(lines,reference)=>{
+  const keep=new Set();
+  lines.forEach((line,index)=>{if(observedTextGroup(line,reference))keep.add(index);});
+  for(const line of reference)for(const span of observedTextSpans(line,lines)){
+   for(let index=span.start;index<span.end;index++)keep.add(index);
+  }
+  return keep;
+ };
+ const oldLines=Array.isArray(original)?original:[],newLines=Array.isArray(revised)?revised:[];
+ const oldKeep=preserved(oldLines,newLines),newKeep=preserved(newLines,oldLines);
+ const removedIndices=oldLines.map((_,index)=>index).filter(index=>!oldKeep.has(index));
+ const addedIndices=newLines.map((_,index)=>index).filter(index=>!newKeep.has(index));
+ return {removed:removedIndices.map(index=>oldLines[index]),added:addedIndices.map(index=>newLines[index]),removedIndices,addedIndices};
 }
 export function factLines(facts){
  return String(facts||'').split(/\r?\n/).map(s=>s.replace(/^\s*[-*•]\s*/, '').trim()).filter(s=>s&&s.length<=350);

@@ -6,6 +6,7 @@ on:
     paths:
       - 'public/app.js'
       - 'public/factual-repair.js'
+      - 'public/visual-consistency.js'
       - 'public/output-system.js'
       - 'public/consistency-ui.js'
       - 'scripts/factual-repair-browser.cjs'
