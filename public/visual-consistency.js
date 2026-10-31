@@ -89,6 +89,13 @@ export function unverifiedPerformanceText(lines,facts='',sourceContext=null){
  }
  return findings.slice(0,12);
 }
+// Same conservative inherited-duration check can guide a text-only correction
+// BEFORE generation, not just reject the candidate after the fact.
+export function impliedThermalDurationText(initial,facts=''){
+ const lines=initial?.text_inventory?.lines||[];
+ return unverifiedPerformanceText(lines,facts,initial)
+  .filter(line=>IMPLIED_THERMAL_DURATION.test(line));
+}
 export function inspectConsistency(initial,revised,settings,measurements=null,facts=''){
  const s=normalizeSettings(settings),i=revised?.consistency;
  const original=i?.original_text||initial?.text_inventory;
