@@ -98,12 +98,23 @@ test('explicit AI reframe asks Muse for target aspect and records actual native 
  assert.equal(response.data.repair_metadata.requested_ratio,'1080x1920');
 });
 test('AI reframe rejects fake dimensions or unsupported format before a paid call',async()=>{
- for(const target of [{width:9000,height:1000},{width:1,height:1},null]){
+ for(const target of [{width:9000,height:1000},{width:1,height:1},{width:9000,height:1000,print:true},{width:8192,height:8192,print:true},{width:1,height:1,print:true},{width:1240,height:1754,print:'true'},null]){
   const out=await invoke({...input,issues:[],mode:'reframe',target},()=>{throw Error('must not call paid API');});
   assert.equal(out.status,400);
  }
  const out=await invoke({...input,issues:[],mode:'reframe',target:{width:1600,height:900}},async()=>Response.json({data:[{b64_json:image.split(',')[1]}]}));
  assert.equal(out.status,502,'provider returning wrong ratio must not pass as edge-to-edge output');
+});
+test('custom print aspect uses authentic Muse edit and retains actual native resolution',async()=>{
+ const mock=Buffer.from(image.split(',')[1],'base64');mock.writeUInt32BE(1240,16);mock.writeUInt32BE(1754,20);
+ let sent;
+ const out=await invoke({...input,issues:[],mode:'reframe',target:{width:1240,height:1754,print:true}},async(url,opts)=>{
+  assert.ok(url.endsWith('images/edits'));sent=JSON.parse(opts.body);
+  return Response.json({data:[{b64_json:mock.toString('base64')}]});
+ });
+ assert.equal(out.status,200);assert.equal(sent.model,'muse-image-1.0');assert.equal(sent.size,'1240x1754');
+ assert.deepEqual(out.data.repair_metadata.model_dimensions,{width:1240,height:1754});
+ assert.equal(out.data.repair_metadata.exact_pixels_promised,false);
 });
 test('format adaptation still blocks unsupported new copy but does not flag intentional canvas extension itself',()=>{
  const baseline={score:50,claim_ledger:[],text_inventory:inventory(['Lamp','5 W'])};

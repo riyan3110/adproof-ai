@@ -296,7 +296,7 @@ test('Output Size requires user-triggered, verified AI composition before aspect
  const output=readFileSync(new URL('../public/output-system.js',import.meta.url),'utf8');
  const server=readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
  assert.match(visual,/id="adaptOutput"/);
- assert.ok(visual.includes('adaptFormat(image,{width:plan.width,height:plan.height})'));
+ assert.ok(visual.includes("adaptFormat(image,{width:plan.width,height:plan.height,print:opts.category==='print'})"));
  assert.ok(visual.includes("mustAdapt&&!usableFormat(src,plan)"),'cannot use blank-padding fallback for aspect-changing social or website');
  assert.ok(visual.includes("out.review.status==='failed'"),'failed AI candidates cannot export');
  assert.ok(visual.includes('aiAdapted:mustAdapt'),'only verified AI candidates may use cover export');

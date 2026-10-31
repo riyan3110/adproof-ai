@@ -336,8 +336,9 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
     const restyle=body.mode==='restyle';
     const allowedFormats=new Set(['1080x1080','1080x1350','1080x1920','1600x900','1920x1080','2560x1440']);
     const target=reframe?body.target:null;
-    if(reframe && (!target || !Number.isInteger(target.width)||!Number.isInteger(target.height)||!allowedFormats.has(target.width+'x'+target.height))) {
-      const e=new Error('Target AI hanya mendukung enam ukuran Sosial Media dan Website.');e.status=400;throw e;
+    const validTarget=target&&Number.isInteger(target.width)&&Number.isInteger(target.height)&&target.width>=64&&target.height>=64&&target.width<=8192&&target.height<=8192&&target.width*target.height<=32e6;
+    if(reframe && (!validTarget || (!allowedFormats.has(target.width+'x'+target.height)&&target.print!==true))) {
+      const e=new Error('Pilih ukuran Sosial Media/Website atau ukuran cetak 64–8192 piksel (maksimal 32 MP).');e.status=400;throw e;
     }
     if(!reframe&&!restyle && (!Array.isArray(body.issues)||!hasRepairTarget({issues:body.issues,claim_ledger:body.claims}))) { const e=new Error('Jalankan audit terlebih dahulu.'); e.status=400; throw e; }
     const settings=normalizeSettings(body.consistency);
