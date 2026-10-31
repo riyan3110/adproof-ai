@@ -23,9 +23,9 @@ export function imageDimensions(bytes){
  }else if(b.length>4&&b[0]===255&&b[1]===216){
   let p=2;
   while(p+4<=b.length){
-   if(b[p]!==255)break;const marker=b[p+1];p+=2;
+   if(b[p]!==255)break;let marker=b[p+1];p+=2;
+   while(marker===255&&p<b.length){marker=b[p];p+=1;}
    if(marker===0xd9||marker===0xda)break;
-   if(marker===255){p--;continue;}
    const len=b.readUInt16BE(p);if(len<2||p+len>b.length)break;
    if([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)&&len>=7){height=b.readUInt16BE(p+3);width=b.readUInt16BE(p+5);break;}
    p+=len;

@@ -25,7 +25,8 @@ export const LOCKS=Object.freeze({
  branding:['Branding','Preserve logos, trademarks, labels and brand identity exactly.']
 });
 export function normalizeSettings(value={}){
- return {version:POLICY_VERSION,style:Object.hasOwn(STYLES,value?.style)?value.style:'preserve',locks:Object.fromEntries(Object.keys(LOCKS).map(k=>[k,value?.locks?.[k]!==false])),region:normalizeRegion(value?.region)};
+ const locksInput=value?.locks&&typeof value.locks==='object'?value.locks:{};
+ return {version:POLICY_VERSION,style:Object.hasOwn(STYLES,value?.style)?value.style:'preserve',locks:Object.fromEntries(Object.keys(LOCKS).map(k=>[k,locksInput[k]!==false])),region:normalizeRegion(value?.region)};
 }
 export function normalizeRegion(r){
  if(!r)return null;
