@@ -1,6 +1,10 @@
 import {STYLES,LOCKS,normalizeSettings} from './visual-consistency.js';
 import {PRESETS,PRINT_SIZES,dimensions,outputPlan,assessOutputQuality,renderOutput} from './output-system.js';
 const localKey='adproof-visual-settings-v1';
+export function matchesFormatCandidate(candidate,image,plan){
+ return !!candidate&&candidate.input===image&&plan.category!=='print'&&
+  candidate.width*plan.height===candidate.height*plan.width;
+}
 export function createConsistencyUI({state,language,onSettingsChange,download,notify,adaptFormat}){
  const id=()=>language()==='id',say=(en,indo)=>id()?indo:en;
  const panel=document.createElement('section');panel.className='consistency-controls';panel.id='visualControls';panel.setAttribute('data-no-translate','');
@@ -32,15 +36,18 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  const source=()=>q('#outputSource').value==='revised'?state.revised:state.original;
  const exportSource=()=>q('#outputSource').value==='original'?(state.fullOriginalURL||state.original):state.revised;
  const candidateAllowed=()=>!!state.verified&&!!state.consistencyReview&&!failed();
- const matchingFormat=(image,plan)=>formatCandidate&&formatCandidate.input===image&&formatCandidate.width===plan.width&&formatCandidate.height===plan.height;
+ const matchingFormat=(image,plan)=>matchesFormatCandidate(formatCandidate,image,plan);
  const usableFormat=(image,plan)=>matchingFormat(image,plan)&&formatCandidate.review?.status!=='failed';
  async function estimate(){
   const image=exportSource();state.outputRequested=options();q('#printFields').hidden=options().category!=='print';q('#pixelPresetLabel').hidden=options().category==='print';
   if(!image){q('#outputEstimate').textContent=say('Upload an image first.','Unggah gambar terlebih dahulu.');q('#outputQuality').textContent='';return;}
   try{if(image!==dimensionKey){dimensionKey=image;sourceSize=await dimensions(image);if(exportSource()!==image)return;}
-   const p=outputPlan(sourceSize,options()),quality=assessOutputQuality(p);
-   const ratioWarning=p.aspect_changed?(p.category==='print'?say('Print ratio differs: empty padding possible. ','Rasio cetak berbeda: kemungkinan margin kosong. '):say('AI adaptation required to fill format without blank margins. ','Perlu adaptasi AI agar format terisi tanpa margin kosong. ')):'';
-   q('#outputEstimate').textContent=say('Source ','Sumber ')+`${p.source.width} × ${p.source.height} → ${p.width} × ${p.height} px. `+ratioWarning;
+   let p=outputPlan(sourceSize,options());
+   const adapted=usableFormat(source(),p);
+   if(adapted)p=outputPlan(await dimensions(formatCandidate.image),options());
+   const quality=assessOutputQuality(p);
+   const ratioWarning=!adapted&&p.aspect_changed?(p.category==='print'?say('Print ratio differs: empty padding possible. ','Rasio cetak berbeda: kemungkinan margin kosong. '):say('AI adaptation required to fill format without blank margins. ','Perlu adaptasi AI agar format terisi tanpa margin kosong. ')):'';
+   q('#outputEstimate').textContent=(adapted?say('Meta native candidate ','Kandidat asli Meta '):say('Source ','Sumber '))+`${p.source.width} × ${p.source.height} → ${p.width} × ${p.height} px. `+ratioWarning;
    q('#outputQuality').dataset.status=quality.status;
    q('#outputQuality').textContent=(quality.needs_interpolation?say('NATIVE DETAIL INSUFFICIENT: ${factor}× interpolation adds NO genuine detail. ','DETAIL ASLI TIDAK CUKUP: interpolasi ${factor}× TIDAK menambah detail nyata. ').replace('${factor}',String(quality.enlargement_factor)):say('Source pixel dimensions sufficient without enlargement; text/logo still require inspection. ','Dimensi piksel sumber cukup tanpa pembesaran; teks/logo tetap perlu diperiksa. '))+(p.category==='print'?say('Effective source: ${ppi} PPI, target ${target} PPI. At target PPI the source supports about ${w} × ${h} mm BEFORE any layout changes. Professional print NOT certified.','PPI asli efektif: ${ppi}; target ${target}. Pada PPI target, sumber mendukung sekitar ${w} × ${h} mm SEBELUM penyesuaian tata letak. BELUM tersertifikasi untuk cetak profesional.').replace('${ppi}',String(quality.native_source_ppi)).replace('${target}',String(p.physical.target_ppi)).replace('${w}',String(quality.max_native_print_mm.width_mm)).replace('${h}',String(quality.max_native_print_mm.height_mm)):'');
 
@@ -85,7 +92,8 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   // Any changed input invalidates the previously rendered pixels AND their export metadata.
   // Consent/review toggles keep the user's current checkbox value, not old output.
   const sameSource=['confirmOutput','allowInterpolation','outputPadding'].includes(e.target.id);
-  clearPrepared({keepReview:sameSource,keepFormat:sameSource});sync();
+  const sameFormat=['outputCategory','outputPreset'].includes(e.target.id)&&matchingFormat(source(),outputPlan({width:1,height:1},options()));
+  clearPrepared({keepReview:sameSource,keepFormat:sameSource||sameFormat});sync();
  });
  q('#adaptOutput').addEventListener('click',async()=>{
   const image=source(),opts=options(),token=++generation;
@@ -103,6 +111,7 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
    formatCandidate={input:image,image:out.image,width:plan.width,height:plan.height,review:out.review,metadata:out.metadata};
    q('#formatBefore').src=image;q('#formatAfter').src=out.image;q('#formatPreview').hidden=false;
    q('#formatReview').textContent=out.review.status==='failed'?say('AI adaptation failed checks. Do not export this candidate; original retained.','Adaptasi AI gagal pemeriksaan. Jangan ekspor kandidat; gambar asli dipertahankan.'):say('AI candidate checked. Review product, text, logos and resolution manually before output.','Kandidat AI diperiksa. Periksa produk, teks, logo, dan resolusi secara manual sebelum ekspor.');
+   if(out.review.risks?.length)q('#formatReview').textContent+=' '+out.review.risks.map(r=>r.code+': '+r.evidence).join(' · ').slice(0,1400);
    if(out.review.status==='failed')notify(q('#formatReview').textContent,true);
   }catch(e){q('#formatReview').textContent=e.message;notify(e.message,true);}
   finally{sync();}

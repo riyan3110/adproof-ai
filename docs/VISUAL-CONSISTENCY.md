@@ -60,3 +60,7 @@ Official public event page rechecked: <https://events.cerebralvalley.ai/e/meta-a
 2. Inspect text/logo and product geometry visually on the reframe candidate, especially composition edges. Check no invented claim and no blank margins.
 3. Export one Social Media preset and one Website preset, inspect the actual PNG image dimensions and pixel detail at 100% zoom. For Print, report effective native density and explicitly mark interpolated outputs as draft, not professional HD.
 4. Keep the production hackathon submission centered on proven Meta-based audit, repair, re-audit and format adaptation. Do not describe any unsupported upscaling feature.
+
+## 31 October — live testing follow-up
+
+Actual production Audit → Repair → Verify and square/4:5 adaptation evidence is in `evidence/live-2026-10-31/`. Format attempts now retain provider provenance and failed verification history in JSON/ZIP even when the selected output changes. Same-source, same-ratio Website presets reuse the already checked composition; each pixel size still needs a new PNG preview and human confirmation. The output estimate uses the native candidate dimensions once a usable adaptation exists. Imported evidence is historical and never activates an approved candidate. This does not certify professional print or native super-resolution.

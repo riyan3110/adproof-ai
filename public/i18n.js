@@ -4,6 +4,11 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'Access verified ✓':'Akses terverifikasi ✓',
+ 'Enter the private demo code shared with you.':'Masukkan kode demo privat yang dibagikan kepada Anda.',
+ 'Verified against this server without a paid Meta request. Saved in this tab only. Never share the code publicly.':'Diverifikasi server tanpa panggilan Meta berbayar. Disimpan hanya di tab ini. Jangan bagikan kode secara publik.',
+ 'Judge Access verified by server. Meta models are tested only when you run an audit.':'Akses Juri diverifikasi server. Model Meta hanya diuji saat audit dijalankan.',
+
  'Verify consistency ↗':'Verifikasi konsistensi ↗',
  '↓ Export image':'↓ Ekspor gambar',
  'Audit complete ✓':'Audit selesai ✓',
