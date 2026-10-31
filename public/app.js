@@ -6,6 +6,7 @@ import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, ac
 import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js';
 import {isClearlySubjectiveSlogan} from './claim-engine.js';
 import {describeRepairNotice} from './repair-notice.js';
+import {repairJourney} from './repair-journey.js';
 import {repairCaption,reviewRepairedCaption} from './factual-repair.js';
 import {planOneCorrection,correctionPayload} from './auto-correction.js';
 import {createAuditPackage,fromImageDataUrl,openAuditFile} from './audit-archive.js';
@@ -22,6 +23,7 @@ const ui = {
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
   refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
   recoveryBar:$('#localRecoveryBar'),recoveryText:$('#localRecoveryText'),recoveryClear:$('#clearLocalRecovery'),
+  journey:$('#repairJourney'),journeyButton:$('#repairJourneyButton'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
   accessButton:$('#judgeAccessButton'),accessDialog:$('#judgeAccessDialog'),accessForm:$('#judgeAccessForm'),accessInput:$('#judgeAccessCode'),accessHint:$('#judgeAccessHint'),accessCancel:$('#judgeAccessCancel'),accessSubmit:$('#judgeAccessForm button[type=submit]'),accessError:$('#judgeAccessError'),accessStatus:$('#judgeAccessStatus'),providerStatus:$('#metaProviderStatus')
 };
@@ -228,6 +230,41 @@ function refreshCaptionSafety(){
   :'Caption automatically corrected from product facts. The original remains in history and the ZIP archive.'):'';
 }
 
+function updateRepairJourney(){
+ const retryEligible=!!state.verified&&state.consistencyReview?.status==='failed'
+  &&!state.imported&&!state.busy&&state.history.length<8
+  &&planOneCorrection({initial:state.initialAudit,verified:state.verified,
+    consistencyReview:state.consistencyReview,repairReview:state.repairReview,
+    alreadyAttempted:false}).allowed;
+ const view=repairJourney(state,{canRepair:hasImageRepairTarget(state.initialAudit),
+   canRetry:retryEligible,language:getLanguage()});
+ ui.journey.hidden=!view.visible;
+ if(!view.visible)return;
+ const fill=(suffix,value)=>{document.getElementById('repairJourney'+suffix).textContent=value||'';};
+ const id=getLanguage()!=='en';
+ fill('Title',view.title);
+ fill('Status',({ready:id?'SIAP':'READY',processing:id?'DIPROSES':'PROCESSING',
+  passed:id?'LOLOS':'PASSED',blocked:id?'PERLU PERBAIKAN':'NEEDS WORK',
+  unverified:id?'BELUM DIPERIKSA':'NOT VERIFIED',saved:id?'TERSIMPAN':'SAVED',
+  'no-image-fix':id?'TANPA REPAIR GAMBAR':'NO IMAGE REPAIR'})[view.phase]||'');
+ ui.journey.dataset.phase=view.phase;
+ for(const [field,labelId,labelEn] of [['Issue','Temuan','Finding'],['Action','Tindakan','Action'],
+  ['Method','Cara perbaikan','How it works'],['Change','Perubahan teramati','Observed change'],
+  ['Result','Hasil pemeriksaan','Verification result']]){
+  fill(fieldLabel(field),id?labelId:labelEn);
+  fill(field,view[field.toLowerCase()]);
+ }
+ fill('Next',view.next);fill('Footnote',view.footnote);
+ fill('Guidance',view.guidance);
+ document.getElementById('repairJourneyGuidance').hidden=!view.guidance;
+ document.getElementById('repairJourneyChange').parentElement.hidden=!view.change;
+ ui.journeyButton.hidden=!view.button;
+ ui.journeyButton.disabled=state.busy||state.imported;
+ ui.journeyButton.dataset.action=view.button?.action||'';
+ ui.journeyButton.textContent=view.button?.label||'';
+}
+function fieldLabel(field){return field+'Label';}
+
 function syncDeck(){
  refreshCaptionSafety();
  const current=state.phase, ready=!!state.original, indonesian=getLanguage()==='id';
@@ -247,6 +284,7 @@ function syncDeck(){
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
  renderArchiveHistory();
  visualUI.sync();
+ updateRepairJourney();
  put('pipelineHint',state.imported?'Imported archive · choose Original or Revised to continue editing without re-auditing the saved image.':state.busy?'Processing with Meta. Please keep this tab open.':!ready?'Upload your creative and add product facts.':current===0?'Add facts, then run the initial audit.':current===1?(hasImageRepairTarget(state.initialAudit)?'Inspect the evidence, then repair the creative.':'No grounded image repair required. Review findings or export the audit; do not force an edit.'):current===2?'Automatic verification is pending.':state.consistencyReview?.status==='validated'?'Automatic validation complete. Choose the output size and export.':'Validation incomplete. Export blocked; source and candidate retained.');
  put('exportState',state.imported?(state.original?'Saved audit restored locally. Choose a source to resume; no Meta request until you press Repair or Verify.':'JSON report restored without source images; continue editing requires a ZIP containing images.'):current===3?(state.consistencyReview?.status==='validated'?'Validated revision, corrected caption and audit evidence available.':'Source, candidate and audit evidence retained. Final export awaits validation.'):current>0?'Initial observations available. Re-audit completes the comparison.':'Run an audit to create a report.');
 
@@ -539,11 +577,11 @@ async function adaptFormat(image,target){
 // Repair's first Muse Spark verification can trigger ONE evidence-grounded
 // corrective Muse Image pass. Failed image attempts never delete the old
 // candidate, and browser reload never triggers any paid request.
-async function attemptAutoCorrectionOnce(){
+async function attemptAutoCorrectionOnce({manual=false}={}){
  const plan=planOneCorrection({
   initial:state.initialAudit,verified:state.verified,
   consistencyReview:state.consistencyReview,repairReview:state.repairReview,
-  alreadyAttempted:Boolean(state.autoCorrection?.attempted)
+  alreadyAttempted:manual?false:Boolean(state.autoCorrection?.attempted)
  });
  if(!plan.allowed||state.imported||state.busy)return false;
  if(state.history.length>=8){
@@ -629,6 +667,24 @@ function download(data,name,type){const blob=data instanceof Blob?data:new Blob(
 for(const field of [ui.product,ui.facts,ui.caption])field.addEventListener('input',()=>{if(state.context&&!state.busy&&!state.imported){void forgetMilestone();ui.recoveryBar.hidden=true;resetAudit({preserveHistory:state.history.length>0});switchView('original');notify('Product facts changed. The saved baseline cannot be reused; run a NEW audit to keep evidence consistent. Prior archive rounds remain preserved.');}});
 ui.form.addEventListener('submit',async e=>{e.preventDefault();if(!state.original){notify('Unggah gambar iklan terlebih dahulu.',true);return;}if(state.busy||state.imported)return;try{await performAudit(state.original)}catch(e){notify(e.message,true);}});
 ui.refine.addEventListener('click',async()=>{if(state.busy||state.imported)return;try{await performImprove();}catch(e){notify(e.message,true);}});
+ui.journeyButton.addEventListener('click',async()=>{
+ if(state.busy||state.imported)return;
+ const action=ui.journeyButton.dataset.action;
+ if(action==='repair'){ui.refine.click();return;}
+ if(action==='verify'){ui.verify.click();return;}
+ if(action==='caption'){selectReportView('caption');ui.suggested.scrollIntoView({block:'center',behavior:'smooth'});return;}
+ if(action==='compare'){
+  if(state.original&&state.revised)switchView('compare');
+  document.querySelector('.preview-pane')?.scrollIntoView({block:'center',behavior:'smooth'});
+  return;
+ }
+ if(action==='retry'){
+  if(!state.verified||state.consistencyReview?.status!=='failed'||state.history.length>=8)return;
+  try{await attemptAutoCorrectionOnce({manual:true});}
+  catch(error){notify(String(error?.message||error).slice(0,180),true);}
+ }
+});
+
 ui.verify.addEventListener('click',async()=>{if(state.busy||state.imported||!state.revised)return;try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);}});
 ui.copyCaption.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(ui.suggested.textContent);notify('Caption copied.');}catch{notify('Clipboard tidak tersedia.',true);}});
 // Export the exact saved observation set; graph and DNA are rebuilt from
