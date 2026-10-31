@@ -202,7 +202,7 @@ test('existing verification dossier warns when AI repair is unapproved despite h
  const guard=readFileSync(new URL('../public/repair-guard.js',import.meta.url),'utf8');
  assert.ok(html.includes('id="repairGuardNotice"'));
  assert.ok(html.includes('aria-live="polite"'));
- assert.ok(js.includes("import {reviewRepairCandidate} from './repair-guard.js'"));
+ assert.ok(js.includes("import {reviewRepairCandidate,reviewUnchangedCaption} from './repair-guard.js'"));
  assert.ok(js.includes("originalReferenceSent:out.original_reference_sent===true"));
  assert.ok(js.includes("auditPayload.referenceImage=await compactOriginalReference(state.original)"));
  assert.ok(js.includes("A higher score is NOT proof the image improved."));
