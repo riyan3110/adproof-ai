@@ -1,0 +1,45 @@
+name: AdProof AI independent live browser check (no paid Meta)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/live-public-browser.cjs'
+      - '.github/workflows/production-browser.yml'
+      - 'public/styles.css'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated test-only Chromium
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test ACTUAL production pages with Chromium (NO mock APIs or keys)
+        env:
+          ADPROOF_CANDIDATE_CSS: ${{ github.event_name == 'pull_request' && '1' || '0' }}
+          ADPROOF_LIVE_REPORT: /tmp/adproof-live-browser-report.json
+          ADPROOF_LIVE_SCREENSHOTS: /tmp/adproof-live-screenshots
+        run: node scripts/live-public-browser.cjs
+      - name: Upload real production browser evidence, not Meta inference
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adproof-real-production-browser-evidence
+          path: |
+            /tmp/adproof-live-browser-report.json
+            /tmp/adproof-live-screenshots
+          if-no-files-found: warn
+          retention-days: 7
