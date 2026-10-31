@@ -2,6 +2,23 @@
 export const REPAIR_VERSION='source-bound-1';
 const clean=s=>typeof s==='string'?s.trim():'';
 const norm=s=>clean(s).normalize('NFKC').replace(/\s+/g,' ').toLowerCase();
+// OCR inventories contain visual lines, while the factual ledger contains
+// complete assertions. Match only whole, consecutive source lines. Never use
+// fuzzy words/substrings: numbers, negation and non-adjacent text must agree.
+export function observedTextGroup(text,lines){
+ const target=norm(text),source=(Array.isArray(lines)?lines:[]).map(norm);
+ if(!target)return false;
+ for(let start=0;start<source.length;start++){
+  let group='';
+  for(let end=start;end<Math.min(source.length,start+8);end++){
+   if(!source[end])break;
+   group+=(group?' ':'')+source[end];
+   if(group===target)return true;
+   if(group.length>=target.length)break;
+  }
+ }
+ return false;
+}
 export function factLines(facts){
  return String(facts||'').split(/\r?\n/).map(s=>s.replace(/^\s*[-*•]\s*/, '').trim()).filter(s=>s&&s.length<=350);
 }
@@ -50,7 +67,7 @@ export function normalizeLocalPlan(plan,audit,facts){
  for(const e of plan.edits){
   if(!validBox(e?.box)||e.box.width*e.box.height>.16||!['solid','complex'].includes(e.background)||!clean(e.before)||e.before.length>350)return null;
   if(protectedRegions.some(b=>overlaps(e.box,b))||edits.some(x=>overlaps(e.box,x.box)))return null;
-  if(!sourceLines.some(s=>norm(s)===norm(e.before)))return null;
+  if(!observedTextGroup(e.before,sourceLines))return null;
   const target=bad.some(c=>norm(c.claim)===norm(e.before))||(audit.issues||[]).some(i=>['Claim','Readability'].includes(i.category)&&norm(i.evidence).includes(norm(e.before)));
   if(!target)return null;
   // Replacement text is an entire supplied fact line (or deletion). No paraphrase.

@@ -1,0 +1,295 @@
+{
+  "app": "AdProof AI",
+  "date": "2026-10-31T20:06:24.311Z",
+  "report_language": "id",
+  "product": "LumaDesk Mini — LED Desk Lamp",
+  "context": {
+    "product": "LumaDesk Mini — LED Desk Lamp",
+    "facts": "Product: LumaDesk Mini\nCategory: LED desk lamp\nPower consumption: 5 watts\nLight color: Warm white (3000K)\nPower source: USB 5V\nMaterial: ABS plastic\nFeatures: Adjustable lamp head, touch on/off button\nUse: Indoor desk lighting\nWarranty: Not specified\nNo verified evidence for medical benefits, eye protection, energy savings percentages, or sleep improvement.",
+    "caption": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!"
+  },
+  "caption_repair": {
+    "version": "source-bound-1",
+    "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+    "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "status": "source_bound",
+    "method": "meta_selected_verbatim_facts",
+    "product_identity": "LumaDesk Mini — LED Desk Lamp",
+    "statements": [
+      {
+        "text": "Category: LED desk lamp",
+        "fact_quote": "Category: LED desk lamp"
+      },
+      {
+        "text": "Power consumption: 5 watts",
+        "fact_quote": "Power consumption: 5 watts"
+      },
+      {
+        "text": "Light color: Warm white (3000K)",
+        "fact_quote": "Light color: Warm white (3000K)"
+      },
+      {
+        "text": "Power source: USB 5V",
+        "fact_quote": "Power source: USB 5V"
+      }
+    ],
+    "verification": {
+      "status": "passed",
+      "basis": "complete_source_lines_and_exact_rendered_values",
+      "unsupported_sentences": 0
+    },
+    "basis": "seller_supplied_facts_not_independently_verified"
+  },
+  "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+  "runs": [
+    {
+      "stage": "initial",
+      "model": "muse-spark-1.3",
+      "tokens": 12955,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "output_sha256": null,
+        "stage": "audit",
+        "completed_at": "2026-10-31T20:06:05.150Z",
+        "input_sha256": "f05ddf354e57f6732cf1c2ce38f167588e74fa1df400b3e1b18c930fd7a4ff9c",
+        "report_language": "id"
+      }
+    }
+  ],
+  "original": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "",
+      "lines": [
+        "LumaDesk Mini",
+        "LED DESK LAMP",
+        "Brighter Days. Calmer Nights.",
+        "A Smarter Light for a Healthier You.",
+        "Save up to",
+        "90% Electricity",
+        "Protect",
+        "Your Eyes",
+        "Better Sleep",
+        "in 7 Days",
+        "Shop Now ->",
+        "The Better Home",
+        "A Brighter You"
+      ]
+    },
+    "consistency": null,
+    "score": 58,
+    "headline": "Klaim hemat energi dan manfaat kesehatan tidak didukung fakta pemasok",
+    "summary": "Nama dan kategori produk sesuai fakta, tetapi klaim 90%, perlindungan mata, dan tidur dalam 7 hari pada gambar dan caption tidak didukung fakta pemasok. Visual produk tampak bersih tanpa cacat yang jelas. Disarankan menghapus klaim yang tidak didukung dan hanya memakai spesifikasi yang diberikan.",
+    "recommended_caption": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "issues": [
+      {
+        "id": "issue-1",
+        "title": "Klaim hemat listrik 90% tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Save up to 90% Electricity dan caption memuat Save up to 90% electricity, sedangkan fakta pemasok hanya memuat Power consumption: 5 watts tanpa persentase penghematan.",
+        "suggestion": "Hapus klaim 90% dari gambar dan caption, gunakan fakta daya yang tersedia bila relevan."
+      },
+      {
+        "id": "issue-2",
+        "title": "Klaim perlindungan mata tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Protect Your Eyes dan caption memuat protect your eyes with our revolutionary LED technology, sedangkan fakta pemasok tidak mencantumkan manfaat perlindungan mata.",
+        "suggestion": "Hapus klaim perlindungan mata dari gambar dan caption."
+      },
+      {
+        "id": "issue-3",
+        "title": "Klaim tidur lebih baik dalam 7 hari tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Pada panel kiri tertera Better Sleep in 7 Days dan caption memuat Guaranteed better sleep in just 7 days!, sedangkan fakta pemasok tidak mencantumkan manfaat tidur, durasi, atau garansi.",
+        "suggestion": "Hapus klaim tidur, durasi 7 hari, dan garansi dari gambar dan caption."
+      }
+    ],
+    "strengths": [
+      "Nama produk dan kategori sesuai dengan fakta pemasok.",
+      "Visual lampu, meja, dan pencahayaan tampak jelas dan rapi.",
+      "Hierarki teks dan tombol Shop Now mudah dibaca.",
+      "Slogan ekspresif tidak dinilai sebagai klaim faktual."
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "LumaDesk Mini",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Product: LumaDesk Mini",
+        "reason": "Nama produk pada gambar sama persis dengan fakta pemasok.",
+        "recommended_action": "Pertahankan nama produk apa adanya."
+      },
+      {
+        "id": "claim-2",
+        "claim": "LED DESK LAMP",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Category: LED desk lamp",
+        "reason": "Kategori pada gambar sesuai dengan kategori pada fakta pemasok.",
+        "recommended_action": "Pertahankan kategori apa adanya."
+      },
+      {
+        "id": "claim-3",
+        "claim": "Save up to 90% Electricity",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+        "recommended_action": "Hapus klaim persentase atau ganti dengan fakta watt yang tersedia."
+      },
+      {
+        "id": "claim-4",
+        "claim": "Protect Your Eyes",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat perlindungan mata pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perlindungan mata.",
+        "recommended_action": "Hapus klaim kesehatan mata tersebut."
+      },
+      {
+        "id": "claim-5",
+        "claim": "Better Sleep in 7 Days",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat tidur atau durasi 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk perbaikan tidur.",
+        "recommended_action": "Hapus klaim tidur dan durasi tersebut."
+      },
+      {
+        "id": "claim-6",
+        "claim": "Save up to 90% electricity",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada persentase penghematan listrik pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi untuk persentase penghematan energi.",
+        "recommended_action": "Hapus klaim persentase dari caption."
+      },
+      {
+        "id": "claim-7",
+        "claim": "protect your eyes with our revolutionary LED technology",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada manfaat perlindungan mata atau teknologi revolusioner pada fakta pemasok.",
+        "recommended_action": "Hapus klaim perlindungan mata dari caption."
+      },
+      {
+        "id": "claim-8",
+        "claim": "Guaranteed better sleep in just 7 days!",
+        "origin": "caption",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Tidak ada garansi atau manfaat tidur dalam 7 hari pada fakta pemasok dan dinyatakan tidak ada bukti terverifikasi.",
+        "recommended_action": "Hapus klaim garansi tidur dari caption."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 8,
+      "supported_by_supplied_facts": 2,
+      "unsupported_by_supplied_facts": 6,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 30,
+      "clarity": 88,
+      "hierarchy": 85,
+      "action": 85
+    },
+    "caption_repair": {
+      "version": "source-bound-1",
+      "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+      "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+      "status": "source_bound",
+      "method": "meta_selected_verbatim_facts",
+      "product_identity": "LumaDesk Mini — LED Desk Lamp",
+      "statements": [
+        {
+          "text": "Category: LED desk lamp",
+          "fact_quote": "Category: LED desk lamp"
+        },
+        {
+          "text": "Power consumption: 5 watts",
+          "fact_quote": "Power consumption: 5 watts"
+        },
+        {
+          "text": "Light color: Warm white (3000K)",
+          "fact_quote": "Light color: Warm white (3000K)"
+        },
+        {
+          "text": "Power source: USB 5V",
+          "fact_quote": "Power source: USB 5V"
+        }
+      ],
+      "verification": {
+        "status": "passed",
+        "basis": "complete_source_lines_and_exact_rendered_values",
+        "unsupported_sentences": 0
+      },
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "local_text_repair": null
+  },
+  "verified": null,
+  "auto_correction": null,
+  "visual_consistency": {
+    "format_history": [],
+    "upload_dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "source_dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "settings": {
+      "version": "visual-consistency-2",
+      "style": "preserve",
+      "locks": {
+        "product_shape": true,
+        "colors": true,
+        "lighting": true,
+        "background": true,
+        "composition": true,
+        "typography": true,
+        "branding": true
+      },
+      "region": null
+    },
+    "repair": null,
+    "verification": null,
+    "output_requested": {
+      "category": "social",
+      "preset": 0,
+      "width": 210,
+      "height": 297,
+      "unit": "mm",
+      "ppi": 150,
+      "standard": "a4",
+      "padding": "white",
+      "source": "original"
+    },
+    "output_actual": null
+  },
+  "repair_review": null,
+  "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+  "archive_artifacts": {
+    "original": "original.png",
+    "revised": null
+  },
+  "archive_history": [],
+  "archive_format_version": 2,
+  "archive_note": "Saved previous rounds. Import is not a fresh model run or Meta-signed evidence."
+}
