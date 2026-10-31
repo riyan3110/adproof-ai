@@ -36,7 +36,7 @@ const id={
  'Repair a confirmed issue; AI automatically re-checks the revised image.':'Perbaiki kesalahan yang ditemukan; AI otomatis memeriksa ulang gambar hasilnya.',
  'Review + save':'Periksa hasil + simpan',
  'Check the automatic verification result and save the usable output.':'Lihat hasil pemeriksaan otomatis lalu simpan hasil yang layak digunakan.',
- 'Use your verified demo access to run AI. Repair uses one Muse Image request and one automatic Muse Spark re-audit, charged against the project's Meta API allowance. Failed checks block revised export.':'Gunakan akses demo yang sudah terverifikasi untuk menjalankan AI. Repair memakai satu permintaan Muse Image dan satu audit ulang Muse Spark otomatis, menggunakan kuota API Meta proyek. Hasil yang gagal diperiksa diblokir dari ekspor revisi.',
+ 'Use your verified demo access to run AI. Repair uses one Muse Image request and one automatic Muse Spark re-audit, counted against the Meta API allowance. Failed checks block revised export.':'Gunakan akses demo yang sudah terverifikasi untuk menjalankan AI. Repair memakai satu permintaan Muse Image dan satu audit ulang Muse Spark otomatis, menggunakan kuota API Meta proyek. Hasil yang gagal diperiksa diblokir dari ekspor revisi.',
  'Swipe to view all steps →':'Geser untuk melihat semua langkah →',
  'Language':'Bahasa',
  'Auto (browser)':'Otomatis (browser)',
