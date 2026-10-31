@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {describeRepairNotice} from '../public/repair-notice.js';
 
 test('rejected repair gets a short neutral notice without duplicating generated observations',()=>{
@@ -32,4 +33,9 @@ test('English result has same conservative export messaging',()=>{
   const notice=describeRepairNotice({status:'regression_suspected',reasons:['Duplicated text']},{status:'failed'},'en');
   assert.match(notice.text,/Revised export remains blocked/);
   assert.doesNotMatch(notice.text,/Duplicated text/);
+});
+
+test('the new browser module is exposed by the server static allowlist',()=>{
+  const server=readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
+  assert.match(server,/\['\/repair-notice\.js','public\/repair-notice\.js'\]/);
 });
