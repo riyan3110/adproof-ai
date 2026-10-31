@@ -1,5 +1,5 @@
 import {createConsistencyUI} from './consistency-ui.js';
-import {inspectConsistency} from './visual-consistency.js';
+import {inspectConsistency,impliedThermalDurationText} from './visual-consistency.js';
 import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
 import {renderProofStudio, resetProofStudio, proofReport, openClaimInspector, activateProofView, refreshProofLanguage} from './proof-studio.js';
@@ -164,7 +164,7 @@ async function verifyCode(code,{restoring=false}={}) {
   try{
    res=await fetch('/api/access',{method:'POST',headers:{'x-demo-code':code},signal:controller.signal});
    reply=await res.json().catch(()=>({}));
-  }finally{clearTimeout(timer);}
+  }finally{clearTimeout(timer);if(pulse!==null)clearInterval(pulse);}
   if(generation!==accessCheckGeneration)return false;
   if(res.ok && reply.ok===true && reply.access==='verified') {
    setCode(code);
@@ -327,6 +327,16 @@ async function api(endpoint,data,retried=false){
  const timeoutMs=endpoint==='/api/improve'?125000:80000;
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ // Only report measured elapsed time, never invented completion percentages.
+ // This continues visibly updating while a long Muse Image request awaits.
+ const progressEndpoint=['/api/improve','/api/localize','/api/audit'].includes(endpoint);
+ const started=Date.now();
+ const stageName=endpoint==='/api/improve'?(getLanguage()==='id'?'Muse Image mengedit gambar':'Muse Image editing image')
+  :endpoint==='/api/localize'?(getLanguage()==='id'?'Muse Spark mencari area teks':'Muse Spark finding text bounds')
+  :(getLanguage()==='id'?'Muse Spark memeriksa gambar':'Muse Spark checking image');
+ const pulse=progressEndpoint?setInterval(()=>{
+  if(state.busy)workStep(stageName,(getLanguage()==='id'?'Berjalan ':'Elapsed ')+Math.floor((Date.now()-started)/1000)+' detik');
+ },4500):null;
  let r,result;
  try {
   const headers={'content-type':'application/json'};
@@ -703,11 +713,23 @@ async function performImprove(){
   // The first audit may have found the unsupported copy but omitted accurate
   // bounds. For copy-only defects, request Spark localization rather than
   // letting an unmasked Muse Image edit redraw the product or entire scene.
-  if(!repairSettings.region&&!state.initialAudit.local_text_repair&&isTextOnlyRepair(state.initialAudit)){
+  // Keep the independent original audit immutable: only augment the internal
+  // localization request with exactly observed dependent thermal text.
+  const inferredCopy=impliedThermalDurationText(state.initialAudit,state.context?.facts||'')
+   .filter(line=>!(state.initialAudit.claim_ledger||[]).some(claim=>String(claim.claim||'').trim().toLowerCase()===line.trim().toLowerCase()));
+  const needsDependentRegions=inferredCopy.some(line=>!state.initialAudit.local_text_repair?.edits?.some(edit=>String(edit.before||'').trim().toLowerCase()===line.trim().toLowerCase()));
+  if(needsDependentRegions)state.initialAudit.local_text_repair=null;
+  const localizationAudit={
+   issues:state.initialAudit.issues,
+   claim_ledger:[...(state.initialAudit.claim_ledger||[]),...inferredCopy.map(line=>({
+    origin:'creative',claim:line,assessment:'unsupported_by_supplied_facts',fact_quote:'',
+    recommended_action:'Remove contextual unsupported duration claim',reason:'Depends on an unsupported original temperature-duration claim'
+   }))],
+   text_inventory:state.initialAudit.text_inventory
+  };
+  if(!repairSettings.region&&!state.initialAudit.local_text_repair&&isTextOnlyRepair(localizationAudit)){
    workStep(getLanguage()==='id'?'Menentukan area teks':'Locating text region','Muse Spark');
-   const localized=await api('/api/localize',{...payload(state.original),audit:{
-    issues:state.initialAudit.issues,claim_ledger:state.initialAudit.claim_ledger,
-    text_inventory:state.initialAudit.text_inventory}});
+   const localized=await api('/api/localize',{...payload(state.original),audit:localizationAudit});
    state.runs.push({stage:'localize',model:localized.model,tokens:localized.tokens,provenance:localized.provenance||null});
    if(!localized.plan){
     await persistMilestone();

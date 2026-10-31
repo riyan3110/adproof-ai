@@ -73,6 +73,37 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
    const print=await output.renderOutput(printSource.image,{category:'print',width:210,height:297,unit:'mm',ppi:150},{allowInterpolation:true,aiAdapted:true});
    return {proof,original:await imageBytes(original),revised:await imageBytes(revised),transitions,print:{metadata:print.metadata,bytes:[...new Uint8Array(await print.blob.arrayBuffer())]},source_dimensions:{width:source.naturalWidth,height:source.naturalHeight}};
   });
+  // Actual browser canvas test: a complex photo-like scene includes a
+  // uniform badge. A multiline replacement must stay inside the badge
+  // without altering protected product pixels or relying on Muse glyphs.
+  const badgeProof=await page.evaluate(async()=>{
+    const out=await import('/output-system.js');
+    const c=document.createElement('canvas');c.width=600;c.height=600;const ctx=c.getContext('2d');
+    const gr=ctx.createLinearGradient(0,0,600,600);
+    gr.addColorStop(0,'#0f3022');gr.addColorStop(.5,'#728663');gr.addColorStop(1,'#2d4033');
+    ctx.fillStyle=gr;ctx.fillRect(0,0,600,600);
+    for(let i=0;i<50;i++){ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fillRect((i*83)%600,(i*67)%600,15,15);}
+    ctx.fillStyle='#deded2';ctx.fillRect(390,110,140,370);
+    ctx.fillStyle='#f4dda1';ctx.fillRect(24,230,320,100);
+    ctx.font='bold 24px Arial';ctx.fillStyle='#152b23';ctx.fillText('DINGIN HINGGA 24 JAM',39,282);
+    const original=c.toDataURL('image/png');
+    const plan={edits:[{background:'complex',before:'DINGIN HINGGA 24 JAM',
+      replacement:'STAINLESS STEEL 600 mL TUTUP ULIR',
+      box:{x:24/600,y:230/600,width:320/600,height:100/600}}],
+      protected_regions:[{x:390/600,y:110/600,width:140/600,height:370/600}]};
+    const result=await out.repairTextLocally(original,plan);
+    if(!result)return {success:false};
+    const proof=await out.verifyLocalPixels(original,result.image,result.pixel_proof.rectangles);
+    const layoutCtx=c.getContext('2d');
+    const layout=out.fitReplacementLines(layoutCtx,plan.edits[0].replacement,320,100,10);
+    return {success:true,proof,layout,method:result.method};
+  });
+  assert.equal(badgeProof.success,true,'uniform local badge is repairable even in a complex scene');
+  assert.equal(badgeProof.proof.outside_changed_pixels,0);
+  assert.ok(badgeProof.proof.inside_changed_pixels>0);
+  assert.equal(badgeProof.layout.lines.join(' '),'STAINLESS STEEL 600 mL TUTUP ULIR');
+  assert.ok(badgeProof.layout.lines.length>1);
+  assert.equal(badgeProof.method,'source_pixels_with_deterministic_text');
   // Adversarial complex background: the image model changes EVERYTHING,
   // including the bottle, while the source-pixel compositor must only accept
   // the localized text patch. This checks decoded pixels, not AI assertions.
