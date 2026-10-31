@@ -9,7 +9,7 @@ export const assets={
   '/styles.css':'styles.css','/studio.css':'studio.css','/app.js':'app.js',
   '/i18n.js':'i18n.js','/local-recovery.js':'local-recovery.js','/auto-correction.js':'auto-correction.js','/claim-engine.js':'claim-engine.js',
   '/proof-studio.js':'proof-studio.js','/repair-guard.js':'repair-guard.js',
-  '/audit-archive.js':'audit-archive.js','/visual-consistency.js':'visual-consistency.js','/output-system.js':'output-system.js','/consistency-ui.js':'consistency-ui.js'
+  '/factual-repair.js':'factual-repair.js','/audit-archive.js':'audit-archive.js','/visual-consistency.js':'visual-consistency.js','/output-system.js':'output-system.js','/consistency-ui.js':'consistency-ui.js'
 };
 const hash=value=>createHash('sha256').update(value).digest('hex');
 export async function smoke({origin='https://adproof-ai.vercel.app',fetcher=fetch,readAsset=name=>readFile(path.join(root,'public',name))}={}){

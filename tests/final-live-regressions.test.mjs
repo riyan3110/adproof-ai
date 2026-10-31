@@ -11,7 +11,7 @@ test('one reviewed 16:9 composition serves every Website size without reusing an
  for(const [width,height] of [[1600,900],[1920,1080],[2560,1440]])assert.equal(matchesFormatCandidate(candidate,'source-a',{category:'website',width,height}),true);
  assert.equal(matchesFormatCandidate(candidate,'source-b',{category:'website',width:1920,height:1080}),false);
  assert.equal(matchesFormatCandidate(candidate,'source-a',{category:'social',width:1080,height:1350}),false);
- assert.equal(matchesFormatCandidate(candidate,'source-a',{category:'print',width:1600,height:900}),false);
+ assert.equal(matchesFormatCandidate(candidate,'source-a',{category:'print',width:1600,height:900}),true);
  assert.equal(matchesFormatCandidate(null,'source-a',{category:'website',width:1600,height:900}),false);
 });
 
@@ -19,7 +19,7 @@ function liveAdapter(api){
  const state={formatHistory:[],runs:[],configured:true,initialAudit:{score:70},context:{},consistency:{}};
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  const start=source.indexOf('async function adaptFormat('),end=source.indexOf('\nasync function performImprove',start);
- const context=vm.createContext({state,api,payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
+ const context=vm.createContext({state,api,extendFlatBackground:async()=>null,payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
   getLanguage:()=> 'en',setBusy:v=>state.busy=v,updateMetaStatus:()=>{},inspectFormatCandidate:()=>({status:'failed',risks:[{code:'lock_typography',evidence:'Missing required text'}]}),reviewRepairCandidate:()=>({status:'review_required'}),visualUI:{readSettings:()=>({})}});
  return {state,run:vm.runInContext(source.slice(start,end)+';adaptFormat',context)};
 }

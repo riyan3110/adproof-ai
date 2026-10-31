@@ -1,6 +1,6 @@
 // Deterministic budget guard for one follow-up Muse Image edit after an
 // independently completed Muse Spark re-audit. Never infer success from scores.
-const TEXT_RISKS=new Set(['unsupported_performance_copy','new_claim','unverified_added_text','removed_text_review']);
+const TEXT_RISKS=new Set(['unsupported_performance_copy','new_claim','unverified_added_text','removed_text_review','unresolved_creative_claim']);
 const DIAGNOSTIC_LIMIT=5;
 const str=(x,n)=>typeof x==='string'?x.trim().slice(0,n):'';
 export function planOneCorrection({initial,verified,consistencyReview,repairReview,alreadyAttempted=false}={}){

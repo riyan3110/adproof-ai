@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {smoke} from '../scripts/production-smoke.mjs';
+import {smoke,assets} from '../scripts/production-smoke.mjs';
 function fixture({stale=false,gate=true,acceptWrong=false}={}){
  const requests=[];
  return {requests,readAsset:async name=>Buffer.from(name),fetcher:async(url,options)=>{
@@ -16,7 +16,7 @@ test('release smoke rejects stale HTTP 200 assets before API requests',async()=>
 });
 test('release smoke confirms source hashes and rejection of missing/wrong codes without credentials',async()=>{
  const f=fixture();const report=await smoke(f);
- assert.equal(report.assets.length,16);assert.equal(report.access.length,6);assert.equal(report.paid_model_calls,0);
+ assert.equal(report.assets.length,Object.keys(assets).length);assert.equal(report.access.length,6);assert.equal(report.paid_model_calls,0);
  assert.equal(report.health.provider_tested,false);
  assert.ok(f.requests.filter(x=>x.options.method==='POST').every(x=>x.options.body==='{}'));
 });

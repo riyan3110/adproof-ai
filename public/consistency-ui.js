@@ -2,7 +2,7 @@ import {STYLES,LOCKS,normalizeSettings} from './visual-consistency.js';
 import {PRESETS,PRINT_SIZES,dimensions,outputPlan,assessOutputQuality,renderOutput} from './output-system.js';
 const localKey='adproof-visual-settings-v1';
 export function matchesFormatCandidate(candidate,image,plan){
- return !!candidate&&candidate.input===image&&plan.category!=='print'&&
+ return !!candidate&&candidate.input===image&&
   candidate.width*plan.height===candidate.height*plan.width;
 }
 export function createConsistencyUI({state,language,onSettingsChange,download,notify,adaptFormat}){
@@ -35,9 +35,10 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  const failed=()=>state.consistencyReview?.status==='failed'||state.repairReview?.status==='regression_suspected';
  const source=()=>q('#outputSource').value==='revised'?state.revised:state.original;
  const exportSource=()=>q('#outputSource').value==='original'?(state.fullOriginalURL||state.original):state.revised;
- const candidateAllowed=()=>!!state.verified&&!!state.consistencyReview&&!failed();
+ const candidateAllowed=()=>!!state.verified&&state.consistencyReview?.status==='validated'&&!failed();
+ const originalAllowed=()=>!!state.initialAudit&&!(state.initialAudit.claim_ledger||[]).some(c=>c.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment))&&!(state.initialAudit.issues||[]).some(i=>!/^caption\s*:/i.test(i.evidence||'')&&['high','medium'].includes(i.severity));
  const matchingFormat=(image,plan)=>matchesFormatCandidate(formatCandidate,image,plan);
- const usableFormat=(image,plan)=>matchingFormat(image,plan)&&formatCandidate.review?.status!=='failed';
+ const usableFormat=(image,plan)=>matchingFormat(image,plan)&&formatCandidate.review?.status==='validated';
  async function estimate(){
   const image=exportSource();state.outputRequested=options();q('#printFields').hidden=options().category!=='print';q('#pixelPresetLabel').hidden=options().category==='print';
   if(!image){q('#outputEstimate').textContent=say('Upload an image first.','Unggah gambar terlebih dahulu.');q('#outputQuality').textContent='';return;}
@@ -55,7 +56,7 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  }
  function renderResult(){
   const r=state.consistencyReview;result.hidden=!r;result.replaceChildren();if(!r)return;
-  const h=document.createElement('h3');h.textContent=r.status==='failed'?say('Consistency check failed — original retained','Pemeriksaan konsistensi gagal — gambar asli dipertahankan'):say('Consistency — manual review required','Konsistensi — perlu pemeriksaan manual');result.append(h);
+  const h=document.createElement('h3');h.textContent=r.status==='validated'?say('Consistency validated — source pixels protected','Konsistensi tervalidasi — piksel sumber terlindungi'):r.status==='failed'?say('Consistency check failed — original retained','Pemeriksaan konsistensi gagal — gambar asli dipertahankan'):say('Consistency — manual review required','Konsistensi — perlu pemeriksaan manual');result.append(h);
   const statuses={preserved:say('Preserved','Dipertahankan'),possible_change:say('Possible Change','Mungkin Berubah'),changed:say('Changed','Berubah'),unable_to_verify:say('Unable to Verify','Belum Dapat Diverifikasi')};
   const list=document.createElement('dl');list.className='lock-results';for(const [k,v] of Object.entries(r.locks)){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=(id()?lockLabels[k]:LOCKS[k][0])+(v.locked?' · ON':' · OFF');dd.textContent=statuses[v.status]||statuses.unable_to_verify;if(v.evidence)dd.title=v.evidence;list.append(dt,dd);}result.append(list);
   const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent=say('Text changes, evidence & limitations','Perubahan teks, bukti & keterbatasan');details.append(summary);
@@ -76,7 +77,9 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
   q('#styleConflict').textContent=style.value==='preserve'?say('Preserve the source; correct only evidenced issues.','Pertahankan sumber; perbaiki hanya masalah dengan bukti.'):say('Locks take priority. Conflicting style changes are skipped.','Lock diprioritaskan. Perubahan gaya yang bertentangan dilewati.');
   for(const e of panel.querySelectorAll('input,select'))e.disabled=state.busy||state.imported||!!state.revised;
   for(const e of output.querySelectorAll('input,select,button'))e.disabled=state.busy;
-  q('#outputSource').options[1].disabled=!candidateAllowed();if(!candidateAllowed()&&q('#outputSource').value==='revised'){q('#outputSource').value='original';clearPrepared();}
+  q('#confirmOutput').closest('label').hidden=true;
+  q('#outputSource').options[1].disabled=!candidateAllowed();
+  if(candidateAllowed()&&!prepared&&q('#outputSource').value==='original'&&!originalAllowed())q('#outputSource').value='revised';if(!candidateAllowed()&&q('#outputSource').value==='revised'){q('#outputSource').value='original';clearPrepared();}
   q('#downloadImage').disabled=state.busy||!prepared;q('#prepareOutput').disabled=state.busy||!state.original;
   q('#adaptOutput').disabled=state.busy||state.imported||!state.original||!state.initialAudit||options().category==='print'||(options().source==='revised'&&!candidateAllowed());
   if(state.original&&q('#regionPreview').getAttribute('src')!==state.original)q('#regionPreview').src=state.original;
@@ -118,10 +121,14 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
  });
  q('#prepareOutput').addEventListener('click',async()=>{
   const token=++generation;
-  try{if(!q('#confirmOutput').checked)throw Error(say('Inspect the source and confirm the review first.','Periksa sumber dan centang pemeriksaan terlebih dahulu.'));
+  try{if(options().source==='original'&&!originalAllowed())throw Error(say('Source has unresolved findings. Use the validated repair; original stays in the archive.','Gambar sumber masih memiliki temuan. Gunakan revisi tervalidasi; sumber tetap tersimpan dalam arsip.'));
    if(options().source==='revised'&&!candidateAllowed())throw Error(say('Candidate failed or has not been verified. Export the original.','Kandidat gagal atau belum diverifikasi. Ekspor gambar asli.'));
    const src=source(),opts=options(),plan=outputPlan(await dimensions(exportSource()),opts);
-   const mustAdapt=plan.aspect_changed&&opts.category!=='print';
+   const mustAdapt=plan.aspect_changed;
+   if(mustAdapt&&!usableFormat(src,plan)){
+    const out=await adaptFormat(src,{width:plan.width,height:plan.height,print:opts.category==='print'});
+    formatCandidate={input:src,image:out.image,width:plan.width,height:plan.height,review:out.review,metadata:out.metadata};
+   }
    if(mustAdapt&&!usableFormat(src,plan))throw Error(say('Adapt the composition with AI and pass verification before export. No blank-margin fallback.','Sesuaikan komposisi dengan AI dan lolos pemeriksaan sebelum ekspor. Tanpa margin kosong.'));
    q('#prepareOutput').disabled=true;
    const out=await renderOutput(mustAdapt?formatCandidate.image:exportSource(),opts,{allowInterpolation:q('#allowInterpolation').checked,aiAdapted:mustAdapt});if(token!==generation)return;
