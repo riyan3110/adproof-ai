@@ -96,9 +96,49 @@ async function examinePage(page, route, width, errors) {
       results.push({width,routes:site,archiveRestored:true,uploadRestoredCleanState:true,languageSwitch:true,paidModelRequests:0,pageErrors:[]});
       await context.close();
     }
+    // Inspect the actual saved, previously generated Meta-output PNG bytes.
+    // These are historical files from evidence/live-2026-10-31, not fresh inference.
+    const knownPngs = [
+      ['social-1080x1080.png',1080,1080],
+      ['social-1080x1350.png',1080,1350]
+    ];
+    const pngEvidence = [];
+    const samplePage = await browser.newPage();
+    for (const [name,expectedW,expectedH] of knownPngs) {
+      const bytes = await fs.readFile(path.join(__dirname,'..','evidence/live-2026-10-31',name));
+      assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a',name+' PNG signature');
+      assert.equal(bytes.readUInt32BE(16),expectedW,name+' IHDR width');
+      assert.equal(bytes.readUInt32BE(20),expectedH,name+' IHDR height');
+      const decoded = await samplePage.evaluate(async rawBase64 => {
+        const picture = new Image();
+        picture.src='data:image/png;base64,'+rawBase64;
+        await picture.decode();
+        const canvas=document.createElement('canvas');canvas.width=picture.naturalWidth;canvas.height=picture.naturalHeight;
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
+        ctx.drawImage(picture,0,0);
+        const d=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+        let transparentBorderPixels=0;
+        for(let x=0;x<canvas.width;x++){
+          if(d[(x)*4+3]===0)transparentBorderPixels++;
+          if(d[((canvas.height-1)*canvas.width+x)*4+3]===0)transparentBorderPixels++;
+        }
+        for(let y=1;y<canvas.height-1;y++){
+          if(d[(y*canvas.width)*4+3]===0)transparentBorderPixels++;
+          if(d[(y*canvas.width+canvas.width-1)*4+3]===0)transparentBorderPixels++;
+        }
+        return {width:picture.naturalWidth,height:picture.naturalHeight,transparentBorderPixels};
+      },bytes.toString('base64'));
+      assert.equal(decoded.width,expectedW);
+      assert.equal(decoded.height,expectedH);
+      assert.equal(decoded.transparentBorderPixels,0,name+' transparent edge / blank margin');
+      pngEvidence.push({name,bytes:bytes.length,...decoded,pixelDetailCertified:false,nativeUpscalingCertified:false});
+    }
+    await samplePage.close();
+    console.log('PASS: historical authentic Meta-based PNG exports decode at exact dimensions, with no fully transparent edge pixels.');
+
     await fs.writeFile(reportPath,JSON.stringify({
       checked_at:new Date().toISOString(),origin,scope:process.env.ADPROOF_CANDIDATE_CSS === '1' ? 'REAL PRODUCTION HTML/API WITH LOCAL CANDIDATE CSS (not final deployed version), NO PAID CALLS' : 'REAL PRODUCTION BROWSER, NO META PAID REQUESTS, NO MOCKED ENDPOINTS',
-      results,limitations:['Private Judge Access cannot be authenticated without the owner-only code.','No new Muse Spark/Muse Image paid calls or visual generation performed.','Prior saved JSON is historical evidence; not a fresh inference.','Check live reframe pixel quality and submission credentials separately.']
+      results,pngEvidence,limitations:['PNG border alpha check does not certify lack of opaque padding or visual distortions.','Private Judge Access cannot be authenticated without the owner-only code.','No new Muse Spark/Muse Image paid calls or visual generation performed.','Prior saved JSON is historical evidence; not a fresh inference.','Check live reframe pixel quality and submission credentials separately.']
     },null,2));
     console.log('PASS: real production browser /, /docs, /app, 5 viewport widths, locale toggle, authentic JSON archive import, original upload, no paid calls.');
     console.log('REPORT '+reportPath);
