@@ -23,7 +23,7 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   let audits=0,imageCalls=0,finalCaptionSent=null;
   await page.route('**/api/health',r=>r.fulfill({json:{ok:true,configured:true,demoGate:false}}));
   await page.route('**/api/improve',r=>{imageCalls++;return r.fulfill({status:500,json:{error:'No image generation permitted in deterministic test'}});});
-  await page.route('**/api/audit',r=>{audits++;const body=r.request().postDataJSON();if(body.referenceImage)finalCaptionSent=body.caption;return r.fulfill({json:{audit:body.referenceImage?revisedAudit:originalAudit,model:'MOCK SPARK — NOT LIVE',tokens:0,original_reference_sent:!!body.referenceImage,report_language:'en'}});});
+  await page.route('**/api/audit',r=>{audits++;const body=r.request().postDataJSON();if(body.referenceImage)finalCaptionSent=body.caption;return r.fulfill({json:{audit:body.referenceImage?(audits>2?{...revisedAudit,consistency:{...revisedAudit.consistency,original_text:inventory(newLines),new_claims:[]}}:revisedAudit):originalAudit,model:'MOCK SPARK — NOT LIVE',tokens:0,original_reference_sent:!!body.referenceImage,report_language:'en'}});});
   await page.goto('http://127.0.0.1:3000/app');
   await page.locator('#languageSelect').selectOption('en');
   await page.locator('#fileInput').setInputFiles('evidence/live-2026-10-31/case-a/original.png');
@@ -74,7 +74,15 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   await page.locator('#prepareOutput').click();
   await page.waitForFunction(()=>!document.querySelector('#downloadImage').disabled);
   const imageDownload=page.waitForEvent('download');await page.locator('#downloadImage').click();
-  await (await imageDownload).saveAs(path.join(outDir,'ui-export-1600x900.png'));
+  const uiPath=path.join(outDir,'ui-export-1600x900.png');
+  await (await imageDownload).saveAs(uiPath);
+  const actual=await fs.readFile(uiPath);assert.equal(actual.readUInt32BE(16),1600);assert.equal(actual.readUInt32BE(20),900);
+  const exportedPixels=await page.evaluate(async data=>{
+   const {decodeImage}=await import('/output-system.js');const exported=await decodeImage(data),preview=document.querySelector('#outputPreview');await preview.decode();
+   const read=img=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);return ctx.getImageData(0,0,c.width,c.height).data;};
+   const x=read(exported),y=read(preview);return {preview_matches_export:x.every((v,i)=>v===y[i]),all_opaque:x.every((v,i)=>i%4!==3||v===255),dimensions:{width:exported.naturalWidth,height:exported.naturalHeight}};
+  },'data:image/png;base64,'+actual.toString('base64'));
+  assert.equal(exportedPixels.preview_matches_export,true);assert.equal(exportedPixels.all_opaque,true);checks.exportedPixels=exportedPixels;
   assert.equal(imageCalls,0);assert.equal(audits,3,'one re-audit for extension, no new image generation');
   assert.deepEqual(errors,[]);
   const caption=await page.locator('#suggestedCaption').textContent();
