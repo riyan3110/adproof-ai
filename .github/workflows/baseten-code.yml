@@ -89,10 +89,27 @@ jobs:
           relevant; separate source-only validations from authentic production
           evidence. This is one bounded task, not a claim that the complete Work
           mission has finished. Leave unresolved blockers clearly documented.
+          Work on ONE concrete scope per run. Avoid a full-repository rewrite or
+          lengthy reasoning narrative: send complete, applicable code edits first.
+          Do not claim a bug was fixed until its code was actually changed.
           USER TASK:
           """
           Path("/tmp/adproof-baseten-task.txt").write_text(
               guardrails + "\n" + task + "\n" + details + "\n", encoding="utf-8"
+          )
+          # This Baseten hackathon model is unknown to Aider's bundled metadata.
+          # Without explicit metadata Aider reported 0 context/output tokens and
+          # discarded a lengthy proposed diff instead of applying it.
+          import json
+          metadata = {"openai/meta-models/muse-spark-open-1026": {
+              "max_tokens": 16384,
+              "max_input_tokens": 1000000,
+              "max_output_tokens": 16384,
+              "litellm_provider": "openai",
+              "mode": "chat"
+          }}
+          Path("/tmp/adproof-baseten-model-metadata.json").write_text(
+              json.dumps(metadata), encoding="utf-8"
           )
           PY
 
@@ -104,10 +121,11 @@ jobs:
         run: |
           aider \
             --model openai/meta-models/muse-spark-open-1026 \
+            --model-metadata-file /tmp/adproof-baseten-model-metadata.json \
             --reasoning-effort medium \
             --edit-format diff \
             --message-file /tmp/adproof-baseten-task.txt \
-            --map-tokens 4096 \
+            --map-tokens 2048 \
             --timeout 300 \
             --no-auto-commits \
             --no-auto-lint \
@@ -140,10 +158,10 @@ jobs:
 
           # Only application, test and documentation files are eligible.
           # AI-proposed GitHub workflow / credential changes are never included.
-          git add -A -- api public scripts test tests server.mjs consistency-server.mjs package.json docs README.md
+          git add -A -- api public scripts test tests server.mjs consistency-server.mjs package.json docs README.md FINAL-HACKATHON-READINESS.md
           if git diff --cached --quiet; then
-            echo "::error::No permitted application files changed; no PR created."
-            echo "Agent produced no reviewable app changes." >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Baseten/Aider did not apply any permitted edits, so no PR can be created. Check model token-limit errors in the agent step."
+            echo "No code/report changes were applied. Passing unchanged regression tests does NOT complete the task." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 

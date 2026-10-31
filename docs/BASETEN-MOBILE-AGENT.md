@@ -51,6 +51,12 @@ hackathon. Actual live Meta/image/judge checks remain separate and must be
 performed and evidenced before READY status. Baseten credits pay for AI coding,
 not for ChatGPT Work or Meta Image.
 
+## Failed second run (31 October 2026): model token metadata
+
+[Run #41181903006](https://github.com/riyan3110/adproof-ai/actions/runs/41181903006) connected to Baseten and ran `npm run check` successfully, but produced **no applied edits**, so the PR publishing step correctly stopped. The agent log reports an unrecognized **0-token limit** and discards its overlong response. Its prose described fixes, but those fixes **were not committed**. Do not count that run as completed work.
+
+This workflow now registers explicit Aider metadata for the custom Baseten model, limits the repo map and allows staging root `FINAL-HACKATHON-READINESS.md`. The model metadata's 16,384 output-token configuration is an **agent-side budget**, not verified Baseten's actual API limit. The change does not retroactively apply the failed response; any future run consumes additional Baseten credit. Run only a **small, specific task per owner-authored comment** and review the resulting diff. Do not reissue the broad failed comment verbatim.
+
 ## Guardrails and limits
 
 - The model is exactly `meta-models/muse-spark-open-1026` as granted by the
