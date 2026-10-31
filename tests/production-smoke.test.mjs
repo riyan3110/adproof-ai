@@ -16,7 +16,7 @@ test('release smoke rejects stale HTTP 200 assets before API requests',async()=>
 });
 test('release smoke confirms source hashes and rejection of missing/wrong codes without credentials',async()=>{
  const f=fixture();const report=await smoke(f);
- assert.equal(report.assets.length,15);assert.equal(report.access.length,6);assert.equal(report.paid_model_calls,0);
+ assert.equal(report.assets.length,16);assert.equal(report.access.length,6);assert.equal(report.paid_model_calls,0);
  assert.equal(report.health.provider_tested,false);
  assert.ok(f.requests.filter(x=>x.options.method==='POST').every(x=>x.options.body==='{}'));
 });
