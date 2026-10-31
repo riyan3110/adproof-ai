@@ -881,6 +881,30 @@ button:disabled{cursor:not-allowed;opacity:.42}
 }
 
 
+/* Actionable post-audit guidance; no fake success badges or decorative warnings. */
+.studio-body .repair-journey{margin:0 0 16px;padding:17px 19px;background:#f1f3ed;border:1px solid #c9d2c5;color:#25392e}
+.studio-body .repair-journey[hidden]{display:none!important}
+.studio-body .repair-journey-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.studio-body .repair-journey-head strong{font-size:16px;font-weight:750}
+.studio-body .repair-journey-head span{font-size:10px;letter-spacing:.4px;font-weight:800;color:#426348}
+.studio-body .repair-journey[data-phase=blocked] .repair-journey-head span{color:#855b39}
+.studio-body .repair-journey-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;margin:0}
+.studio-body .repair-journey-steps>div{min-width:0;padding-bottom:7px;border-bottom:1px solid #d6ded2}
+.studio-body .repair-journey-steps>div[hidden]{display:none}
+.studio-body .repair-journey dt{font-size:10px;font-weight:800;color:#4c6656;margin-bottom:5px}
+.studio-body .repair-journey dd{margin:0;color:#29372e;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.studio-body .repair-journey-guidance{font-size:12px;color:#6c513c;font-weight:650;margin:12px 0 0}
+.studio-body .repair-journey-next{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:14px}
+.studio-body .repair-journey-next p{font-size:12px;line-height:1.5;margin:0;flex:1}
+.studio-body .repair-journey-next button{flex-shrink:0;max-width:240px}
+.studio-body .repair-journey small{display:block;font-size:10px;color:#607166;margin-top:9px}
+@media(max-width:760px){
+ .studio-body .repair-journey{padding:13px 12px}
+ .studio-body .repair-journey-steps{grid-template-columns:1fr;gap:9px}
+ .studio-body .repair-journey-next{align-items:stretch;flex-direction:column}
+ .studio-body .repair-journey-next button{width:100%;max-width:none}
+}
+
 /* Existing Audit Dossier: repair candidates are never silently approved. */
 .studio-body .repair-guard-notice{
   margin:3px 0 17px;
