@@ -1,4 +1,5 @@
 import test from 'node:test';
+import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {repairCaption,normalizeLocalPlan} from '../public/factual-repair.js';
 import {inspectConsistency} from '../public/visual-consistency.js';
@@ -53,4 +54,15 @@ test('ZIP includes corrected caption + original, preserves budget flag and never
  assert.equal(imported.report.caption_repair.original,report.context.caption);
  assert.equal(imported.report.auto_correction.attempted,true);
  assert.notEqual(imported.report.visual_consistency?.verification?.status,'validated');
+});
+
+test('legacy archived repair corrects external caption without repeating its successful initial audit',()=>{
+ const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+ const start=source.indexOf('function payload('),end=source.indexOf('\nfunction el(',start);
+ const state={context:{product:'LumaDesk Mini',facts,caption:'Saves 90% and protects eyes'},initialAudit:{score:42},captionRepair:null};
+ const fn=vm.runInNewContext(source.slice(start,end)+';payload',{state,repairCaption,getLanguage:()=> 'en',visualUI:{readSettings:()=>({})}});
+ const first=fn('legacy-original');assert.match(first.caption,/5 watts/);assert.doesNotMatch(first.caption,/Saves 90|protects eyes/);
+ assert.equal(state.context.caption,'Saves 90% and protects eyes');
+ assert.equal(state.captionRepair.original,state.context.caption);
+ assert.equal(fn('legacy-revised').caption,first.caption);
 });
