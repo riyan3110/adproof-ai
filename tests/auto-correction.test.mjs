@@ -17,7 +17,7 @@ test('one bounded corrective image and audit only after grounded failure',()=>{
 });
 test('clean or incomplete verification NEVER triggers blind expensive image retry',()=>{
  for(const c of [null,undefined,{status:'review_required',risks:[]},{status:'failed',risks:[]}]){
-  const plan=planOneCorrection({initial:baseline,verified:revised,consistencyReview:c});
+  const plan=planOneCorrection({initial:baseline,verified:{claim_ledger:[],issues:[]},consistencyReview:c});
   assert.equal(plan.allowed,false);
  }
  const plan=planOneCorrection({initial:baseline,verified:null,consistencyReview:check});
