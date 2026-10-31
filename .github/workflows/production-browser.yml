@@ -6,6 +6,9 @@ on:
     paths:
       - 'scripts/live-public-browser.cjs'
       - '.github/workflows/production-browser.yml'
+      - 'public/styles.css'
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +29,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Test ACTUAL production pages with Chromium (NO mock APIs or keys)
         env:
+          ADPROOF_CANDIDATE_CSS: ${{ github.event_name == 'pull_request' && '1' || '0' }}
           ADPROOF_LIVE_REPORT: /tmp/adproof-live-browser-report.json
           ADPROOF_LIVE_SCREENSHOTS: /tmp/adproof-live-screenshots
         run: node scripts/live-public-browser.cjs
