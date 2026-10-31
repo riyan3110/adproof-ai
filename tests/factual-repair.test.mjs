@@ -1,7 +1,7 @@
 import test from 'node:test';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-import {repairCaption,normalizeLocalPlan} from '../public/factual-repair.js';
+import {repairCaption,reviewRepairedCaption,normalizeLocalPlan} from '../public/factual-repair.js';
 import {inspectConsistency} from '../public/visual-consistency.js';
 import {createAuditPackage,readAuditPackage} from '../public/audit-archive.js';
 import {readFileSync} from 'node:fs';
@@ -65,4 +65,26 @@ test('legacy archived repair corrects external caption without repeating its suc
  assert.equal(state.context.caption,'Saves 90% and protects eyes');
  assert.equal(state.captionRepair.original,state.context.caption);
  assert.equal(fn('legacy-revised').caption,first.caption);
+});
+
+test('independent Muse caption claim contradiction blocks source-bound repair despite higher score',()=>{
+ const repair=repairCaption({product:'LumaDesk Mini',facts,original:'Save 90% electricity.'});
+ const check=reviewRepairedCaption(repair,{score:96,claim_ledger:[
+   {claim:'Save 90% electricity',origin:'caption',assessment:'unsupported_by_supplied_facts'},
+   {claim:'A 5 watt lamp',origin:'creative',assessment:'supported_by_supplied_facts'}
+ ]});
+ assert.equal(check.status,'failed');
+ assert.deepEqual(check.issues,['Save 90% electricity']);
+ assert.equal(check.model_observed_unsupported,1);
+ const ok=reviewRepairedCaption(repair,{claim_ledger:[{claim:'5 watts',origin:'caption',assessment:'supported_by_supplied_facts'}]});
+ assert.equal(ok.status,'source_bound');
+ assert.notEqual(reviewRepairedCaption(null,{claim_ledger:[]}).status,'source_bound');
+});
+test('caption re-audit conflicting claim must invalidate candidate export in Studio',()=>{
+ const s=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+ assert.match(s,/reviewRepairedCaption\(state\.captionRepair,out\.audit\)/);
+ assert.match(s,/state\.repairReview\.caption_review\?\.status==='failed'/);
+ assert.match(s,/state\.consistencyReview\.status='failed'/);
+ assert.match(s,/verified_caption_claim_regression/);
+ assert.doesNotMatch(s,/state\.repairReview\.caption_review=\{status:'source_bound',unchanged:false,issues:\[\]\}/);
 });

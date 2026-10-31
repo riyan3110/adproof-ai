@@ -23,6 +23,20 @@ export function repairCaption({product='',facts='',original='',selections=[]}={}
   product_identity:title,statements:parts,verification:{status:'passed',basis:'complete_source_lines_and_exact_rendered_values',
    unsupported_sentences:0},basis:'seller_supplied_facts_not_independently_verified'};
 }
+// Fail closed when the independent Muse Spark re-audit disagrees with the
+// source-bound caption. Previously the Studio overwrote these findings with
+// 'source_bound' and could therefore incorrectly approve a revised image.
+export function reviewRepairedCaption(repair,reaudit){
+ const invalid=(Array.isArray(reaudit?.claim_ledger)?reaudit.claim_ledger:[])
+  .filter(c=>c?.origin==='caption'&&
+   ['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c?.assessment));
+ const issues=[...new Set(invalid.map(c=>clean(c.claim)).filter(Boolean))].slice(0,8);
+ const sourceBound=repair?.status==='source_bound'&&repair?.verification?.status==='passed'
+  &&typeof repair?.final==='string'&&repair.final.trim().length>0;
+ return {status:issues.length?'failed':sourceBound?'source_bound':'unverified',
+  unchanged:false,issues,model_observed_unsupported:invalid.length,
+  scope:'Source-bound facts and only the model-selected caption claims; no exhaustive external truth certification.'};
+}
 export function validBox(b){return !!b&&['x','y','width','height'].every(k=>Number.isFinite(b[k]))&&b.x>=0&&b.y>=0&&b.width>0&&b.height>0&&b.x+b.width<=1&&b.y+b.height<=1;}
 const overlaps=(a,b)=>a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;
 export function normalizeLocalPlan(plan,audit,facts){
