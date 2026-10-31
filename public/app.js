@@ -34,7 +34,8 @@ let recoveryVersion=0;
 function setRecoveryStatus(message,warning=false){
  ui.recoveryBar.hidden=false;
  ui.recoveryBar.dataset.warning=String(warning);
- ui.recoveryText.textContent=message;
+ ui.recoveryText.dataset.message=message;
+ ui.recoveryText.textContent=t(message);
 }
 async function persistMilestone(){
  if(!state.original||!state.initialAudit||state.imported)return;
@@ -54,7 +55,7 @@ async function persistMilestone(){
 function forgetMilestone(){
  recoveryVersion++;
  recoveryQueue=recoveryQueue.catch(()=>{}).then(async()=>{
-  try{await removeRecovery();}catch{setRecoveryStatus('Unable to clear local browser recovery. Clear website storage in browser settings.',true);}
+  try{await removeRecovery();return true;}catch{setRecoveryStatus('Unable to clear local browser recovery. Clear website storage in browser settings.',true);return false;}
  });
  return recoveryQueue;
 }
@@ -70,7 +71,8 @@ async function recoverMilestone(){
 }
 ui.recoveryClear.addEventListener('click',async()=>{
  await forgetMilestone();
- if(ui.recoveryBar.dataset.warning!=='true')ui.recoveryBar.hidden=true;
+ ui.recoveryBar.hidden=true;
+ ui.recoveryBar.dataset.warning='false';
  notify('Local recovery backup cleared. The current open Studio session remains visible.');
 });
 
@@ -93,6 +95,7 @@ function applySelectedLanguage(){
  visualUI.sync();
  syncDeck();syncSticky();
  applyLanguage();
+ if(ui.recoveryText.dataset.message)ui.recoveryText.textContent=t(ui.recoveryText.dataset.message);
  renderSavedLanguageNotice();
 }
 const canAct=()=>!!state.original && !!ui.product.value.trim() && ui.facts.value.trim().length>=8 && state.configured;
