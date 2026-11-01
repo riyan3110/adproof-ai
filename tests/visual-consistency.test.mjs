@@ -116,6 +116,20 @@ test('custom print aspect uses authentic Muse edit and retains actual native res
  assert.deepEqual(out.data.repair_metadata.model_dimensions,{width:1240,height:1754});
  assert.equal(out.data.repair_metadata.exact_pixels_promised,false);
 });
+test('landscape relayout prompt separates product and copy rather than freezing the square reference',async()=>{
+ const mock=Buffer.from(image.split(',')[1],'base64');mock.writeUInt32BE(1600,16);mock.writeUInt32BE(900,20);
+ let sent;
+ const out=await invoke({...input,issues:[],mode:'reframe',target:{width:1600,height:900,relayout:true,source_framed:false}},async(url,opts)=>{
+  sent=JSON.parse(opts.body);return Response.json({data:[{b64_json:mock.toString('base64')}]});
+ });
+ assert.equal(out.status,200,JSON.stringify(out.data));
+ assert.match(sent.prompt,/Reposition the original product and the original text groups independently/);
+ assert.match(sent.prompt,/do not shrink the entire original canvas/);
+ assert.doesNotMatch(sent.prompt,/Keep all original content together in its original relative arrangement/);
+ assert.doesNotMatch(sent.prompt,/composition: ON/);
+ assert.match(sent.prompt,/typography: ON/);
+ assert.equal(out.data.repair_metadata.method,'reference_image_ai_relayout_no_mask');
+});
 test('format adaptation still blocks unsupported new copy but does not flag intentional canvas extension itself',()=>{
  const baseline={score:50,claim_ledger:[],text_inventory:inventory(['Lamp','5 W'])};
  const after={score:85,claim_ledger:[],consistency:observation()};

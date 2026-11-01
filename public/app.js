@@ -586,15 +586,18 @@ async function adaptFormat(image,target){
  state.formatHistory.push(attempt);
  setBusy(true,'AI format…');
  try {
+  const sourceDimensions=await dimensions(image);
   const extended=await extendFlatBackground(image,target);
-  const framed=extended?null:await prepareFormatReference(image,target);
-  const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(framed.image),mode:'reframe',target:{...target,source_framed:true,reference_rect:framed.source_rect},issues:[],claims:[]});
+  const relayout=!extended&&!target.print&&target.width>target.height&&Math.abs((sourceDimensions.width/sourceDimensions.height)/(target.width/target.height)-1)>.02;
+  const framed=extended||relayout?null:await prepareFormatReference(image,target);
+  const out=extended?{image:extended.image,model:'deterministic-background-extension',repair_metadata:{model_dimensions:extended.native_dimensions},provenance:null}:await api('/api/improve',{...payload(relayout?image:framed.image),mode:'reframe',target:{...target,source_framed:!relayout,relayout,reference_rect:framed?.source_rect},issues:[],claims:[]});
+  attempt.strategy=relayout?'independent_ai_relayout':'source_frame_extension';
   attempt.deterministic_extension=extended?{...extended,image:undefined}:null;
   attempt.image=out.provenance||null;attempt.model_native_dimensions=out.repair_metadata?.model_dimensions||null;
   state.runs.push({stage:'format_image',model:out.model,provenance:out.provenance||null});
   state.imageResponded=state.imageResponded||!extended;updateMetaStatus();
   await validateCandidateImage(out.image);
-  const frame=extended||await compositeReferenceFrame(image,out.image);
+  const frame=relayout?{image:out.image,method:'independent_ai_relayout',source_pixels_preserved:false,source_dimensions:sourceDimensions,native_dimensions:await dimensions(out.image)}:extended||await compositeReferenceFrame(image,out.image);
   out.image=frame.image;
   attempt.reference_frame={...frame,image:undefined};
   // Compare against the exact selected source, not a different prior revision.
@@ -605,7 +608,13 @@ async function adaptFormat(image,target){
   state.runs.push({stage:'format_audit',model:checked.model,tokens:checked.tokens,provenance:checked.provenance||null});
   state.sparkResponded=true;state.reauditResponded=true;updateMetaStatus();
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
-  const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings(),state.context?.facts||'');
+  const measurements=relayout?await comparePixels(image,out.image):null;
+  if(measurements){
+   const baselineRun=state.runs.filter(r=>r.stage===(image===state.revised?'reaudit':'initial')||r.stage==='archive_baseline').filter(r=>r.provenance?.response_id).at(-1);
+   measurements.requested_format={width:target.width,height:target.height};
+   measurements.independent_review={reference_sent:checked.original_reference_sent===true,provider:checked.provenance?.provider,stage:checked.provenance?.stage,source_response_id:baselineRun?.provenance?.response_id,response_id:checked.provenance?.response_id,input_sha256:checked.provenance?.input_sha256};
+  }
+  const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings(),state.context?.facts||'',measurements);
   const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage(),caption:state.context?.caption});
   attempt.repair_review=repairReview;
   if(frame.source_pixels_preserved&&review.status!=='failed'&&review.coverage==='model_reports_complete'&&repairReview.status!=='regression_suspected'){review.status='validated';review.auto_approved=true;review.pixel_preservation={...frame,image:undefined};}
@@ -614,7 +623,7 @@ async function adaptFormat(image,target){
   }
   attempt.status=review.status;attempt.review=review;
   workStep(getLanguage()==='id'?'Komposisi selesai diperiksa':'Composition comparison complete');
-  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.status!=='validated',reference_frame:{...frame,image:undefined},deterministic_extension:extended?{...extended,image:undefined}:null}};
+  return {image:out.image,review,metadata:{image:out.provenance||null,audit:checked.provenance||null,requested:target,model_native_dimensions:out.repair_metadata?.model_dimensions||null,model_score_observation:checked.audit.score,not_automatically_approved:review.auto_approved!==true,reference_frame:{...frame,image:undefined},deterministic_extension:extended?{...extended,image:undefined}:null}};
  } catch(error){attempt.status='error';attempt.error=String(error.message).slice(0,500);workStep(getLanguage()==='id'?'Komposisi belum selesai':'Composition incomplete');throw error;}
  finally {setBusy(false);}
 }
