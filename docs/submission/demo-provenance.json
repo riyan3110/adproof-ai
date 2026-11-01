@@ -1,0 +1,155 @@
+{
+  "title": "AdProof AI \u2014 Three-minute production walkthrough",
+  "duration_seconds": 180,
+  "disclosure": "Edited walkthrough of actual production results. Fictional QA inputs. Saved reports are identified; no mocked provider output.",
+  "format": "Edited narrated walkthrough using actual UI captures, downloaded outputs and a labelled JSON excerpt. Not continuous live footage.",
+  "sources": [
+    {
+      "scene": "01",
+      "path": "qa-artifacts/home-current-2026-11-01.jpg",
+      "duration_seconds": 15,
+      "sha256": "0953bc30616d5b0d13e3227eaa1479faee5e6ff922fb73c6484f1f9cb5518978"
+    },
+    {
+      "scene": "02",
+      "path": "qa-artifacts/demo-video/02-source-facts.jpg",
+      "duration_seconds": 15,
+      "sha256": "45d91228973f3ebab23a9d88e6ddedebb25bd556af416ba23983fce3d2d7e5dc"
+    },
+    {
+      "scene": "03",
+      "path": "qa-artifacts/demo-video/03-claim-xray.jpg",
+      "duration_seconds": 15,
+      "sha256": "c413c0763a31191ff6842cd27b482932ef7e8452fb2d391873bc03067e63eb29"
+    },
+    {
+      "scene": "04",
+      "path": "qa-artifacts/demo-video/04-proof-constellation.jpg",
+      "duration_seconds": 15,
+      "sha256": "d6f20d41ecd239c4f080ed9035dde995692e1c12e0f8e3524771d75d2b0deda1"
+    },
+    {
+      "scene": "05",
+      "path": "qa-artifacts/demo-video/05-repaired-creative.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "aad72081f00d47cd160f682573d51c0db2d7304666086862a5ddff955fe0d0ee"
+    },
+    {
+      "scene": "05",
+      "path": "evidence/live-2026-11-01/aruna/export-1080-verified.png",
+      "duration_seconds": 7.5,
+      "sha256": "9fb638539d14f23a133ae9e67fa4244f275ffd14920dd8ac04919317bd1ba520"
+    },
+    {
+      "scene": "06",
+      "path": "qa-artifacts/demo-video/06-recorded-verification.png",
+      "duration_seconds": 15,
+      "sha256": "178d851c61399cd5612adf4cc3ca771c15660385b12c36d01dfb4a427e776a9b"
+    },
+    {
+      "scene": "07",
+      "path": "qa-artifacts/demo-video/07-claim-dna.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "3630a5d42f691538e29c1307c160a1980f9d5627673eca0b56e48abf553739d3"
+    },
+    {
+      "scene": "07",
+      "path": "qa-artifacts/demo-video/07-compare-midpoint.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "5dab54e5edbf774a9748293cece9e78dfb7b6473fdf68e43d1501c05c3f5d75f"
+    },
+    {
+      "scene": "08",
+      "path": "qa-artifacts/demo-video/08-style-controls.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "a142cfce9cfdf1cdf1ce193b699e8a491ac767f21aabc5d9c34964bce10d3009"
+    },
+    {
+      "scene": "08",
+      "path": "qa-artifacts/demo-video/08-style-compare.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "aa9c019307cac41b59b12e7b563098caddda15b86592bb0bfa28e4ad3be696c6"
+    },
+    {
+      "scene": "09",
+      "path": "evidence/live-2026-11-01/aruna/production-export-success.jpg",
+      "duration_seconds": 15,
+      "sha256": "91239774d70e8dbfeef91133720db1d4a444c11a447702cc1b25ed4a7b3c26d4"
+    },
+    {
+      "scene": "10",
+      "path": "qa-artifacts/demo-video/10-downloaded-formats.png",
+      "duration_seconds": 15,
+      "sha256": "a56f48c9ddda15a15a2d989c88216c5022def4f5403f1b31835448a5fba91156"
+    },
+    {
+      "scene": "11",
+      "path": "qa-artifacts/demo-video/11-read-only-archive.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "cb8d6f50ec005d32c6727cdf9080d36a991c7fc696d2db3ef4ac70c013fd85da"
+    },
+    {
+      "scene": "11",
+      "path": "qa-artifacts/demo-video/11-archive-continuation.jpg",
+      "duration_seconds": 7.5,
+      "sha256": "3e3be52cd3420c8a96bcc646edd032bb4ff026bccbb7608db9e01e5fbede1780"
+    },
+    {
+      "scene": "12",
+      "path": "qa-artifacts/demo-video/12-public-example.jpg",
+      "duration_seconds": 15,
+      "sha256": "2dd43a020cd9b271e489f4086864281f7a1d1a14d95a8f892eedba9f15c14ab9"
+    }
+  ],
+  "narration": "Offline synthesized English narration (flite slt).",
+  "chapters": [
+    {
+      "start_seconds": 0,
+      "title": "A claim is more than a score"
+    },
+    {
+      "start_seconds": 15,
+      "title": "Start with facts"
+    },
+    {
+      "start_seconds": 30,
+      "title": "Inspect the source"
+    },
+    {
+      "start_seconds": 45,
+      "title": "Follow the evidence"
+    },
+    {
+      "start_seconds": 60,
+      "title": "Repair the creative"
+    },
+    {
+      "start_seconds": 75,
+      "title": "Verify independently"
+    },
+    {
+      "start_seconds": 90,
+      "title": "Track every observed change"
+    },
+    {
+      "start_seconds": 105,
+      "title": "Choose a style deliberately"
+    },
+    {
+      "start_seconds": 120,
+      "title": "Check the actual output"
+    },
+    {
+      "start_seconds": 135,
+      "title": "Adapt the composition"
+    },
+    {
+      "start_seconds": 150,
+      "title": "Save the evidence and continue"
+    },
+    {
+      "start_seconds": 165,
+      "title": "Inspect the proof"
+    }
+  ]
+}

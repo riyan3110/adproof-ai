@@ -2,11 +2,13 @@
 
 **Positioning:** Advertising Claim Verification & Repair Engine.
 **Experience:** Visual Proof Intelligence Studio — Audit → Repair → automatic Verify, with inspectable source evidence and claim lineage.
-**Current status — 1 November 2026: CORE PRODUCTION DEMO VERIFIED; FINAL SUBMISSION PACKAGE INCOMPLETE.** No final submission or acceptance receipt is recorded.
+**Current status — 1 November 2026: CORE DEMO AND VIDEO PREPARED; FINAL FONT RETEST AND SUBMISSION OUTSTANDING.** No final submission or acceptance receipt is recorded.
 
 The current core demo has authentic production Meta responses, visually inspected image downloads and ZIP round-trip evidence. ARUNA's saved revision passed a fresh independent Spark comparison; NORI Website downloads at 1600×900 and 1920×1080 and A4 at target 150 PPI are recorded in [the live evidence](../evidence/live-2026-11-01/README.md). This does not certify all model results or every style/lock/output combination.
 
-Remaining release work: finish the outstanding visual-style coverage, produce the final video from actual application behavior, verify the authenticated portal's fields/video specification and private evaluator access instructions, and submit with a confirmed receipt. Personal eligibility, registered track and acceptance of the event rules are not established by technical tests. Public event deadline rechecked 1 November: 4 November 21:00 ET, equivalent to 5 November 09:00 WIB.
+Remaining work: fresh post-fix Illustration typography verification, the participant's own two required survey answers and permission to let Meta/Cerebral Valley publish/promote the materials, then final submission and a confirmed receipt. The browser's secure demo-code prompt was automatically rejected for mislabelling code verification as sign-in; no credential was sent and no workaround was attempted. This blocks new live inference, not public inspection. Existing testing authorization remains valid.
+
+The actual authenticated portal was inspected and requires a **3-Minute Demo Video URL**. The exact 180-second MP4 and accessible player are included in this release, with an honest edited-recording disclosure. [Public ARUNA example](https://adproof-ai.vercel.app/app?example=aruna) restores genuine saved evidence and images without a code or new model request. [Prepared form text](submission/form-draft.json) contains no private access code. Deadline: **5 November 2026, 09:00 WIB** (4 November 21:00 ET), as shown in the event portal.
 
 See [compliance register](HACKATHON-COMPLIANCE.md) for source-linked requirements and [engine documentation](CLAIM-PROOF-ENGINE.md) for implementation limits.
 
@@ -26,13 +28,13 @@ Official Rules weights: Impact 30%, Meta AI Tooling 25%, Technical Depth & Execu
 | Claim X-Ray | Implemented as panel | Actual source image and observation; no fake coordinates |
 | Muse Code authorship | Verified genuine contribution | Existing issue #9/run and new issue #14/run; original commit retained, ChatGPT fixes separate |
 | Access | Private paid routes retained | Public homepage/Studio/docs; Judge Access; fail-closed production |
-| Tests / viewport / preview | 269 source tests passed; production desktop/mobile browser checks passed | Source upstream mocks and recorded replay are distinct from fresh Meta inference; release PRs record deployment checks |
+| Tests / viewport / preview | 276 source tests passed; prior production desktop/mobile browser checks passed | Source upstream mocks and recorded replay are distinct from fresh Meta inference; release PRs record deployment checks |
 | Authentic Meta core workflow | Verified production cases | ARUNA original/repair/independent Verify, real PNG and ZIP; NORI real image/format comparisons and Website/A4 downloads. See 1 November evidence; not universal quality certification |
-| All visual styles / combinations | Coverage incomplete | Twelve selectable options exist; not every option or lock/output combination has been individually live-tested |
-| Screenshots / participant-only instructions | Current production screenshots available; portal details unverified | Live evidence includes actual Studio/download screenshots. Full participant-only requirements still need checking |
+| Visual styles | Ten transformations + local Preserve passed on one fixture; Illustration retest outstanding | [Raw reports, images, manual failure and manifest](../evidence/styles-2026-11-01/README.md). Typography prompt fix PR77 deployed; not claimed live-verified |
+| Screenshots / participant portal | Actual portal inspected; draft prepared | Required fields, 3-minute video URL, two subjective surveys and material permission observed. No final submission |
 | Participant eligibility / chosen track / signed waiver | NEEDS VERIFICATION | Participant must confirm privately |
-| Final video | NOT RECORDED | Must use actual successful provider calls |
-| Final submission / X | NOT PERFORMED | Requires user's explicit instruction; no acceptance receipt |
+| Final video | Exact 180-second edited walkthrough prepared | [Player](https://adproof-ai.vercel.app/demo.html), real UI captures, actual outputs and labelled saved JSON excerpt; English narration/captions; [provenance](submission/demo-provenance.json) |
+| Final submission / X | NOT PERFORMED | Submission requested; final material permission and personal survey answers remain. No X post requested or published; no acceptance receipt |
 
 ## Studio demonstration navigation
 
@@ -42,18 +44,11 @@ Desktop-first composition and mobile flow have automated browser coverage, inclu
 
 For a new recorded live run, use a creative the owner may share, documented product facts and privately verified Judge Access. Fictional QA products must be clearly labelled; mocked/replayed provider responses must never be described as fresh inference. Existing user authorization covers project testing with Meta credits; do not require repeated permission for the same authorized scope or expose credentials in the recording.
 
-## Authentic demo storyboard
+## Completed demonstration package
 
-Proposed **three-minute editorial cut**, not a verified official video duration. Confirm the actual portal's format/limit before the final cut. Distinguish fictional input material from genuine Meta execution; do not present mocks or replay as fresh calls.
+[Three-minute player](https://adproof-ai.vercel.app/demo.html) · [script](submission/demo-script.json) · [source/provenance manifest](submission/demo-provenance.json).
 
-1. **0:00–0:20 — Problem.** Use one rights-cleared real product creative with an existing questionable claim. Show the actual product facts and explain their provenance. Avoid invented product benefits, prices or certifications.
-2. **0:20–0:50 — Detect.** Enter Judge Access privately before recording. Upload the real image and run Muse Spark. Show the actual returned claim and source; preserve uncertainty if no claim was readable.
-3. **0:50–1:20 — Verify.** Select that claim in Proof Constellation, inspect the exact fact excerpt, assessment and repair advice. Say explicitly that these are seller-supplied facts, not independently verified evidence.
-4. **1:20–1:50 — Repair.** Run Muse Image on the original asset with claim-specific instructions. Inspect its actual output and use the before/after slider. If waiting is edited, label the time cut.
-5. **1:50–2:30 — Prove.** Run a fresh Spark audit on the revised image. Open Claim DNA: retained, possible change, new and missing observations. Never call a missing claim automatically repaired. Keep a problematic result visible if the repair failed.
-6. **2:30–3:00 — Inspect and export.** Select a trajectory to show X-Ray source inspection; export the JSON lineage/graph and briefly state limits. Close with public app and source URLs, not secrets.
-
-Record only an authentic run. If the API fails, repair the fault and run again within the authorized budget; do not replace it with mock playback. Save the genuine report securely and review privacy before publication. A privacy-safe recording/video URL is still outstanding.
+The H.264/AAC file is exactly 180 seconds at 1920×1080. It uses actual production screenshots, actual PNG downloads and a clearly labelled excerpt from the genuine ARUNA comparison JSON. Narration explains the archive reuse; it does not claim continuous footage of a fresh request. Chapter 8 uses the inspected Cinematic result, not the failed Illustration. Import resets approval and remains read-only. Source tests use upstream mocks; the film's saved outputs came from real production calls.
 
 ## Submission preparation
 
@@ -63,7 +58,7 @@ Record only an authentic run. If the API fails, repair the fault and run again w
 - Repository: https://github.com/riyan3110/adproof-ai
 - Draft one-line description: “AdProof AI traces advertising claims from detection through evidence inspection, image repair and re-audit, making uncertainty and every observed change inspectable with Meta AI.”
 - Technical evidence: link Muse Code issue/run/commit, source modules, regression results and genuine provider report/video. Do not claim that every file was authored by Muse.
-- Confirm authenticated form's description fields, video duration, URLs, source/public license requirements and evaluator access instructions. Do not infer them from application fields.
+- Authenticated form fields and three-minute video URL requirement were inspected. Draft text is prepared; two personal opinions and the permission checkbox remain for the participant. The public recorded example provides inspection without exposing paid access.
 - Share private judge code only through an approved confidential evaluator channel. It must never appear in public GitHub, X, screenshots or video.
 - Bonus Most Viral is discretionary in Official Rules; confirm the current specific social-post rules. No X post was made.
 

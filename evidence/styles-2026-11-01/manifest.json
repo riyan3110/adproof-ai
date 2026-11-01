@@ -1,0 +1,190 @@
+{
+  "date": "2026-11-01",
+  "scope": "One fictional Nori source and one production trial per style, except a documented Minimalist retry after a system fix. Does not certify all lock/source/format combinations.",
+  "results": [
+    {
+      "style": "photorealistic",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "photorealistic.json",
+      "image": "photorealistic.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "f253f2e62da4e80d29bd9e865331784fa8bcfe5562cd5ff55647fd744f018a69",
+      "downloaded_png_sha256": "f356cb05f3fd835777d7e8699479c4e11a106c3823dadd84cf8788d7ebbda1b3",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196f2-ffb5-7789-8c29-74f603aea4d0"
+    },
+    {
+      "style": "natural",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "natural.json",
+      "image": "natural.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "499a2e392fbe509464b2a7e0d1990feb369a239b7137bb8da6554180f350c0bc",
+      "downloaded_png_sha256": "2f767c2360f8313dc91bc1353f0d04b1937d4e306454c62ec8058daf0dcedafa",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196f4-955e-7602-a66b-c276f33c9781"
+    },
+    {
+      "style": "studio",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "studio.json",
+      "image": "studio.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "1a3abdc6939c12c0b0a9cafc9f0de03c2aa49cb045795e36d0122557516bdc12",
+      "downloaded_png_sha256": "96621af1bbbce2850a023c95c69715984df72a537e91de74b7a3bd011a5e2174",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196f6-15a7-7179-b71f-4d7115e39c81"
+    },
+    {
+      "style": "lifestyle",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "lifestyle.json",
+      "image": "lifestyle.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "81805d53bcbf079c8c459aa0d8e1fde6f1b9cab8f8893d49ff6b88b483c11b5f",
+      "downloaded_png_sha256": "3c6ea15a7864be4dfa75ad99af3b070ff9dc0170032d3319a2653c8eaa613701",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196f8-6399-7317-a9ac-49df0f58485e"
+    },
+    {
+      "style": "cinematic",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "cinematic.json",
+      "image": "cinematic.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "67c9a5260ef3168b300664abf6ac1647633d1280eb606051439616ce0ca2f80a",
+      "downloaded_png_sha256": "1337f091183d5732c3b9679c51e462ff02c1c45b44152ccae2347f36054ca90a",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196f9-aebd-71be-9242-bc570a7a921b"
+    },
+    {
+      "style": "luxury",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "luxury.json",
+      "image": "luxury.png",
+      "image_kind": "actual downloaded 1080 PNG; native ZIP not in stable artifact folder",
+      "image_sha256": "f717b7cd685bf5200bec56e38823fd54d12fa8c33d54deaace0a6bb5d06e6d38",
+      "downloaded_png_sha256": "f717b7cd685bf5200bec56e38823fd54d12fa8c33d54deaace0a6bb5d06e6d38",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a196fa-f594-717d-9e82-af78c22c009d"
+    },
+    {
+      "style": "minimalist",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "minimalist.json",
+      "image": "minimalist.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "852703d1a3d076ed430adfcbe73463dd12538773751d4c90546a002cb666044a",
+      "downloaded_png_sha256": "ae25261d8ccc6e24036fd430ea5ce416bd4c49ae023cfe0d0a5a4e70ed0081a3",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a19707-9e3d-7461-aecb-18ccf5e59d77"
+    },
+    {
+      "style": "editorial",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "editorial.json",
+      "image": "editorial.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "4864610b9a54c29bda3aa016dd1c6883ddacaca94fb7b21b130bcc0a32376121",
+      "downloaded_png_sha256": "6b7d15611a0aa29def2eaa8f6f3baf77cc0876aa52165efa5907903bbcf5ff63",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a19709-04b7-726d-92cf-151125787084"
+    },
+    {
+      "style": "vibrant",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "vibrant.json",
+      "image": "vibrant.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "ead8ca5ece3790dae578c110974608a21540b680c6bca71939e04665dd3e6e7e",
+      "downloaded_png_sha256": "e5c6143df4bd8c1c63d8a5cad44bc1e62f5d7ad1cf3a467b8559d654c0cbc576",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a1970e-73cc-748b-bfe9-9135d4c63ca7"
+    },
+    {
+      "style": "cgi",
+      "manual_result": "passed_inspected_fixture",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "cgi.json",
+      "image": "cgi.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "0a0afadb4e15c1006fc2ef5d006537d5757e511d6aab2b9881a361a46dd52eb1",
+      "downloaded_png_sha256": "58aa86cbe1312091a05fefcd4c76a1572a15081ed57493456d3eca04186a05c4",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a1970f-92b9-7488-b98c-d9eaa851de58"
+    },
+    {
+      "style": "illustration",
+      "manual_result": "failed_typography_font_changed",
+      "model_verification": "validated",
+      "model_risks": [],
+      "report": "illustration.json",
+      "image": "illustration.webp",
+      "image_kind": "native Muse image",
+      "image_sha256": "f2d15e52d025a57b89e1e5740b33bb7b7d8d6a8eb1dc214607642ab59f50bdb2",
+      "downloaded_png_sha256": "d4471c5e93cf937699ec33467ecf40c4de1f0618e557380a8efd24856ac7be82",
+      "actual_png_dimensions": {
+        "width": 1080,
+        "height": 1080
+      },
+      "independent_response_id": "chatcmpl-01a19711-8f95-7511-9e0e-8a20724a3b74"
+    }
+  ],
+  "preserve_original": {
+    "result": "passed_local_only",
+    "no_new_model_request": true,
+    "actual_png_sha256": "d5045020a51e4ba2b1c754d5b3e2acdf6060695d6b12a8e1d3dea007f3ec4326"
+  },
+  "outstanding": {
+    "illustration": "Manual inspection found sans-serif title changed to serif despite Typography lock and a false-positive model assessment. PR77 strengthens generation and verification instructions; source tests and deployed smoke passed. Fresh post-fix live verification remains blocked by browser secure-form auto-review, not by lack of user testing authorization."
+  }
+}

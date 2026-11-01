@@ -1,0 +1,91 @@
+{
+  "title": "AdProof AI — Three-minute production walkthrough",
+  "duration_seconds": 180,
+  "disclosure": "Edited walkthrough of actual production results. Fictional QA inputs. Saved reports are identified; no mocked provider output.",
+  "scenes": [
+    {
+      "id": "01",
+      "seconds": 15,
+      "title": "A claim is more than a score",
+      "caption": "Audit → Repair → independent Verify",
+      "narration": "AdProof AI helps small brands review advertising claims, repair a creative, and inspect what changed. Meta models support a traceable evidence workflow. A higher score alone never approves an edit."
+    },
+    {
+      "id": "02",
+      "seconds": 15,
+      "title": "Start with facts",
+      "caption": "Fictional QA product · real production model results",
+      "narration": "This fictional bottle has supplied facts: stainless steel, six hundred milliliters, and a screw cap. No fact establishes twenty four hours of cooling. The recording shows real production model results."
+    },
+    {
+      "id": "03",
+      "seconds": 15,
+      "title": "Inspect the source",
+      "caption": "Muse Spark · readable claims and recorded evidence",
+      "narration": "Muse Spark reads the creative and compares concrete claims with supplied facts. Claim X Ray keeps each observation beside its actual source image, without inventing location boxes or treating the advertisement as proof."
+    },
+    {
+      "id": "04",
+      "seconds": 15,
+      "title": "Follow the evidence",
+      "caption": "Proof Constellation · source-linked observations",
+      "narration": "Proof Constellation connects a claim with its recorded fact quotation, assessment, and repair advice. A quotation proves wording was supplied, not independent product truth. Unlinked findings and uncertainty remain visible."
+    },
+    {
+      "id": "05",
+      "seconds": 15,
+      "title": "Repair the creative",
+      "caption": "Source-bound corrections · original and revision retained",
+      "narration": "Repair addresses evidenced problems while protecting correct copy and product details. Safe text areas can use source pixels and OCR; complex changes use Muse Image. This recorded result removes unsupported duration and related wording."
+    },
+    {
+      "id": "06",
+      "seconds": 15,
+      "title": "Verify independently",
+      "caption": "Recorded independent Meta comparison · source JSON",
+      "narration": "Verify compares the revision with its original through a separate Muse Spark request. It checks text, new claims, product identity, branding, and active locks. Failed comparisons keep the revised export blocked."
+    },
+    {
+      "id": "07",
+      "seconds": 15,
+      "title": "Track every observed change",
+      "caption": "Claim DNA · inspect retained, changed and missing observations",
+      "narration": "Claim DNA relates model observations across the audits. Missing from a short claim list does not prove removal. The comparison slider lets reviewers inspect the actual before and after pixels alongside the evidence."
+    },
+    {
+      "id": "08",
+      "seconds": 15,
+      "title": "Choose a style deliberately",
+      "caption": "12 options · 7 locks · explicit model action",
+      "narration": "Twelve style options and seven locks guide deliberate edits. Selecting a preset makes no model call. Apply Style edits with Muse Image, then verifies independently. Core product, composition, typography and branding locks remain active."
+    },
+    {
+      "id": "09",
+      "seconds": 15,
+      "title": "Check the actual output",
+      "caption": "Native pixels measured · interpolation adds no detail",
+      "narration": "Choose Social Media, Website, or Print. Check Output renders locally and reports actual PNG dimensions, without hidden generation retries. Interpolation requires explicit permission and adds no native detail."
+    },
+    {
+      "id": "10",
+      "seconds": 15,
+      "title": "Adapt the composition",
+      "caption": "Website and print · independent format comparison",
+      "narration": "Composition adaptation creates a new aspect ratio and compares it independently. Recorded Website downloads are sixteen hundred by nine hundred, and nineteen twenty by ten eighty. Print options report physical size and density."
+    },
+    {
+      "id": "11",
+      "seconds": 15,
+      "title": "Save the evidence and continue",
+      "caption": "JSON reports · image ZIP archives · no model call on import",
+      "narration": "JSON saves observations and provenance. ZIP also keeps available images and history. Import makes no model call. Explicitly rechecking a saved pair uses one audit request, without generating the image again."
+    },
+    {
+      "id": "12",
+      "seconds": 15,
+      "title": "Inspect the proof",
+      "caption": "adproof-ai.vercel.app · public source and evidence",
+      "narration": "AdProof AI brings the creative, supplied facts, model evidence, revisions, and export limits into one inspectable workspace. Real production evidence and source code are public. Human review remains essential. Follow the proof."
+    }
+  ]
+}

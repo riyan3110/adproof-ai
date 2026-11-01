@@ -2,7 +2,11 @@
 
 **Advertising Claim Verification & Repair Engine.** Audit → Repair → automatic Verify, with source inspection, claim lineage and checked image export. Built for Meta Global AI Developer Hackathon 2026.
 
-**Status — 1 November 2026:** the core production demo has authentic Meta results and actual downloaded PNG/ZIP evidence. The final submission package is still incomplete: no final demo video or acceptance receipt is recorded, authenticated portal requirements remain unverified, and not every visual style/output combination has been individually live-tested. See [current readiness](docs/HACKATHON-READINESS.md) and [real production evidence](evidence/live-2026-11-01/README.md).
+**Status — 1 November 2026:** authentic core production results, a three-minute narrated demo, public recorded judge example and a prepared submission draft are available. **No competition submission or acceptance receipt is recorded.** Ten transformation styles and local Preserve Original passed the inspected Nori fixture. Illustration exposed a font-lock false positive; the deployed prompt fix still needs fresh live verification. See [current readiness](docs/HACKATHON-READINESS.md), [core evidence](evidence/live-2026-11-01/README.md) and [style matrix](evidence/styles-2026-11-01/README.md).
+
+- [Watch the three-minute production walkthrough](https://adproof-ai.vercel.app/demo.html)
+- [Open the genuine recorded ARUNA example without a code](https://adproof-ai.vercel.app/app?example=aruna)
+- [Open the production Studio](https://adproof-ai.vercel.app/app) · [Documentation](https://adproof-ai.vercel.app/docs)
 
 This repository contains real application code. It is not a static mockup and does not simulate AI analysis. Calls only work when a valid Meta Model API key is configured on the server.
 
@@ -81,7 +85,7 @@ Audit images are resized by the browser and sent as base64 to the server and Met
 - A configured key or accepted demo code alone is not proof of model execution. Indicators record actual model responses separately. Code tests use mocked upstream responses; browser replay, genuine production calls and visual review are identified separately in the evidence.
 - Production: https://adproof-ai.vercel.app/ . The 1 November release passed source tests and public browser checks at desktop/mobile widths. Paid routes reject requests without accepted private access.
 - Genuine production results include ARUNA claim repair with a fresh independent comparison and actual 1080×1080 PNG/ZIP downloads; NORI Website 1600×900 and 1920×1080 exports without interpolation; and A4 output at target 150 PPI. See [response provenance, failures and files](evidence/live-2026-11-01/README.md). Application-recorded provenance is not a signed provider billing receipt, and these cases do not establish universal model accuracy.
-- Not every one of the 12 visual style options or every style/lock/output combination has been live-tested individually. Failed or uncertain results are retained for review, rather than represented as successful output.
+- The dated style matrix records ten visually accepted transformations, local Preserve Original, and one Illustration typography failure with a deployed prompt fix awaiting fresh verification. This covers one fixture, not every source/lock/output combination. Raw false-positive model output remains visible.
 - Public browsing does not run paid models. A public four-step guide is displayed without fictional audit results.
 
 ## Official integration references
@@ -92,7 +96,7 @@ Audit images are resized by the browser and sent as base64 to the server and Met
 
 ## Hackathon compliance
 
-Created October 27, 2026 during the hackathon window. This is a **new and separate project**; no AI Ads Lab repository has been changed. Public repository: https://github.com/riyan3110/adproof-ai . A real demonstration video and final hackathon submission are still required.
+Created October 27, 2026 during the hackathon window. This is a **new and separate project**; no AI Ads Lab repository has been changed. Public repository: https://github.com/riyan3110/adproof-ai . The three-minute video and form draft are prepared. Final required personal survey answers, promotional-material permission, submission and receipt remain outstanding.
 
 ## Evidence and readiness
 
