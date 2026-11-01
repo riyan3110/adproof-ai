@@ -236,3 +236,9 @@
 .local-recovery-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 18px;border:1px solid #496753;background:#1a2a21;color:#c5e6c3;padding:12px 14px;margin:12px 0;border-radius:10px;font-size:12px;line-height:1.5}
 .local-recovery-bar .text-button{color:var(--lime);font-size:12px;min-height:38px;text-decoration:underline}
 .local-recovery-bar[data-warning=true]{border-color:#977a4e;color:#ffd7a2}
+/* Documentation output presets remain readable on narrow screens. */
+.docs-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:20px 0;color:#a9b3b6;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+.docs-table caption{text-align:left;margin-bottom:10px;color:#a9b3b6}
+.docs-table th,.docs-table td{text-align:left;vertical-align:top;padding:12px 10px;border-bottom:1px solid #303a3e}
+.docs-table th{color:var(--cream,#eef0dc)}
+.docs-table th:first-child{width:28%}
