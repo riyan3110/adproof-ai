@@ -19,7 +19,7 @@ function liveAdapter(api){
  const state={formatHistory:[],runs:[],configured:true,initialAudit:{score:70},context:{},consistency:{}};
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  const start=source.indexOf('async function adaptFormat('),end=source.indexOf('\nasync function performImprove',start);
- const context=vm.createContext({state,api,workStep:()=>{},prepareFormatReference:async()=>({image:'framed-guide',source_rect:{x:0,y:.2,width:1,height:.6}}),extendFlatBackground:async()=>null,compositeReferenceFrame:async()=>({image:'result',source_pixels_preserved:true}),payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
+ const context=vm.createContext({state,api,workStep:()=>{},dimensions:async()=>({width:1600,height:1600}),comparePixels:async()=>({original:{width:1600,height:1600},revised:{width:1600,height:900},aspect_delta:.4375,changed_sample_fraction:.4}),prepareFormatReference:async()=>({image:'framed-guide',source_rect:{x:0,y:.2,width:1,height:.6}}),extendFlatBackground:async()=>null,compositeReferenceFrame:async()=>({image:'result',source_pixels_preserved:true}),payload:image=>({image}),validateCandidateImage:async()=>{},compactOriginalReference:async x=>x,
   getLanguage:()=> 'en',setBusy:v=>state.busy=v,updateMetaStatus:()=>{},inspectFormatCandidate:()=>({status:'failed',risks:[{code:'lock_typography',evidence:'Missing required text'}]}),reviewRepairCandidate:()=>({status:'review_required'}),visualUI:{readSettings:()=>({})}});
  return {state,run:vm.runInContext(source.slice(start,end)+';adaptFormat',context)};
 }
@@ -37,6 +37,20 @@ test('complex print background follows the same Muse image and independent verif
  assert.equal(requests.length,2);assert.equal(requests[0].path,'/api/improve');assert.equal(requests[0].body.target.print,true);assert.equal(requests[0].body.image,'framed-guide');assert.equal(requests[0].body.target.source_framed,true);
  assert.equal(requests[1].body.referenceImage,'source');assert.equal(state.formatHistory[0].status,'failed');
  assert.equal(result.review.status,'failed','print keeps all consistency findings');assert.equal(state.busy,false);
+});
+test('landscape adaptation sends the original to Muse and never overlays a shrunken square',async()=>{
+ const requests=[];
+ const {state,run}=liveAdapter(async(path,body)=>{requests.push({path,body});return path==='/api/improve'?{image:'landscape-artwork',model:'muse-image-1.0'}:{audit:{score:70},original_reference_sent:true};});
+ const result=await run('source',{width:1600,height:900});
+ assert.equal(requests.length,2);
+ assert.equal(requests[0].body.image,'source');
+ assert.equal(requests[0].body.target.relayout,true);
+ assert.equal(requests[0].body.target.source_framed,false);
+ assert.equal(result.image,'landscape-artwork','source overlay would undo the requested layout');
+ assert.equal(state.formatHistory[0].reference_frame.source_pixels_preserved,false);
+ assert.equal(state.formatHistory[0].strategy,'independent_ai_relayout');
+ assert.equal(state.reauditResponded,true);
+ assert.equal(state.formatHistory[0].audit_report.score,70);
 });
 test('failed format review and both paid responses survive JSON export, with secrets stripped',async()=>{
  let calls=0;

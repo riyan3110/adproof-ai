@@ -174,10 +174,18 @@ export function inspectConsistency(initial,revised,settings,measurements=null,fa
  * regressions. All product/claim/typography/brand locks remain conservative.
  * A model-only inspection never authorizes automatic approval.
  */
-export function inspectFormatCandidate(baseline,adapted,settings,facts=''){
+export function inspectFormatCandidate(baseline,adapted,settings,facts='',measurements=null){
  const normalized=normalizeSettings(settings);
  const adaptedLocks={...normalized.locks,background:false,composition:false};
- const check=inspectConsistency(baseline,adapted,{...normalized,locks:adaptedLocks},null,facts);
+ // A format change is measured against its requested ratio, while retaining
+ // the original/source ratio delta as evidence. Other pixel/lock checks stay.
+ let formatMeasurements=null;
+ const target=measurements?.requested_format;
+ if(target&&Number.isFinite(target.width)&&Number.isFinite(target.height)&&target.width>0&&target.height>0&&measurements?.revised?.width>0&&measurements?.revised?.height>0){
+  formatMeasurements={...measurements,source_aspect_delta:measurements.aspect_delta,
+   aspect_delta:Math.abs((measurements.revised.width/measurements.revised.height)/(target.width/target.height)-1),aspect_comparison:'requested_format'};
+ }
+ const check=inspectConsistency(baseline,adapted,{...normalized,locks:adaptedLocks},formatMeasurements,facts);
  const observedIssues=(Array.isArray(adapted?.issues)?adapted.issues:[])
   .filter(x=>['Visual','Readability','Consistency'].includes(x?.category)&&['high','medium'].includes(x?.severity));
  if(observedIssues.length){
