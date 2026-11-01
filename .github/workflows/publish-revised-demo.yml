@@ -1,0 +1,54 @@
+name: Publish revised judge demo
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-revised-demo.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Tools
+        run: |
+          python -m pip install --quiet Pillow
+          ffmpeg -version | head -n 1
+      - name: Download and verify the original 3-minute demo
+        run: |
+          curl --fail --location --silent --show-error --retry 3 https://adproof-ai.vercel.app/demo/adproof-ai-demo.mp4 -o /tmp/adproof-source.mp4
+          echo "1a6f77ebec377017d8a05f029343590156d81b7aa2d6903c6352ea9c79e70f33  /tmp/adproof-source.mp4" | sha256sum --check
+      - name: Create a clean, truthfully disclosed replay
+        run: |
+          python scripts/publish-clean-demo.py --source /tmp/adproof-source.mp4 --output public/demo/adproof-ai-demo-v2.mp4
+          duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 public/demo/adproof-ai-demo-v2.mp4)"
+          python -c "import sys; value=float(sys.argv[1]); assert abs(value-180)<0.15" "$duration"
+      - name: Update player to the revised recording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html=Path('public/demo.html')
+          text=html.read_text()
+          old='/demo/adproof-ai-demo.mp4'
+          assert text.count(old)==3, f'Unexpected original video references: {text.count(old)}'
+          text=text.replace(old,'/demo/adproof-ai-demo-v2.mp4')
+          text=text.replace('label="English" default>', 'label="English">')
+          html.write_text(text)
+          css=Path('public/demo.css')
+          content=css.read_text()
+          if 'video{width:100%;aspect-ratio:16/9;' in content:
+              content=content.replace('video{width:100%;aspect-ratio:16/9;', 'video{width:100%;max-width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;')
+          css.write_text(content)
+          PY
+      - name: Publish updated video, without changing application features
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/demo/adproof-ai-demo-v2.mp4 public/demo.html public/demo.css
+          git diff --cached --stat
+          git commit -m "Publish cleaned, truthfully disclosed Meta judge demo and mobile player defaults"
+          git push origin HEAD:main
