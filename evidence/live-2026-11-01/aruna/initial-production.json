@@ -1,0 +1,730 @@
+{
+  "app": "AdProof AI",
+  "date": "2026-11-01T07:06:49.186Z",
+  "report_language": "id",
+  "product": "ARUNA Drinkware — produk uji fiktif",
+  "context": {
+    "product": "ARUNA Drinkware — produk uji fiktif",
+    "facts": "Produk uji fiktif: ARUNA Drinkware.\nBahan: stainless steel.\nKapasitas: 600 mL.\nJenis tutup: tutup ulir.\nTidak tersedia data pengujian ketahanan suhu atau bukti bahwa minuman tetap dingin selama 24 jam.",
+    "caption": ""
+  },
+  "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+  "caption_repair": {
+    "version": "source-bound-1",
+    "original": "",
+    "final": "ARUNA Drinkware — produk uji fiktif. Produk uji fiktif: ARUNA Drinkware.. Bahan: stainless steel.. Kapasitas: 600 mL.. Jenis tutup: tutup ulir.",
+    "status": "source_bound",
+    "method": "meta_selected_verbatim_facts",
+    "product_identity": "ARUNA Drinkware — produk uji fiktif",
+    "statements": [
+      {
+        "text": "Produk uji fiktif: ARUNA Drinkware.",
+        "fact_quote": "Produk uji fiktif: ARUNA Drinkware."
+      },
+      {
+        "text": "Bahan: stainless steel.",
+        "fact_quote": "Bahan: stainless steel."
+      },
+      {
+        "text": "Kapasitas: 600 mL.",
+        "fact_quote": "Kapasitas: 600 mL."
+      },
+      {
+        "text": "Jenis tutup: tutup ulir.",
+        "fact_quote": "Jenis tutup: tutup ulir."
+      }
+    ],
+    "verification": {
+      "status": "passed",
+      "basis": "complete_source_lines_and_exact_rendered_values",
+      "unsupported_sentences": 0
+    },
+    "basis": "seller_supplied_facts_not_independently_verified"
+  },
+  "runs": [
+    {
+      "stage": "initial",
+      "model": "muse-spark-1.3",
+      "tokens": 11605,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a195ed-7303-754b-a33c-67d41b85cd92",
+        "stage": "audit",
+        "completed_at": "2026-11-01T07:05:29.156Z",
+        "input_sha256": "7c2940ceac3653d6894ced3c81019ff8d3dd1a68647d57cde6a08d0865be8746",
+        "report_language": "id"
+      }
+    }
+  ],
+  "auto_correction": null,
+  "repair_review": null,
+  "claim_evolution": {
+    "basis": "seller_supplied_facts_not_independently_verified",
+    "entries": [
+      {
+        "before": {
+          "id": "claim-1",
+          "claim": "DINGIN HINGGA 24 JAM",
+          "origin": "creative",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Fakta pasokan menyatakan tidak ada data pengujian ketahanan suhu atau bukti dingin 24 jam, bahan stainless steel saja tidak membuktikan durasi.",
+          "recommended_action": "Hapus klaim durasi atau ganti dengan fakta yang didukung."
+        },
+        "after": null,
+        "before_index": 0,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-2",
+          "claim": "Lebih lama.",
+          "origin": "creative",
+          "assessment": "unsupported_by_supplied_facts",
+          "fact_quote": "",
+          "reason": "Dalam konteks wadah insulasi bersama klaim dingin 24 jam, frasa ini melanjutkan janji durasi termal yang tidak didukung fakta.",
+          "recommended_action": "Hapus atau ubah menjadi ungkapan non-durasi tanpa janji lama dingin."
+        },
+        "after": null,
+        "before_index": 1,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-3",
+          "claim": "Botol stainless steel",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Bahan: stainless steel.",
+          "reason": "Materi botol sesuai dengan fakta bahan yang diberikan.",
+          "recommended_action": "Pertahankan."
+        },
+        "after": null,
+        "before_index": 2,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-4",
+          "claim": "600 mL",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Kapasitas: 600 mL.",
+          "reason": "Angka kapasitas sesuai dengan fakta pasokan.",
+          "recommended_action": "Pertahankan."
+        },
+        "after": null,
+        "before_index": 3,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-5",
+          "claim": "Tutup ulir",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Jenis tutup: tutup ulir.",
+          "reason": "Jenis tutup sesuai dengan fakta pasokan.",
+          "recommended_action": "Pertahankan."
+        },
+        "after": null,
+        "before_index": 4,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-6",
+          "claim": "ARUNA DRINKWARE",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Produk uji fiktif: ARUNA Drinkware.",
+          "reason": "Nama produk sesuai dengan fakta pasokan.",
+          "recommended_action": "Pertahankan."
+        },
+        "after": null,
+        "before_index": 5,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      }
+    ],
+    "summary": {
+      "pending": 6
+    },
+    "complete": false
+  },
+  "proof_constellation": {
+    "initial": {
+      "nodes": [
+        {
+          "id": "fact-source",
+          "type": "fact_source",
+          "label": "Seller-supplied facts",
+          "detail": "Produk uji fiktif: ARUNA Drinkware.\nBahan: stainless steel.\nKapasitas: 600 mL.\nJenis tutup: tutup ulir.\nTidak tersedia data pengujian ketahanan suhu atau bukti bahwa minuman tetap dingin selama 24 jam.",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "id": "claim-1",
+          "type": "claim",
+          "label": "DINGIN HINGGA 24 JAM",
+          "detail": "[creative] DINGIN HINGGA 24 JAM",
+          "source": "claim_ledger[0].claim"
+        },
+        {
+          "id": "claim-1-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Fakta pasokan menyatakan tidak ada data pengujian ketahanan suhu atau bukti dingin 24 jam, bahan stainless steel saja tidak membuktikan durasi.",
+          "source": "claim_ledger[0].assessment"
+        },
+        {
+          "id": "claim-1-action",
+          "type": "action",
+          "label": "Hapus klaim durasi atau ganti dengan fakta yang didukung.",
+          "detail": "Hapus klaim durasi atau ganti dengan fakta yang didukung.",
+          "source": "claim_ledger[0].recommended_action"
+        },
+        {
+          "id": "claim-2",
+          "type": "claim",
+          "label": "Lebih lama.",
+          "detail": "[creative] Lebih lama.",
+          "source": "claim_ledger[1].claim"
+        },
+        {
+          "id": "claim-2-status",
+          "type": "status",
+          "label": "unsupported_by_supplied_facts",
+          "detail": "Dalam konteks wadah insulasi bersama klaim dingin 24 jam, frasa ini melanjutkan janji durasi termal yang tidak didukung fakta.",
+          "source": "claim_ledger[1].assessment"
+        },
+        {
+          "id": "claim-2-action",
+          "type": "action",
+          "label": "Hapus atau ubah menjadi ungkapan non-durasi tanpa janji lama dingin.",
+          "detail": "Hapus atau ubah menjadi ungkapan non-durasi tanpa janji lama dingin.",
+          "source": "claim_ledger[1].recommended_action"
+        },
+        {
+          "id": "claim-3",
+          "type": "claim",
+          "label": "Botol stainless steel",
+          "detail": "[creative] Botol stainless steel",
+          "source": "claim_ledger[2].claim"
+        },
+        {
+          "id": "claim-3-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Materi botol sesuai dengan fakta bahan yang diberikan.",
+          "source": "claim_ledger[2].assessment"
+        },
+        {
+          "id": "claim-3-action",
+          "type": "action",
+          "label": "Pertahankan.",
+          "detail": "Pertahankan.",
+          "source": "claim_ledger[2].recommended_action"
+        },
+        {
+          "id": "claim-3-quote",
+          "type": "quote",
+          "label": "Bahan: stainless steel.",
+          "detail": "Bahan: stainless steel.",
+          "source": "claim_ledger[2].fact_quote"
+        },
+        {
+          "id": "claim-4",
+          "type": "claim",
+          "label": "600 mL",
+          "detail": "[creative] 600 mL",
+          "source": "claim_ledger[3].claim"
+        },
+        {
+          "id": "claim-4-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Angka kapasitas sesuai dengan fakta pasokan.",
+          "source": "claim_ledger[3].assessment"
+        },
+        {
+          "id": "claim-4-action",
+          "type": "action",
+          "label": "Pertahankan.",
+          "detail": "Pertahankan.",
+          "source": "claim_ledger[3].recommended_action"
+        },
+        {
+          "id": "claim-4-quote",
+          "type": "quote",
+          "label": "Kapasitas: 600 mL.",
+          "detail": "Kapasitas: 600 mL.",
+          "source": "claim_ledger[3].fact_quote"
+        },
+        {
+          "id": "claim-5",
+          "type": "claim",
+          "label": "Tutup ulir",
+          "detail": "[creative] Tutup ulir",
+          "source": "claim_ledger[4].claim"
+        },
+        {
+          "id": "claim-5-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Jenis tutup sesuai dengan fakta pasokan.",
+          "source": "claim_ledger[4].assessment"
+        },
+        {
+          "id": "claim-5-action",
+          "type": "action",
+          "label": "Pertahankan.",
+          "detail": "Pertahankan.",
+          "source": "claim_ledger[4].recommended_action"
+        },
+        {
+          "id": "claim-5-quote",
+          "type": "quote",
+          "label": "Jenis tutup: tutup ulir.",
+          "detail": "Jenis tutup: tutup ulir.",
+          "source": "claim_ledger[4].fact_quote"
+        },
+        {
+          "id": "claim-6",
+          "type": "claim",
+          "label": "ARUNA DRINKWARE",
+          "detail": "[creative] ARUNA DRINKWARE",
+          "source": "claim_ledger[5].claim"
+        },
+        {
+          "id": "claim-6-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Nama produk sesuai dengan fakta pasokan.",
+          "source": "claim_ledger[5].assessment"
+        },
+        {
+          "id": "claim-6-action",
+          "type": "action",
+          "label": "Pertahankan.",
+          "detail": "Pertahankan.",
+          "source": "claim_ledger[5].recommended_action"
+        },
+        {
+          "id": "claim-6-quote",
+          "type": "quote",
+          "label": "Produk uji fiktif: ARUNA Drinkware.",
+          "detail": "Produk uji fiktif: ARUNA Drinkware.",
+          "source": "claim_ledger[5].fact_quote"
+        },
+        {
+          "id": "issue-1",
+          "type": "issue",
+          "label": "Klaim dingin hingga 24 jam tanpa dukungan fakta",
+          "detail": "Category: Claim. Severity: high.",
+          "source": "issues[0]"
+        },
+        {
+          "id": "issue-1-evidence",
+          "type": "evidence",
+          "label": "Di sisi kiri terdapat badge terang bertuliskan DINGIN HINGGA 24 JAM dan di atasnya headline Lebih lama. Keduanya dibaca ",
+          "detail": "Di sisi kiri terdapat badge terang bertuliskan DINGIN HINGGA 24 JAM dan di atasnya headline Lebih lama. Keduanya dibaca sebagai janji durasi dingin, sedangkan fakta pasokan tidak menyediakan data pengujian suhu.",
+          "source": "issues[0].evidence"
+        },
+        {
+          "id": "issue-1-suggestion",
+          "type": "suggestion",
+          "label": "Hapus kedua tulisan durasi tersebut dan tampilkan hanya fakta bahan, kapasitas, dan tutup yang didukung.",
+          "detail": "Hapus kedua tulisan durasi tersebut dan tampilkan hanya fakta bahan, kapasitas, dan tutup yang didukung.",
+          "source": "issues[0].suggestion"
+        }
+      ],
+      "edges": [
+        {
+          "from": "claim-1",
+          "to": "claim-1-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-1",
+          "to": "claim-1-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[2].fact_quote"
+        },
+        {
+          "from": "claim-3-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[3].fact_quote"
+        },
+        {
+          "from": "claim-4-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-5",
+          "to": "claim-5-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[4]"
+        },
+        {
+          "from": "claim-5",
+          "to": "claim-5-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[4]"
+        },
+        {
+          "from": "claim-5",
+          "to": "claim-5-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[4].fact_quote"
+        },
+        {
+          "from": "claim-5-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-6",
+          "to": "claim-6-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[5]"
+        },
+        {
+          "from": "claim-6",
+          "to": "claim-6-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[5]"
+        },
+        {
+          "from": "claim-6",
+          "to": "claim-6-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[5].fact_quote"
+        },
+        {
+          "from": "claim-6-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "issue-1",
+          "to": "issue-1-evidence",
+          "relation": "has_evidence",
+          "source": "issues[0].evidence"
+        },
+        {
+          "from": "issue-1",
+          "to": "issue-1-suggestion",
+          "relation": "has_suggestion",
+          "source": "issues[0].suggestion"
+        }
+      ],
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "revised": null
+  },
+  "evidence_basis": "seller_supplied_facts_not_independently_verified",
+  "original": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "",
+      "lines": [
+        "ARUNA",
+        "DRINKWARE",
+        "Bawa segarnya.",
+        "Lebih lama.",
+        "DINGIN HINGGA 24 JAM",
+        "Botol stainless steel untuk",
+        "aktivitas sehari-hari.",
+        "600 mL • Tutup ulir",
+        "Lihat koleksi →",
+        "ARUNA",
+        "DRINKWARE",
+        "600 mL",
+        "MATERI UJI • PRODUK FIKTIF",
+        "ARUNA / 01"
+      ]
+    },
+    "consistency": null,
+    "score": 62,
+    "headline": "Klaim tahan dingin 24 jam tidak didukung, info dasar sudah tepat",
+    "summary": "Iklan ARUNA Drinkware menampilkan info bahan, kapasitas, dan tutup dengan benar. Janji dingin hingga 24 jam beserta frasa Lebih lama merupakan janji durasi termal tanpa data pendukung. Visual ilustrasi tampak rapi tanpa cacat yang terbukti. Disarankan menghapus janji durasi dan hanya memakai fakta yang tersedia.",
+    "recommended_caption": "ARUNA Drinkware — produk uji fiktif. Produk uji fiktif: ARUNA Drinkware.. Bahan: stainless steel.. Kapasitas: 600 mL.. Jenis tutup: tutup ulir.",
+    "issues": [
+      {
+        "id": "issue-1",
+        "title": "Klaim dingin hingga 24 jam tanpa dukungan fakta",
+        "category": "Claim",
+        "severity": "high",
+        "evidence": "Di sisi kiri terdapat badge terang bertuliskan DINGIN HINGGA 24 JAM dan di atasnya headline Lebih lama. Keduanya dibaca sebagai janji durasi dingin, sedangkan fakta pasokan tidak menyediakan data pengujian suhu.",
+        "suggestion": "Hapus kedua tulisan durasi tersebut dan tampilkan hanya fakta bahan, kapasitas, dan tutup yang didukung."
+      }
+    ],
+    "strengths": [
+      "Bahan, kapasitas 600 mL, dan tutup ulir disampaikan sesuai fakta pasokan.",
+      "Hierarki teks dan tombol Lihat koleksi jelas dan mudah dibaca.",
+      "Mencantumkan penanda MATERI UJI PRODUK FIKTIF secara terbuka."
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "DINGIN HINGGA 24 JAM",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Fakta pasokan menyatakan tidak ada data pengujian ketahanan suhu atau bukti dingin 24 jam, bahan stainless steel saja tidak membuktikan durasi.",
+        "recommended_action": "Hapus klaim durasi atau ganti dengan fakta yang didukung."
+      },
+      {
+        "id": "claim-2",
+        "claim": "Lebih lama.",
+        "origin": "creative",
+        "assessment": "unsupported_by_supplied_facts",
+        "fact_quote": "",
+        "reason": "Dalam konteks wadah insulasi bersama klaim dingin 24 jam, frasa ini melanjutkan janji durasi termal yang tidak didukung fakta.",
+        "recommended_action": "Hapus atau ubah menjadi ungkapan non-durasi tanpa janji lama dingin."
+      },
+      {
+        "id": "claim-3",
+        "claim": "Botol stainless steel",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Bahan: stainless steel.",
+        "reason": "Materi botol sesuai dengan fakta bahan yang diberikan.",
+        "recommended_action": "Pertahankan."
+      },
+      {
+        "id": "claim-4",
+        "claim": "600 mL",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Kapasitas: 600 mL.",
+        "reason": "Angka kapasitas sesuai dengan fakta pasokan.",
+        "recommended_action": "Pertahankan."
+      },
+      {
+        "id": "claim-5",
+        "claim": "Tutup ulir",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Jenis tutup: tutup ulir.",
+        "reason": "Jenis tutup sesuai dengan fakta pasokan.",
+        "recommended_action": "Pertahankan."
+      },
+      {
+        "id": "claim-6",
+        "claim": "ARUNA DRINKWARE",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Produk uji fiktif: ARUNA Drinkware.",
+        "reason": "Nama produk sesuai dengan fakta pasokan.",
+        "recommended_action": "Pertahankan."
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 6,
+      "supported_by_supplied_facts": 4,
+      "unsupported_by_supplied_facts": 2,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 45,
+      "clarity": 88,
+      "hierarchy": 86,
+      "action": 85
+    },
+    "caption_repair": {
+      "version": "source-bound-1",
+      "original": "",
+      "final": "ARUNA Drinkware — produk uji fiktif. Produk uji fiktif: ARUNA Drinkware.. Bahan: stainless steel.. Kapasitas: 600 mL.. Jenis tutup: tutup ulir.",
+      "status": "source_bound",
+      "method": "meta_selected_verbatim_facts",
+      "product_identity": "ARUNA Drinkware — produk uji fiktif",
+      "statements": [
+        {
+          "text": "Produk uji fiktif: ARUNA Drinkware.",
+          "fact_quote": "Produk uji fiktif: ARUNA Drinkware."
+        },
+        {
+          "text": "Bahan: stainless steel.",
+          "fact_quote": "Bahan: stainless steel."
+        },
+        {
+          "text": "Kapasitas: 600 mL.",
+          "fact_quote": "Kapasitas: 600 mL."
+        },
+        {
+          "text": "Jenis tutup: tutup ulir.",
+          "fact_quote": "Jenis tutup: tutup ulir."
+        }
+      ],
+      "verification": {
+        "status": "passed",
+        "basis": "complete_source_lines_and_exact_rendered_values",
+        "unsupported_sentences": 0
+      },
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "local_text_repair": {
+      "version": "source-bound-1",
+      "coverage": "complete",
+      "edits": [
+        {
+          "before": "Lebih lama.",
+          "replacement": "",
+          "background": "complex",
+          "box": {
+            "height": 0.075,
+            "width": 0.35,
+            "x": 0.06,
+            "y": 0.28
+          }
+        },
+        {
+          "before": "DINGIN HINGGA 24 JAM",
+          "replacement": "",
+          "background": "solid",
+          "box": {
+            "height": 0.065,
+            "width": 0.505,
+            "x": 0.06,
+            "y": 0.382
+          }
+        }
+      ],
+      "protected_regions": [
+        {
+          "height": 0.58,
+          "width": 0.235,
+          "x": 0.63,
+          "y": 0.255
+        },
+        {
+          "height": 0.055,
+          "width": 0.15,
+          "x": 0.06,
+          "y": 0.06
+        }
+      ]
+    }
+  },
+  "verified": null,
+  "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+  "visual_consistency": {
+    "format_history": [],
+    "upload_dimensions": {
+      "width": 1536,
+      "height": 1536
+    },
+    "source_dimensions": {
+      "width": 1280,
+      "height": 1280
+    },
+    "settings": {
+      "version": "visual-consistency-2",
+      "style": "preserve",
+      "locks": {
+        "product_shape": true,
+        "colors": true,
+        "lighting": true,
+        "background": true,
+        "composition": true,
+        "typography": true,
+        "branding": true
+      },
+      "region": null
+    },
+    "repair": null,
+    "verification": null,
+    "output_requested": {
+      "category": "website",
+      "preset": 1,
+      "width": 210,
+      "height": 297,
+      "unit": "mm",
+      "ppi": 150,
+      "standard": "a4",
+      "padding": "white",
+      "source": "original"
+    },
+    "output_actual": null
+  },
+  "archive_history": []
+}

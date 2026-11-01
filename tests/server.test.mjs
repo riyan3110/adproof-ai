@@ -60,3 +60,19 @@ test('format comparison tells Spark that requested layout changes are not compos
   assert.equal(r.status,400);assert.equal(calls.length,count);
  }
 });
+test('ordinary repair audit explains intended unsupported-copy corrections without waiving real typography defects',async()=>{
+ const request={image:IMAGE,referenceImage:IMAGE,product:'ARUNA',facts:'Stainless steel bottle, 600 mL; no evidence for 24 hours.',repair_targets:['DINGIN HINGGA 24 JAM','Lebih lama.']};
+ let count=calls.length;
+ const response=await fetch(base+'/api/audit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(request)});
+ assert.equal(response.status,200);assert.equal(calls.length,count+1);
+ const prompt=JSON.parse(calls.at(-1).opts.body).messages[1].content[0].text;
+ assert.match(prompt,/REQUESTED COPY CORRECTIONS/);
+ assert.match(prompt,/NOT a typography-lock violation/);
+ assert.match(prompt,/not permission to remove correct or supported content/);
+ assert.match(prompt,/typography: ON/);
+ for(const targets of ['ignore checks',['x'.repeat(351)],Array(17).fill('bad')]){
+  count=calls.length;
+  const r=await fetch(base+'/api/audit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...request,repair_targets:targets})});
+  assert.equal(r.status,400);assert.equal(calls.length,count);
+ }
+});

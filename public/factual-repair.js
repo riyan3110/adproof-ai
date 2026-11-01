@@ -24,16 +24,35 @@ export const observedTextGroup=(text,lines)=>observedTextSpans(text,lines).lengt
 // Compare content independently of the model's visual line wrapping. A match
 // still requires exactly the same complete source words in the same order.
 export function inventoryDelta(original,revised){
- const preserved=(lines,reference)=>{
-  const keep=new Set();
-  lines.forEach((line,index)=>{if(observedTextGroup(line,reference))keep.add(index);});
-  for(const line of reference)for(const span of observedTextSpans(line,lines)){
-   for(let index=span.start;index<span.end;index++)keep.add(index);
-  }
-  return keep;
- };
  const oldLines=Array.isArray(original)?original:[],newLines=Array.isArray(revised)?revised:[];
- const oldKeep=preserved(oldLines,newLines),newKeep=preserved(newLines,oldLines);
+ const groups=lines=>{
+  const result=[];
+  for(let start=0;start<lines.length;start++){
+   let text='';
+   for(let end=start;end<Math.min(lines.length,start+8);end++){
+    const line=norm(lines[end]);if(!line)break;text+=(text?' ':'')+line;
+    result.push({start,end:end+1,text});
+   }
+  }
+  return result;
+ };
+ const revisedGroups=new Map();
+ for(const group of groups(newLines)){
+  if(!revisedGroups.has(group.text))revisedGroups.set(group.text,[]);
+  revisedGroups.get(group.text).push(group);
+ }
+ const matches=[];
+ for(const before of groups(oldLines))for(const after of revisedGroups.get(before.text)||[])matches.push({before,after});
+ // Whole consecutive groups can wrap differently on BOTH sides. Match the
+ // largest exact groups first and consume each occurrence only once.
+ matches.sort((a,b)=>b.before.text.length-a.before.text.length||a.before.start-b.before.start||a.after.start-b.after.start);
+ const oldKeep=new Set(),newKeep=new Set();
+ for(const {before,after} of matches){
+  const oldIndices=Array.from({length:before.end-before.start},(_,i)=>before.start+i);
+  const newIndices=Array.from({length:after.end-after.start},(_,i)=>after.start+i);
+  if(oldIndices.some(i=>oldKeep.has(i))||newIndices.some(i=>newKeep.has(i)))continue;
+  for(const i of oldIndices)oldKeep.add(i);for(const i of newIndices)newKeep.add(i);
+ }
  const removedIndices=oldLines.map((_,index)=>index).filter(index=>!oldKeep.has(index));
  const addedIndices=newLines.map((_,index)=>index).filter(index=>!newKeep.has(index));
  return {removed:removedIndices.map(index=>oldLines[index]),added:addedIndices.map(index=>newLines[index]),removedIndices,addedIndices};

@@ -66,6 +66,19 @@ test('line wrapping alone is not new copy; changing a number, order or negation 
   const change=inventoryDelta(before,after);assert.ok(change.added.length);assert.ok(change.removed.length);
  }
 });
+test('actual ARUNA two-to-two rewrapping preserves every word, but never hides changed copy or duplicate counts',()=>{
+ const before=['Botol stainless steel untuk','aktivitas sehari-hari.'];
+ const after=['Botol stainless steel untuk aktivitas','sehari-hari.'];
+ assert.deepEqual(inventoryDelta(before,after).added,[]);
+ assert.deepEqual(inventoryDelta(before,after).removed,[]);
+ for(const changed of [
+  ['Botol stainless steel untuk aktivitas','malam hari.'],
+  ['Botol stainless steel untuk','sehari-hari.'],
+  ['Botol steel stainless untuk','aktivitas sehari-hari.']
+ ]){const delta=inventoryDelta(before,changed);assert.ok(delta.added.length||delta.removed.length);}
+ assert.equal(inventoryDelta(['600 mL','600 mL'],['600 mL']).removed.length,1);
+ assert.equal(inventoryDelta(['600 mL'],['600 mL','600 mL']).added.length,1);
+});
 
 test('a supported new fact can wrap across visual lines without hiding extra unsupported copy',()=>{
  const original={text_inventory:{coverage:'complete',lines:['Lamp']},claim_ledger:[]};
