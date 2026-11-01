@@ -4,6 +4,8 @@
 const key='adproof-ui-language';
 const supported=new Set(['en','id']);
 const id={
+ 'Open recorded Meta example ↗':'Buka contoh Meta terekam ↗',
+ 'Open the example in a fresh Studio tab to keep the current creative.':'Buka contoh di tab Studio baru agar gambar saat ini tetap tersimpan.',
  'Audit package saved: JSON and original/revised images in their actual formats.':'Paket audit tersimpan: JSON dan gambar asli/revisi sesuai format sebenarnya.',
  'Local recovery saved on this device.':'Pemulihan lokal tersimpan di perangkat ini.',
  'Clear local backup':'Hapus cadangan lokal',

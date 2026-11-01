@@ -1,4 +1,5 @@
 import {createConsistencyUI} from './consistency-ui.js';
+import {loadRecordedExample} from './public-example.js';
 import {inspectConsistency,impliedThermalDurationText} from './visual-consistency.js';
 import {comparePixels,compositeRegion,dimensions,repairTextLocally,verifyLocalPixels,extendFlatBackground,compositePlannedRegions,compositeReferenceFrame,prepareFormatReference} from './output-system.js';
 import {inspectFormatCandidate} from './visual-consistency.js';
@@ -967,6 +968,20 @@ ui.downloadPackage.addEventListener('click',()=>{
 });
 ui.downloadImage.addEventListener('click',()=>visualUI.export());
 const chooseImport=()=>{if(state.busy||state.importing)return;ui.importReportInput.click();};
+async function openRecordedExample(){
+ if(state.busy||state.importing||state.original){notify('Open the example in a fresh Studio tab to keep the current creative.',true);return;}
+ state.importing=true;syncDeck();
+ try{
+  const archive=await loadRecordedExample();
+  restoreAuditSnapshot(archive);
+  ui.archiveNotice.textContent=getLanguage()==='id'
+   ?'CONTOH META TEREKAM · ARUNA adalah produk uji fiktif. Audit, gambar revisi, dan riwayat ini berasal dari pengujian production nyata. Dibuka baca saja; tidak ada panggilan model atau persetujuan otomatis. Bandingkan gambar dan telusuri bukti. Pengujian Meta baru tetap memerlukan akses privat.'
+   :'RECORDED META EXAMPLE · ARUNA is a fictional QA product. The audits, revised image and history come from genuine production tests. Read-only; no model request or automatic approval on opening. Compare images and inspect evidence. New Meta calls still require private access.';
+  switchView('compare');activateProofView('evolution',true);
+ }catch(e){notify(e.message,true);}
+ finally{state.importing=false;syncDeck();}
+}
+$('#openVerifiedExample').addEventListener('click',openRecordedExample);
 ui.importReportButton.addEventListener('click',chooseImport);
 ui.importReportStart.addEventListener('click',chooseImport);
 ui.importReportInput.addEventListener('change',async()=>{
@@ -1036,4 +1051,5 @@ observeDynamicLabels();
 syncDeck();syncSticky();
 // Restore only after the initial UI is initialized. Recovery never calls /api/audit
 // or /api/improve and never repeats a possibly charged request.
-void recoverMilestone();
+if(new URLSearchParams(location.search).get('example')==='aruna')void openRecordedExample();
+else void recoverMilestone();
