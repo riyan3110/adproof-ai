@@ -36,13 +36,15 @@ async function examinePage(page, route, width, errors) {
       const context = await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce',acceptDownloads:true});
       const page = await context.newPage();
       const pageErrors = [], paidAttempts = [];
-      // Pull requests check the proposed docs HTML and CSS with the live site/API.
+      // Pull requests check proposed landing/docs HTML and CSS with the live site/API.
       // Push/main runs use only deployed production assets. No API is mocked.
       if (process.env.ADPROOF_CANDIDATE_CSS === '1') {
         const candidateCSS = await fs.readFile(path.join(__dirname, '..', 'public/styles.css'), 'utf8');
         const candidateDocs = await fs.readFile(path.join(__dirname, '..', 'public/docs.html'), 'utf8');
+        const candidateHome = await fs.readFile(path.join(__dirname, '..', 'public/index.html'), 'utf8');
         await page.route('**/styles.css', route => route.fulfill({status:200,contentType:'text/css',body:candidateCSS}));
         await page.route(origin + '/docs', route => route.fulfill({status:200,contentType:'text/html',body:candidateDocs}));
+        await page.route(origin + '/', route => route.fulfill({status:200,contentType:'text/html',body:candidateHome}));
       }
       page.on('pageerror', e => pageErrors.push(limitedText(e.message)));
       // Fail closed: the browser must never run a paid model during these checks.
@@ -139,7 +141,7 @@ async function examinePage(page, route, width, errors) {
     console.log('PASS: historical authentic Meta-based PNG exports decode at exact dimensions, with no fully transparent edge pixels.');
 
     await fs.writeFile(reportPath,JSON.stringify({
-      checked_at:new Date().toISOString(),origin,scope:process.env.ADPROOF_CANDIDATE_CSS === '1' ? 'REAL PRODUCTION SITE/API WITH LOCAL CANDIDATE DOCS HTML AND CSS (not final deployed version), NO PAID CALLS' : 'REAL PRODUCTION BROWSER, NO META PAID REQUESTS, NO MOCKED ENDPOINTS',
+      checked_at:new Date().toISOString(),origin,scope:process.env.ADPROOF_CANDIDATE_CSS === '1' ? 'REAL PRODUCTION SITE/API WITH LOCAL CANDIDATE LANDING/DOCS HTML AND CSS (not final deployed version), NO PAID CALLS' : 'REAL PRODUCTION BROWSER, NO META PAID REQUESTS, NO MOCKED ENDPOINTS',
       results,pngEvidence,limitations:['PNG border alpha check does not certify lack of opaque padding or visual distortions.','Private Judge Access cannot be authenticated without the owner-only code.','No new Muse Spark/Muse Image paid calls or visual generation performed.','Prior saved JSON is historical evidence; not a fresh inference.','Check live reframe pixel quality and submission credentials separately.']
     },null,2));
     console.log('PASS: real production browser /, /docs, /app, 5 viewport widths, locale toggle, authentic JSON archive import, original upload, no paid calls.');

@@ -8,6 +8,7 @@ on:
       - '.github/workflows/production-browser.yml'
       - 'public/styles.css'
       - 'public/docs.html'
+      - 'public/index.html'
   push:
     branches: [main]
   workflow_dispatch:
