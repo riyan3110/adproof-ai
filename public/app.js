@@ -277,7 +277,7 @@ function syncDeck(){
  put('deckProofState',current>0?'Inspect traced evidence links':'Awaiting observed claims');
  put('deckDNAState',current===3?'View claim trajectories':current===2?'Repair ready · run re-audit':'Awaiting comparison');
  ui.refine.disabled=state.busy||state.imported||!state.initialAudit||!!state.verified||!hasImageRepairTarget(state.initialAudit);
- ui.verify.disabled=state.busy||state.imported||!state.revised||(!!state.verified&&state.consistencyReview?.status!=='review_required');
+ ui.verify.disabled=state.busy||state.imported||!state.revised||(!!state.verified&&state.consistencyReview?.status==='validated');
  ui.originalTab.disabled=!state.original;ui.revisedTab.disabled=!state.revised;ui.compareTab.disabled=!(state.original&&state.revised);
  ui.downloadReport.disabled=state.busy||!state.audit;ui.downloadImage.disabled=state.busy||!state.revised;ui.downloadPackage.disabled=state.busy||!state.audit||!state.original;ui.importReportButton.disabled=state.busy||state.importing;ui.auditButton.disabled=state.busy||state.imported||!!state.initialAudit;
   if(!state.busy)ui.auditText.textContent=t(state.initialAudit?'Audit complete ✓':'Run audit');
