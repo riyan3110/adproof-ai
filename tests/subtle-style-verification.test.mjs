@@ -51,6 +51,8 @@ test('style comparison sends the exact preset and source to Spark; invalid targe
   assert.match(prompt,/REQUESTED STYLE COMPARISON: minimalist/);
   assert.match(prompt,/source already matches/);
   assert.match(prompt,/medium Consistency issue/);
+  assert.match(prompt,/identical words do not establish preserved typography/);
+  assert.match(prompt,/sans-serif source title changed to serif/);
   assert.match(prompt,/Missing|missing/);
   const before=calls.length;
   for(const patch of [{style_target:'unknown'},{style_target:'preserve'},{referenceImage:undefined},{consistency:{style:'cinematic'}},{comparison_mode:'format',format_target:{width:1600,height:900}}])assert.equal((await post({...body,...patch})).status,400);

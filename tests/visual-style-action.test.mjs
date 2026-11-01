@@ -37,6 +37,8 @@ test('style button triggers actual Muse Image edit, not an inert dropdown or moc
   assert.match(calls[0].payload.prompt,/Cinematic/);
   assert.match(calls[0].payload.prompt,/product geometry/);
   assert.match(calls[0].payload.prompt,/typography: ON/);
+  assert.match(calls[0].payload.prompt,/LOCKED TEXT OVERLAY/);
+  assert.match(calls[0].payload.prompt,/NEVER convert sans-serif lettering to serif/);
  }finally{await new Promise(r=>s.close(r));}
 });
 test('style mode cannot silently bypass protected core locks or apply preserved style',async()=>{
