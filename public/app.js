@@ -21,7 +21,7 @@ const ui = {
   auditPhase:$('#auditPhase'),reportEmpty:$('#reportEmpty'),reportContent:$('#reportContent'),repairNotice:$('#repairGuardNotice'),scoreRing:$('#scoreRing'),scoreValue:$('#scoreValue'),scoreHeadline:$('#scoreHeadline'),scoreSummary:$('#scoreSummary'),scoreExplanation:$('#scoreExplanation'),scoreExplanationLabel:$('#scoreExplanationLabel'),scoreExplanationContent:$('#scoreExplanationContent'),
   breakdown:$('#breakdown'), issues:$('#issuesList'), count:$('#issueCount'),suggested:$('#suggestedCaption'),copyCaption:$('#copyCaption'),
   claimPanel:$('#claimEvidencePanel'), claimList:$('#claimEvidenceList'),claimCount:$('#claimEvidenceCount'),
-  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
+  refine:$('#refineButton'),verify:$('#verifyButton'),downloadReport:$('#downloadReport'),downloadImage:$('#downloadImage'),downloadPackage:$('#downloadPackage'),importReportButton:$('#importReportButton'),importReportStart:$('#importReportStart'),importReportInput:$('#importReportInput'),archiveNotice:$('#archiveRestoreNotice'),archiveLanguageNote:$('#archiveLanguageNote'),continueActions:$('#archiveContinueActions'),continueOriginal:$('#continueFromOriginal'),continueRevised:$('#continueFromRevised'),verifyArchived:$('#verifyArchivedRevision'),historyPanel:$('#archiveHistoryPanel'),historySummary:$('#archiveHistorySummary'),historyList:$('#archiveHistoryList'),
   recoveryBar:$('#localRecoveryBar'),recoveryText:$('#localRecoveryText'),recoveryClear:$('#clearLocalRecovery'),
   journey:$('#repairJourney'),journeyButton:$('#repairJourneyButton'),
   scan:$('#scanOverlay'),toast:$('#toast'),connection:$('#connection'),connectionText:$('#connectionText'),
@@ -284,6 +284,7 @@ function syncDeck(){
  ui.continueActions.hidden=!state.imported||!state.original;
  ui.continueOriginal.disabled=state.busy||state.importing||!state.imported||!state.original||state.history.length>=8;
  ui.continueRevised.disabled=state.busy||state.importing||!state.imported||!state.verified||!state.revised||state.history.length>=8;
+ ui.verifyArchived.disabled=state.busy||state.importing||!state.imported||!state.configured||!state.original||!state.revised||!state.initialAudit||state.history.length>=8;
  renderArchiveHistory();
  visualUI.sync();
  updateRepairJourney();
@@ -890,6 +891,19 @@ function restoreAuditSnapshot({report,original,revised,history=[],hasImages},{re
  syncDeck();syncSticky();
  notify(resumeLive?'Browser session recovered from local device storage. No paid Meta request.':hasImages?'Saved archive restored. No paid model request.':'Saved JSON restored without images. No paid model request.');
 }
+async function verifyArchivedRevision(){
+ if(state.busy||state.importing||!state.imported||!state.configured||!state.original||!state.revised||!state.initialAudit)return;
+ if(state.history.length>=8){notify('Riwayat sudah mencapai 8 putaran. Ekspor ZIP lama dahulu; tidak akan ada riwayat yang dihapus otomatis.',true);return;}
+ // Keep the complete failed comparison and both pixel sources before the
+ // user explicitly requests a fresh audit. No new image is generated.
+ state.history=[...state.history,{from:'original',report:reportSnapshot(),original:state.original,revised:state.revised}];
+ state.imported=false;state.archivedReport=null;state.continuedFrom='original';
+ for(const field of [ui.product,ui.facts,ui.caption])field.readOnly=false;
+ ui.archiveLanguageNote.hidden=true;ui.archiveNotice.hidden=false;
+ ui.archiveNotice.textContent=getLanguage()==='id'?'Memeriksa ulang revisi tersimpan terhadap gambar asli. Satu panggilan audit; tanpa membuat gambar baru.':'Rechecking the saved revision against its original. One audit call; no image generation.';
+ try{await performAudit(state.revised,true);}catch(e){notify(e.message,true);syncDeck();}
+}
+ui.verifyArchived.addEventListener('click',verifyArchivedRevision);
 // Explicit continuation preserves the whole imported round and all older
 // rounds as evidence before any changes. No inference is performed here.
 function continueArchivedAudit(from){
