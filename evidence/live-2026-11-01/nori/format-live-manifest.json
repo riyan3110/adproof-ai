@@ -1,0 +1,43 @@
+{
+  "production_commit": "4434df40a1bdc841f415d59bb9d09ca0235b204e",
+  "kind": "actual_authenticated_production_no_mocked_upstream",
+  "initial_audit_reused": true,
+  "model_calls": 6,
+  "authorized_call_limit": 4,
+  "incident": "Check output unexpectedly retried the failed Website adaptation, consuming two extra model calls. Fixed by removing model calls from the local output checker. No further paid requests.",
+  "a4": {
+    "status": "validated",
+    "download_pixels": [
+      1240,
+      1754
+    ],
+    "ppi": 150,
+    "visual_inspection": "All four original text lines and bottle remain visible. No duplicated copy. Background extends above and below. This is not professional print certification."
+  },
+  "website": {
+    "status": "failed",
+    "reason": "Independent comparison reported score regressions; repeated candidate also reported a readability/composition issue. Neither is a successful Website export."
+  },
+  "files": [
+    {
+      "path": "a4-150ppi-verified.png",
+      "sha256": "4e1cb8af4a1fdfc312b0f7087aa824b96fc677f01b29bfd8aa8477bedf3471da",
+      "bytes": 2249582
+    },
+    {
+      "path": "a4-verified-production.json",
+      "sha256": "34569607ead5f24d46d0c6c324f52615705c64e66e8596f671f9162675da80e4",
+      "bytes": 112541
+    },
+    {
+      "path": "website-failed-production.json",
+      "sha256": "e5e9710da069b1f9ad8a5d1d162322a5d8cee8778eb3d66a937053a44c99ba6e",
+      "bytes": 110961
+    },
+    {
+      "path": "website-repeat-failed-production.json",
+      "sha256": "4bde333eba4b4bf0054a328e1c19f520781848f4f0f6b18e1ddb72c98284b134",
+      "bytes": 118296
+    }
+  ]
+}
