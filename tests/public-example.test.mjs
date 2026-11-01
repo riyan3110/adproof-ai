@@ -2,9 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import http from 'node:http';
+import {createHandler} from '../server.mjs';
 import {loadRecordedExample} from '../public/public-example.js';
 
 const bytes=readFileSync(new URL('../public/examples/aruna-verified.zip',import.meta.url));
+test('the local Node server serves both new public assets with correct MIME and no provider access',async()=>{
+ let calls=0;
+ const server=http.createServer(createHandler({key:'',demoCode:'private-test-only',requireDemoGate:true,fetcher:async()=>{calls++;throw Error('No provider call allowed')}}));
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ const base='http://127.0.0.1:'+server.address().port;
+ try{
+  const module=await fetch(base+'/public-example.js');assert.equal(module.status,200);assert.match(module.headers.get('content-type'),/javascript/);
+  const archive=await fetch(base+'/examples/aruna-verified.zip');assert.equal(archive.status,200);assert.equal(archive.headers.get('content-type'),'application/zip');
+  assert.deepEqual(Buffer.from(await archive.arrayBuffer()),bytes);assert.equal(calls,0);
+ }finally{await new Promise(r=>server.close(r))}
+});
 test('public example restores genuine saved pixels and evidence without any paid endpoint or inherited credentials',async()=>{
  const calls=[];
  const archive=await loadRecordedExample(async(url,options)=>{calls.push({url,options});return new Response(bytes)});
