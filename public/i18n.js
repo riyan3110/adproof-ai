@@ -174,6 +174,7 @@ const id={
  'Choose your starting image and its saved audit. No Meta API request occurs until you deliberately press Repair or Verify. The previous audit and both images remain in the next ZIP package.':'Pilih gambar sumber dan audit tersimpan. Tidak ada panggilan Meta sampai kamu sengaja menekan Perbaiki atau Verifikasi. Audit dan kedua gambar sebelumnya disimpan di ZIP berikutnya.',
  '↗ Repair original · saved audit':'↗ Perbaiki gambar asli · audit tersimpan',
  '↗ Repair revised · saved re-audit':'↗ Perbaiki revisi · audit ulang tersimpan',
+ '↗ Verify saved revision · 1 model call':'↗ Verifikasi revisi tersimpan · 1 panggilan model',
  'Previous audit rounds':'Putaran audit sebelumnya',
  'No audit yet.':'Belum ada audit.',
  'Upload a creative and factual product details to begin your evidence trail.':'Unggah gambar iklan dan detail produk untuk memulai jejak bukti.',
