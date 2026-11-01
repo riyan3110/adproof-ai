@@ -529,6 +529,7 @@ async function performAudit(image,verify=false){
   if(!verify){resetAudit({preserveHistory:state.history.length>0});switchView('original');state.context=inputContext();}
   const auditPayload={...payload(image)};
    if(verify){auditPayload.referenceImage=await compactOriginalReference(state.original);auditPayload.caption=state.captionRepair?.final||state.context.caption;auditPayload.repair_targets=[...new Set([...(state.initialAudit?.claim_ledger||[]).filter(c=>c.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment)).map(c=>c.claim),...impliedThermalDurationText(state.initialAudit,state.context?.facts||'')])].slice(0,16);}
+   if(verify&&state.repairMetadata?.method==='style_edit_source_reference_no_mask')auditPayload.style_target=state.repairMetadata.settings?.style;
    const out=await api('/api/audit',auditPayload);
    if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');
    state.sparkResponded=true;if(verify)state.reauditResponded=true;state.reportLanguage=out.report_language||getLanguage();updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
@@ -707,10 +708,14 @@ async function performVisualRestyle(settings){
   const out=await api('/api/improve',{...payload(source),mode:'restyle',consistency:settings,issues:[],claims:[]});
   await validateCandidateImage(out.image);
   const diff=await comparePixels(source,out.image);
-  if(diff.changed_sample_fraction<.01)throw Error('Muse Image belum mengubah gaya secara terlihat. Tidak ada hasil yang diterima sebagai revisi.');
+  // A source may already match Minimalist or another restrained treatment.
+  // Keep the actual provider candidate and independently check style fit;
+  // coarse pixel change is neither semantic proof nor a reason to discard it.
+  const subtle=diff.changed_sample_fraction<.01;
   state.history=[...state.history,snapshot];
   if(useRevised){state.original=source;state.initialAudit=baseline;}
   state.revised=out.image;state.repairMetadata={...out.repair_metadata,settings,
+    style_change:{changed_sample_fraction:diff.changed_sample_fraction,subtle_or_unchanged:subtle,assessment:'independent_style_comparison_required'},
     compositing:{method:'muse_visual_restyle_no_mask',limitations:['Product and brand locks are instructions, not source-pixel proof.']},
     candidate_dimensions:await dimensions(out.image)};
   state.verified=null;state.consistencyReview=null;state.repairReview=null;state.autoCorrection=null;
@@ -726,7 +731,9 @@ async function performVisualRestyle(settings){
  try{
   await performAudit(state.revised,true);
   workStep(state.consistencyReview?.status==='validated'
-   ?(getLanguage()==='id'?'Gaya diterapkan; verifikasi lolos':'Style applied; verification passed')
+   ?(state.repairMetadata?.style_change?.subtle_or_unchanged
+     ?(getLanguage()==='id'?'Gaya diperiksa; perubahan visual kecil':'Style checked; subtle visual change')
+     :(getLanguage()==='id'?'Gaya diterapkan; verifikasi lolos':'Style applied; verification passed'))
    :(getLanguage()==='id'?'Gaya diterapkan; periksa konsistensi sebelum ekspor':'Style applied; review consistency before export'));
  }catch(e){workStep(getLanguage()==='id'?'Gaya dibuat, verifikasi belum selesai':'Style generated; verification incomplete');notify(e.message,true);}
 }
