@@ -1,0 +1,5 @@
+{
+  "status": "failed_manual_visual_review",
+  "reason": "Nori Bottle title changed from source sans-serif to serif despite Typography Lock ON. Raw model comparison said preserved; retain the false-positive evidence and correct prompts before retest.",
+  "raw_report": "illustration-first-typography-failed.json"
+}

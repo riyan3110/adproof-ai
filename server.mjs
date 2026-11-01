@@ -437,9 +437,12 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
   const files = new Map([
     ['/', 'public/index.html'], ['/app','public/app.html'], ['/docs','public/docs.html'],
     ['/public-example.js','public/public-example.js'], ['/examples/aruna-verified.zip','public/examples/aruna-verified.zip'],
+    ['/demo.html','public/demo.html'], ['/demo.css','public/demo.css'],
+    ['/demo/adproof-ai-demo.mp4','public/demo/adproof-ai-demo.mp4'],
+    ['/demo/adproof-ai-demo.vtt','public/demo/adproof-ai-demo.vtt'], ['/demo/poster.jpg','public/demo/poster.jpg'],
     ['/factual-repair.js','public/factual-repair.js'], ['/visual-consistency.js','public/visual-consistency.js'], ['/output-system.js','public/output-system.js'], ['/consistency-ui.js','public/consistency-ui.js'], ['/styles.css','public/styles.css'], ['/studio.css','public/studio.css'], ['/app.js','public/app.js'], ['/claim-engine.js','public/claim-engine.js'], ['/proof-studio.js','public/proof-studio.js'], ['/repair-guard.js','public/repair-guard.js'], ['/repair-notice.js','public/repair-notice.js'], ['/repair-journey.js','public/repair-journey.js'], ['/audit-archive.js','public/audit-archive.js'], ['/local-recovery.js','public/local-recovery.js'], ['/auto-correction.js','public/auto-correction.js'], ['/i18n.js','public/i18n.js']
   ]);
-  const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','zip':'application/zip'};
+  const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','zip':'application/zip','mp4':'video/mp4','vtt':'text/vtt; charset=utf-8','jpg':'image/jpeg'};
 
   return async (req,res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -486,9 +489,28 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
         const body=await parseBody(req);
         return json(res,200,await (url.pathname==='/api/audit'?audit(body):url.pathname==='/api/localize'?localize(body):improve(body)));
       }
-      if(req.method==='GET' && files.has(url.pathname)) {
+      if((req.method==='GET' || req.method==='HEAD') && files.has(url.pathname)) {
         const file=files.get(url.pathname); const data=await readFile(path.join(BASE,file));
-        res.writeHead(200,{'Content-Type':types[file.split('.').pop()], 'Cache-Control':'public, max-age=60'}); res.end(data); return;
+        const mime=types[file.split('.').pop()];
+        const assetHeaders={'Content-Type':mime,'Cache-Control':'public, max-age=60','Content-Length':data.length};
+        if(mime==='video/mp4') {
+          assetHeaders['Accept-Ranges']='bytes';
+          const range=req.headers.range;
+          if(range && req.method==='GET') {
+            const match=/^bytes=(\d*)-(\d*)$/.exec(range);
+            let start=0,end=data.length-1;
+            if(match && (match[1] || match[2])) {
+              if(match[1]) {start=Number(match[1]);if(match[2])end=Math.min(Number(match[2]),end);}
+              else start=Math.max(0,data.length-Number(match[2]));
+            } else start=NaN;
+            if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||start>=data.length||end<start) {
+              res.writeHead(416,{'Content-Range':`bytes */${data.length}`,'Content-Length':0});res.end();return;
+            }
+            res.writeHead(206,{...assetHeaders,'Content-Range':`bytes ${start}-${end}/${data.length}`,'Content-Length':end-start+1});
+            res.end(data.subarray(start,end+1));return;
+          }
+        }
+        res.writeHead(200,assetHeaders); res.end(req.method==='HEAD'?undefined:data); return;
       }
       json(res,404,{error:'Halaman tidak ditemukan.'});
     } catch(err) {
