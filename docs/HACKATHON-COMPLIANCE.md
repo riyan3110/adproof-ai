@@ -2,6 +2,10 @@
 
 **Overall: NEEDS VERIFICATION. This is an evidence register, not eligibility certification or a completed submission.** Rules were examined before source changes in this upgrade. Repository baseline: `df530267b14922bcf2b65b414720539d198261c2` (PR #13).
 
+**Technical update — 1 November 2026:** the historical "live end-to-end unproven" statements below have been superseded by [authentic production evidence](../evidence/live-2026-11-01/README.md): real Muse image output, independent Spark comparisons, ARUNA 1080×1080 and NORI Website/A4 downloads, and ZIP restoration. Source tests now pass 269 cases; production desktop/mobile checks passed. Every visual style/lock/output combination is not yet individually tested. This technical update does not establish participant eligibility or completion of the final submission.
+
+The final video, authenticated submission fields/format and a successful submission receipt remain outstanding in this workspace. Public deadline was rechecked on Meta's event page on 1 November: **4 November 21:00 ET / 5 November 09:00 WIB**. The current demo has local OCR dependencies; historical descriptions of a dependency-free runtime are no longer current and should not be used as a license review.
+
 ## Sources and evidence hierarchy
 
 - [M — Meta event](https://dev.meta.ai/events/global-hackathon)

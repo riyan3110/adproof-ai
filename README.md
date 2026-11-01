@@ -1,6 +1,8 @@
 # AdProof AI
 
-**Advertising Claim Verification & Repair Engine.** Detect → Verify → Repair → Prove. Visual Proof Intelligence Studio for Meta Global AI Developer Hackathon 2026; preserves the Audit → Refine → Verify workflow.
+**Advertising Claim Verification & Repair Engine.** Audit → Repair → automatic Verify, with source inspection, claim lineage and checked image export. Built for Meta Global AI Developer Hackathon 2026.
+
+**Status — 1 November 2026:** the core production demo has authentic Meta results and actual downloaded PNG/ZIP evidence. The final submission package is still incomplete: no final demo video or acceptance receipt is recorded, authenticated portal requirements remain unverified, and not every visual style/output combination has been individually live-tested. See [current readiness](docs/HACKATHON-READINESS.md) and [real production evidence](evidence/live-2026-11-01/README.md).
 
 This repository contains real application code. It is not a static mockup and does not simulate AI analysis. Calls only work when a valid Meta Model API key is configured on the server.
 
@@ -15,18 +17,21 @@ This repository contains real application code. It is not a static mockup and do
 - Grounded multimodal audit with **Meta Muse Spark 1.3**.
 - Issue findings with evidence, severity, and actionable recommendations.
 - Actual image editing with **Meta Muse Image 1.0** (not a simulated change).
-- Actual re-audit of the edited image, before/after compare slider, score changes.
-- Download revised image and JSON audit report.
+- Automatic re-audit of the edited image, original/reference comparison, before/after slider and conservative regression checks. A specifically diagnosed failed comparison can trigger at most one additional edit/Verify pair.
+- Twelve visual style options, seven consistency locks and optional local rectangle compositing. Applying a style invokes editing and independent verification; changing the dropdown alone does not call Meta.
+- Social Media, Website and Print PNG exports, actual native-pixel/PPI checks and explicit AI composition adaptation. Interpolation adds no native detail.
+- JSON reports and image+report ZIP archives, local import, explicit continuation and one-call verification of a saved original/revision pair without new image generation.
 - Complete help at `/docs`; no login/database/tracking by this application.
 - Server-side API key protection, strict data limits, same-origin API, no saved uploads.
 
 ## Run locally
 
-Node.js **20+** only, no extra packages required.
+Node.js **20+** and the dependencies installed by `npm ci`, including local OCR.
 
 ```bash
+npm ci
 cp .env.example .env
-# Update MODEL_API_KEY=... in .env
+# Set MODEL_API_KEY and DEMO_ACCESS_CODE in .env
 node --env-file=.env server.mjs
 # Open http://localhost:3000
 ```
@@ -42,6 +47,7 @@ npm run check
 | Variable | Purpose |
 |---|---|
 | `MODEL_API_KEY` | Required. Meta Model API key, stored only on server |
+| `DEMO_ACCESS_CODE` | Required for production paid routes. Private judge/demo code; never put it in public URLs, reports or videos |
 | `PORT` | Optional HTTP server port (defaults to 3000) |
 | `META_MODEL` | Optional override for Muse Spark version (defaults to muse-spark-1.3) |
 
@@ -57,20 +63,25 @@ Set spend monitoring and a hard budget at your provider where supported. Any pub
 
 `GET /api/health` — non-sensitive readiness status.
 
+`POST /api/access` — verifies the private demo code without a model call.
+
 `POST /api/audit` — JSON `{ image: "data:image/...;base64,...", product: "...", facts: "...", caption: "..." }`.
 
 `POST /api/improve` — same fields plus `issues` from a prior audit.
 
-Images are resized by the browser and sent as base64 only to the server and Meta, not stored in local files or a database.
+`POST /api/localize` — source-bound text localization used by the Repair workflow when needed; the route is protected by the same demo gate.
+
+Audit images are resized by the browser and sent as base64 to the server and Meta. The application has no server-side image database. A browser checkpoint can retain the last session on the device for up to 24 hours; downloaded JSON/ZIP/PNG files are separate user-managed copies.
 
 ## Known limitations
 
 - AI scores and suggestions are estimates, **not legal compliance certification**.
 - Meta Muse Image may introduce unwanted visual or text changes: always manually review the output.
 - Image edits consume API credit. Image transformations may not preserve exact aspect ratio.
-- Production reports both a configured Meta API key and a private access gate, but the connector does not verify credentials against the Meta provider. Automated tests use mocked external provider responses; live paid calls need authorized operator testing.
-- Production is deployed at https://adproof-ai.vercel.app/ . Browser-accessible homepage, Studio, docs and API health returned HTTP 200 in an anonymous external smoke test on 27 October 2026. Both paid API routes returned HTTP 401 without the private demo code.
-- Real end-to-end Meta API calls (Audit → Refine → Verify) have **not** been independently executed and validated; installed credentials and a successful health response are not proof of provider success. Test with the private demo code before producing an authentic submission video.
+- A configured key or accepted demo code alone is not proof of model execution. Indicators record actual model responses separately. Code tests use mocked upstream responses; browser replay, genuine production calls and visual review are identified separately in the evidence.
+- Production: https://adproof-ai.vercel.app/ . The 1 November release passed source tests and public browser checks at desktop/mobile widths. Paid routes reject requests without accepted private access.
+- Genuine production results include ARUNA claim repair with a fresh independent comparison and actual 1080×1080 PNG/ZIP downloads; NORI Website 1600×900 and 1920×1080 exports without interpolation; and A4 output at target 150 PPI. See [response provenance, failures and files](evidence/live-2026-11-01/README.md). Application-recorded provenance is not a signed provider billing receipt, and these cases do not establish universal model accuracy.
+- Not every one of the 12 visual style options or every style/lock/output combination has been live-tested individually. Failed or uncertain results are retained for review, rather than represented as successful output.
 - Public browsing does not run paid models. A public four-step guide is displayed without fictional audit results.
 
 ## Official integration references
