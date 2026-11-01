@@ -140,12 +140,9 @@ export function createConsistencyUI({state,language,onSettingsChange,download,no
    if(options().source==='revised'&&!candidateAllowed())throw Error(say('Candidate failed or has not been verified. Export the original.','Kandidat gagal atau belum diverifikasi. Ekspor gambar asli.'));
    const src=source(),opts=options(),plan=outputPlan(await dimensions(exportSource()),opts);
    const mustAdapt=plan.aspect_changed;
-   if(mustAdapt&&!usableFormat(src,plan)){
-    const out=await adaptFormat(src,{width:plan.width,height:plan.height,print:opts.category==='print'});
-    formatCandidate={input:src,image:out.image,width:plan.width,height:plan.height,review:out.review,metadata:out.metadata};
-    q('#formatBefore').src=src;q('#formatAfter').src=out.image;q('#formatPreview').hidden=false;
-    q('#formatReview').textContent=out.review.status==='failed'?out.review.risks.map(r=>r.evidence).join(' · '):say('Composition verified against selected source.','Komposisi diverifikasi terhadap sumber terpilih.');
-   }
+   // This is a local PNG check, never a second paid adaptation attempt.
+   // Keep any failed candidate/diagnostics visible; only the explicitly
+   // labelled AI composition button may create another model request.
    if(mustAdapt&&!usableFormat(src,plan))throw Error(say('Adapt the composition with AI and pass verification before export. No blank-margin fallback.','Sesuaikan komposisi dengan AI dan lolos pemeriksaan sebelum ekspor. Tanpa margin kosong.'));
    q('#prepareOutput').disabled=true;
    const out=await renderOutput(mustAdapt?formatCandidate.image:exportSource(),opts,{allowInterpolation:q('#allowInterpolation').checked,aiAdapted:mustAdapt});if(token!==generation)return;

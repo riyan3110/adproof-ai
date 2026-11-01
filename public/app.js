@@ -601,11 +601,13 @@ async function adaptFormat(image,target){
   const referenceImage=await compactOriginalReference(image);
   const checked=await api('/api/audit',{...payload(out.image),caption:state.captionRepair?.final||state.context.caption,referenceImage,language:getLanguage()});
   attempt.audit=checked.provenance||null;attempt.tokens=checked.tokens??null;
+  attempt.audit_report=checked.audit||null;
   state.runs.push({stage:'format_audit',model:checked.model,tokens:checked.tokens,provenance:checked.provenance||null});
-  state.sparkResponded=true;updateMetaStatus();
+  state.sparkResponded=true;state.reauditResponded=true;updateMetaStatus();
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');
   const review=inspectFormatCandidate(baseline,checked.audit,state.consistency||visualUI.readSettings(),state.context?.facts||'');
   const repairReview=reviewRepairCandidate(baseline,checked.audit,{originalReferenceSent:true,language:getLanguage(),caption:state.context?.caption});
+  attempt.repair_review=repairReview;
   if(frame.source_pixels_preserved&&review.status!=='failed'&&review.coverage==='model_reports_complete'&&repairReview.status!=='regression_suspected'){review.status='validated';review.auto_approved=true;review.pixel_preservation={...frame,image:undefined};}
   if(repairReview.status==='regression_suspected'){
    review.status='failed';review.risks.push(...repairReview.reasons.map(evidence=>({code:'model_regression',evidence})));

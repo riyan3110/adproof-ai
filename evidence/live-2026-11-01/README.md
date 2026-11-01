@@ -58,3 +58,12 @@ Archived LumaDesk JSON deliberately serializes a validated review as `review_req
 The next real task is the deployed post-PR-62 A4 format adaptation, followed by independent comparison and inspection of an actual downloaded output. Reuse Nori's saved image/audit and avoid a duplicate initial audit. If it passes, run the Website ratio through the same explicit flow. These two live format successes are still **unverified**.
 
 Automatic approval review rejected the secure demo-code form submission in the resumed browser because it did not find explicit authorization for transmitting the private demo code to `https://adproof-ai.vercel.app`. No credential, signed cookie, forged session or alternative authentication path was used. The public release work can continue; the real authenticated format test requires that explicit approval. No new paid Meta request was made during this handoff.
+
+
+## Fresh authenticated format tests — 1 November, 13:28–13:32 WIB
+
+Production `4434df40a1bdc841f415d59bb9d09ca0235b204e` reused Nori's actual saved ZIP and revised audit, without another initial audit. A4 generation plus independent Spark comparison succeeded. The downloaded `nori/a4-150ppi-verified.png` is 1240×1754 at 150 PPI; all source copy and the bottle remain visible without duplicated typography. Its application provenance and pixel-preservation geometry are in `nori/a4-verified-production.json`. This does not certify professional print quality.
+
+Website generation and independent comparison failed the existing readability/layout regression guard. Clicking **Check output** unexpectedly started another image + comparison, also rejected, rather than only inspecting local pixels. Total consumption was six provider calls, exceeding the authorized four by two. No further provider requests were made. Both failed reports are retained; no Website success is claimed.
+
+The correction makes Check output strictly local: only the explicitly labelled AI composition action may call models. Failed previews and findings remain visible, and factual/visual/score regression guards remain unchanged. Future format exports preserve the complete comparison report and repair review for diagnosis; completed format comparisons also update the provider-status indicator. Regression tests exercise repeated local checks after missing/failed adaptation and assert zero provider calls. 258 source tests passed with mocked upstream; they are not a new live Website retest. File hashes and exact scope: `nori/format-live-manifest.json`.
