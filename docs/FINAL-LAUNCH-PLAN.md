@@ -1,6 +1,7 @@
 # AdProof AI — release gate & X promotion kit (29 October 2026 WIB)
 
 This file tracks **the existing** `riyan3110/adproof-ai`, not a proposed new product.
+**Current update — 1 November 2026:** this checklist retains the 29 October release history. Core production Meta calls, output inspection, PNG/ZIP recovery and public desktop/mobile checks now have [recorded live evidence](../evidence/live-2026-11-01/README.md). See [current readiness](HACKATHON-READINESS.md) for remaining style coverage, video and portal/submission work. Old unchecked boxes are not a claim that the completed production tests have never run.
 Current public URL: https://adproof-ai.vercel.app/app
 All external claims below are conditional on verifying the live production build and original Meta provider execution.
 

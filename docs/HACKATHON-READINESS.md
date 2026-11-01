@@ -1,8 +1,12 @@
 # AdProof AI — Hackathon readiness
 
 **Positioning:** Advertising Claim Verification & Repair Engine.
-**Experience:** Visual Proof Intelligence Studio — Detect → Verify → Repair → Prove.
-**Overall submission status: NOT READY for a truthful final submission until the remaining evidence below is completed.**
+**Experience:** Visual Proof Intelligence Studio — Audit → Repair → automatic Verify, with inspectable source evidence and claim lineage.
+**Current status — 1 November 2026: CORE PRODUCTION DEMO VERIFIED; FINAL SUBMISSION PACKAGE INCOMPLETE.** No final submission or acceptance receipt is recorded.
+
+The current core demo has authentic production Meta responses, visually inspected image downloads and ZIP round-trip evidence. ARUNA's saved revision passed a fresh independent Spark comparison; NORI Website downloads at 1600×900 and 1920×1080 and A4 at target 150 PPI are recorded in [the live evidence](../evidence/live-2026-11-01/README.md). This does not certify all model results or every style/lock/output combination.
+
+Remaining release work: finish the outstanding visual-style coverage, produce the final video from actual application behavior, verify the authenticated portal's fields/video specification and private evaluator access instructions, and submit with a confirmed receipt. Personal eligibility, registered track and acceptance of the event rules are not established by technical tests. Public event deadline rechecked 1 November: 4 November 21:00 ET, equivalent to 5 November 09:00 WIB.
 
 See [compliance register](HACKATHON-COMPLIANCE.md) for source-linked requirements and [engine documentation](CLAIM-PROOF-ENGINE.md) for implementation limits.
 
@@ -22,9 +26,10 @@ Official Rules weights: Impact 30%, Meta AI Tooling 25%, Technical Depth & Execu
 | Claim X-Ray | Implemented as panel | Actual source image and observation; no fake coordinates |
 | Muse Code authorship | Verified genuine contribution | Existing issue #9/run and new issue #14/run; original commit retained, ChatGPT fixes separate |
 | Access | Private paid routes retained | Public homepage/Studio/docs; Judge Access; fail-closed production |
-| Tests / viewport / preview | 84/84 automated; six real-browser viewport flows | See WORK-STATE and docs/qa/studio-2026-10-28. Regression mocks are not paid provider tests; release PR records deployment checks |
-| Authentic Meta E2E | NOT RUN in this upgrade | No local MODEL_API_KEY/DEMO_ACCESS_CODE; no user-selected rights-cleared ad for the demo |
-| Full screenshot set / participant-only instructions | Incomplete | One relevant anti-project screenshot recovered; rules/submission authenticated details need verification |
+| Tests / viewport / preview | 269 source tests passed; production desktop/mobile browser checks passed | Source upstream mocks and recorded replay are distinct from fresh Meta inference; release PRs record deployment checks |
+| Authentic Meta core workflow | Verified production cases | ARUNA original/repair/independent Verify, real PNG and ZIP; NORI real image/format comparisons and Website/A4 downloads. See 1 November evidence; not universal quality certification |
+| All visual styles / combinations | Coverage incomplete | Twelve selectable options exist; not every option or lock/output combination has been individually live-tested |
+| Screenshots / participant-only instructions | Current production screenshots available; portal details unverified | Live evidence includes actual Studio/download screenshots. Full participant-only requirements still need checking |
 | Participant eligibility / chosen track / signed waiver | NEEDS VERIFICATION | Participant must confirm privately |
 | Final video | NOT RECORDED | Must use actual successful provider calls |
 | Final submission / X | NOT PERFORMED | Requires user's explicit instruction; no acceptance receipt |
@@ -33,13 +38,13 @@ Official Rules weights: Impact 30%, Meta AI Tooling 25%, Technical Depth & Execu
 
 The first screen exposes all three capabilities through an interactive verification rail. Open Claim X-Ray, Proof Constellation or Claim DNA to switch the inspection workbench even before an audit; only truthful empty states appear. After a genuine audit, select a claim, use “Trace this claim in Constellation”, then inspect a quotation/status node. DNA “Inspect source” selects the corresponding original/revised claim and image. Results tabs separate Claims, Findings and Suggested copy; export is in its own footer.
 
-Desktop-first composition and mobile flow were verified in a real browser at 1920/1440/1280/768/390/320px. Evidence screenshots are regression fixtures, not material for a genuine submission demo. A server health response only confirms configuration; successful model requests and a complete live cycle still require separate evidence.
+Desktop-first composition and mobile flow have automated browser coverage, including narrow 320/390px screens. Historical mocked regression screenshots are distinct from the current genuine production screenshots in the live evidence folder. A server health response only confirms configuration; actual response provenance and output inspection establish the specific completed cases.
 
-For the live run, the owner needs a rights-cleared real creative, documented product facts, a privately entered judge code, and an approved cost cap for one Spark → Image → Spark cycle. Do not retrieve production secrets or repeatedly retry paid generation without an agreed budget.
+For a new recorded live run, use a creative the owner may share, documented product facts and privately verified Judge Access. Fictional QA products must be clearly labelled; mocked/replayed provider responses must never be described as fresh inference. Existing user authorization covers project testing with Meta credits; do not require repeated permission for the same authorized scope or expose credentials in the recording.
 
 ## Authentic demo storyboard
 
-Proposed **three-minute editorial cut**, not a verified official video duration. Confirm the actual portal's format/limit before recording. Do not present test fixture results as a Meta demo.
+Proposed **three-minute editorial cut**, not a verified official video duration. Confirm the actual portal's format/limit before the final cut. Distinguish fictional input material from genuine Meta execution; do not present mocks or replay as fresh calls.
 
 1. **0:00–0:20 — Problem.** Use one rights-cleared real product creative with an existing questionable claim. Show the actual product facts and explain their provenance. Avoid invented product benefits, prices or certifications.
 2. **0:20–0:50 — Detect.** Enter Judge Access privately before recording. Upload the real image and run Muse Spark. Show the actual returned claim and source; preserve uncertainty if no claim was readable.
@@ -65,6 +70,10 @@ Record only an authentic run. If the API fails, repair the fault and run again w
 ## Deferred
 
 AI Red Team Arena, What-If Lab, complex Proof Passport, paid infrastructure and image-coordinate highlighting. None is needed to run the core claim trace/repair/re-audit workflow.
+
+## Historical implementation notes — 28–30 October 2026
+
+The dated sections below preserve the investigation history. Statements such as "not run" or earlier budget/access blockers describe those earlier checks and are superseded by the current status and 1 November evidence above.
 
 ## Editorial Proofroom design review (28 October 2026)
 
