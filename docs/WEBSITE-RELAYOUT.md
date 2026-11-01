@@ -9,3 +9,10 @@ The new layout must pass a separate Spark comparison against the selected source
 Regression coverage exercises the raw landscape image surviving without a square overlay, the server's actual outgoing prompt, correct target geometry, missing receipts, changed products, new claims, incomplete text, and unreadable copy. Existing A4, local pixel repair, archive, recovery and free-output-check coverage remains.
 
 No fresh paid model call has been made for this change. The previous six calls, the two-call overrun incident, successful A4 download and failed Website outputs remain recorded in `evidence/live-2026-11-01/nori/format-live-manifest.json`. A fresh bounded live relayout and comparison are still required to establish the quality of an actual new Muse result. Test fixtures and source tests are not that live evidence.
+
+
+## Actual follow-up: audit scope mismatch
+
+The first live relayout after PR #65 returned complete exact copy, no product defect, clarity 95, and hierarchy 88. It was rejected solely for moving the bottle to the right and changing its fraction of the wider canvas. The audit request still carried the old composition lock, despite format validation deliberately exempting layout changes. The report is preserved in `evidence/live-2026-11-01/nori/website-relayout-scope-failed.json`; it remains a failed attempt, not a successful export.
+
+The audit route now validates an explicit format-comparison mode and target, requires the original reference, and tells Spark that requested repositioning and canvas changes are not composition defects. Composition/background locks are exempt only in that format audit; product identity, parts, copy completeness, actual readability and visual defects remain checked. Ordinary Repair verification retains its original lock policy. Invalid comparison modes/targets fail before inference, and one comparison still uses one Spark request. 263 source tests pass with mocked upstream.

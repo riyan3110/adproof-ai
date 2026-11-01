@@ -1,0 +1,2780 @@
+{
+  "app": "AdProof AI",
+  "date": "2026-11-01T06:56:16.508Z",
+  "report_language": "id",
+  "product": "Nori Bottle",
+  "context": {
+    "product": "Nori Bottle",
+    "facts": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+    "caption": "Nori Bottle. Capacity: 500 mL. Reusable bottle."
+  },
+  "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+  "caption_repair": {
+    "version": "source-bound-1",
+    "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+    "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+    "status": "source_bound",
+    "method": "meta_selected_verbatim_facts",
+    "product_identity": "Nori Bottle",
+    "statements": [
+      {
+        "text": "Fictional QA product: Nori Bottle",
+        "fact_quote": "Fictional QA product: Nori Bottle"
+      },
+      {
+        "text": "Capacity: 500 mL",
+        "fact_quote": "Capacity: 500 mL"
+      },
+      {
+        "text": "Category: Reusable water bottle",
+        "fact_quote": "Category: Reusable water bottle"
+      }
+    ],
+    "verification": {
+      "status": "passed",
+      "basis": "complete_source_lines_and_exact_rendered_values",
+      "unsupported_sentences": 0
+    },
+    "basis": "seller_supplied_facts_not_independently_verified"
+  },
+  "runs": [
+    {
+      "stage": "archive_baseline",
+      "origin": "saved_archive",
+      "model": "muse-spark-1.3",
+      "tokens": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+        "output_sha256": null,
+        "stage": "reaudit",
+        "completed_at": "2026-10-31T20:15:34.860Z",
+        "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "format_image",
+      "model": "muse-image-1.0",
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-image-1.0",
+        "requested_model": "muse-image-1.0",
+        "returned_model": null,
+        "response_id": null,
+        "stage": "repair",
+        "completed_at": "2026-11-01T06:55:35.842Z",
+        "input_sha256": "fbdd56ae5ef46bd413ed8f911b1c2e0947c7d03e46b4c63f5383abe862db9c93",
+        "output_sha256": "be64705c64bb6e70fcd267538bc5b0347eb77fb8ede27d945adf240df6bf2ddf"
+      }
+    },
+    {
+      "stage": "format_audit",
+      "model": "muse-spark-1.3",
+      "tokens": 17705,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a195e4-d026-709d-84f5-84cabe85db7c",
+        "stage": "reaudit",
+        "completed_at": "2026-11-01T06:56:03.166Z",
+        "input_sha256": "9a75dfcd676f4b2813ecefe8b001e601d0721e52c2cf949ec775d5b240b24055",
+        "report_language": "id"
+      }
+    }
+  ],
+  "auto_correction": null,
+  "repair_review": null,
+  "claim_evolution": {
+    "basis": "seller_supplied_facts_not_independently_verified",
+    "entries": [
+      {
+        "before": {
+          "id": "claim-1",
+          "claim": "Nori Bottle",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Fictional QA product: Nori Bottle",
+          "reason": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+          "recommended_action": "Pertahankan"
+        },
+        "after": null,
+        "before_index": 0,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-2",
+          "claim": "QA TEST — FICTIONAL PRODUCT",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Fictional QA product: Nori Bottle",
+          "reason": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+          "recommended_action": "Pertahankan"
+        },
+        "after": null,
+        "before_index": 1,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-3",
+          "claim": "Capacity: 500 mL",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Capacity: 500 mL",
+          "reason": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+          "recommended_action": "Pertahankan"
+        },
+        "after": null,
+        "before_index": 2,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      },
+      {
+        "before": {
+          "id": "claim-4",
+          "claim": "Reusable bottle",
+          "origin": "creative",
+          "assessment": "supported_by_supplied_facts",
+          "fact_quote": "Category: Reusable water bottle",
+          "reason": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+          "recommended_action": "Pertahankan"
+        },
+        "after": null,
+        "before_index": 3,
+        "after_index": null,
+        "status": "pending",
+        "match": "none",
+        "explanation": "Later audit is not available yet; comparison is pending."
+      }
+    ],
+    "summary": {
+      "pending": 4
+    },
+    "complete": false
+  },
+  "proof_constellation": {
+    "initial": {
+      "nodes": [
+        {
+          "id": "fact-source",
+          "type": "fact_source",
+          "label": "Seller-supplied facts",
+          "detail": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "id": "claim-1",
+          "type": "claim",
+          "label": "Nori Bottle",
+          "detail": "[creative] Nori Bottle",
+          "source": "claim_ledger[0].claim"
+        },
+        {
+          "id": "claim-1-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+          "source": "claim_ledger[0].assessment"
+        },
+        {
+          "id": "claim-1-action",
+          "type": "action",
+          "label": "Pertahankan",
+          "detail": "Pertahankan",
+          "source": "claim_ledger[0].recommended_action"
+        },
+        {
+          "id": "claim-1-quote",
+          "type": "quote",
+          "label": "Fictional QA product: Nori Bottle",
+          "detail": "Fictional QA product: Nori Bottle",
+          "source": "claim_ledger[0].fact_quote"
+        },
+        {
+          "id": "claim-2",
+          "type": "claim",
+          "label": "QA TEST — FICTIONAL PRODUCT",
+          "detail": "[creative] QA TEST — FICTIONAL PRODUCT",
+          "source": "claim_ledger[1].claim"
+        },
+        {
+          "id": "claim-2-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+          "source": "claim_ledger[1].assessment"
+        },
+        {
+          "id": "claim-2-action",
+          "type": "action",
+          "label": "Pertahankan",
+          "detail": "Pertahankan",
+          "source": "claim_ledger[1].recommended_action"
+        },
+        {
+          "id": "claim-2-quote",
+          "type": "quote",
+          "label": "Fictional QA product: Nori Bottle",
+          "detail": "Fictional QA product: Nori Bottle",
+          "source": "claim_ledger[1].fact_quote"
+        },
+        {
+          "id": "claim-3",
+          "type": "claim",
+          "label": "Capacity: 500 mL",
+          "detail": "[creative] Capacity: 500 mL",
+          "source": "claim_ledger[2].claim"
+        },
+        {
+          "id": "claim-3-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+          "source": "claim_ledger[2].assessment"
+        },
+        {
+          "id": "claim-3-action",
+          "type": "action",
+          "label": "Pertahankan",
+          "detail": "Pertahankan",
+          "source": "claim_ledger[2].recommended_action"
+        },
+        {
+          "id": "claim-3-quote",
+          "type": "quote",
+          "label": "Capacity: 500 mL",
+          "detail": "Capacity: 500 mL",
+          "source": "claim_ledger[2].fact_quote"
+        },
+        {
+          "id": "claim-4",
+          "type": "claim",
+          "label": "Reusable bottle",
+          "detail": "[creative] Reusable bottle",
+          "source": "claim_ledger[3].claim"
+        },
+        {
+          "id": "claim-4-status",
+          "type": "status",
+          "label": "supported_by_supplied_facts",
+          "detail": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+          "source": "claim_ledger[3].assessment"
+        },
+        {
+          "id": "claim-4-action",
+          "type": "action",
+          "label": "Pertahankan",
+          "detail": "Pertahankan",
+          "source": "claim_ledger[3].recommended_action"
+        },
+        {
+          "id": "claim-4-quote",
+          "type": "quote",
+          "label": "Category: Reusable water bottle",
+          "detail": "Category: Reusable water bottle",
+          "source": "claim_ledger[3].fact_quote"
+        }
+      ],
+      "edges": [
+        {
+          "from": "claim-1",
+          "to": "claim-1-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-1",
+          "to": "claim-1-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[0]"
+        },
+        {
+          "from": "claim-1",
+          "to": "claim-1-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[0].fact_quote"
+        },
+        {
+          "from": "claim-1-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[1]"
+        },
+        {
+          "from": "claim-2",
+          "to": "claim-2-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[1].fact_quote"
+        },
+        {
+          "from": "claim-2-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[2]"
+        },
+        {
+          "from": "claim-3",
+          "to": "claim-3-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[2].fact_quote"
+        },
+        {
+          "from": "claim-3-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-status",
+          "relation": "has_assessment",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-action",
+          "relation": "has_recommended_action",
+          "source": "claim_ledger[3]"
+        },
+        {
+          "from": "claim-4",
+          "to": "claim-4-quote",
+          "relation": "has_quote",
+          "source": "claim_ledger[3].fact_quote"
+        },
+        {
+          "from": "claim-4-quote",
+          "to": "fact-source",
+          "relation": "quoted_from",
+          "source": "input.suppliedFacts"
+        }
+      ],
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "revised": null
+  },
+  "evidence_basis": "seller_supplied_facts_not_independently_verified",
+  "original": {
+    "text_inventory": {
+      "coverage": "complete",
+      "limitations": "",
+      "lines": [
+        "QA TEST — FICTIONAL PRODUCT",
+        "Nori Bottle",
+        "Capacity: 500 mL",
+        "Reusable bottle"
+      ]
+    },
+    "consistency": {
+      "original_text": {
+        "coverage": "complete",
+        "limitations": "",
+        "lines": [
+          "QA TEST — FICTIONAL PRODUCT",
+          "Nori Bottle",
+          "Capacity: 500 mL",
+          "Reusable bottle"
+        ]
+      },
+      "revised_text": {
+        "coverage": "complete",
+        "limitations": "",
+        "lines": [
+          "QA TEST — FICTIONAL PRODUCT",
+          "Nori Bottle",
+          "Capacity: 500 mL",
+          "Reusable bottle"
+        ]
+      },
+      "changed_text": [],
+      "new_claims": [],
+      "visual": {
+        "product_shape": {
+          "status": "preserved",
+          "evidence": "Botol di tengah pada kedua gambar berbentuk silinder dengan leher sempit, bahu dan bawah membulat, serta tutup hitam; tidak ada bagian hilang atau tambahan."
+        },
+        "colors": {
+          "status": "preserved",
+          "evidence": "Bodi hijau tua dan tutup hitam terlihat sama di kedua gambar; highlight dan bayangan hanya efek pencahayaan, warna dasar tidak berubah."
+        },
+        "lighting": {
+          "status": "changed",
+          "evidence": "Gambar asli datar tanpa bayangan, gambar revisi memakai cahaya arah dari kanan dengan bayangan lembut ke kiri di area alas; perubahan ini diizinkan karena tidak terkunci."
+        },
+        "background": {
+          "status": "changed",
+          "evidence": "Latar asli krem polos datar, latar revisi bertekstur dengan gradasi cahaya dan area alas; perubahan ini berada dalam cakupan yang tidak terkunci."
+        },
+        "composition": {
+          "status": "preserved",
+          "evidence": "Tata letak sama: judul di kiri atas, info kapasitas di kiri bawah, botol di tengah; skala dan sudut pandang depan tetap dipertahankan."
+        },
+        "typography": {
+          "status": "preserved",
+          "evidence": "Wording dan penempatan teks di kiri atas dan kiri bawah sama persis, keterbacaan tetap baik dengan gaya sans-serif."
+        },
+        "branding": {
+          "status": "preserved",
+          "evidence": "Nama Nori Bottle tampil sama di kedua gambar tanpa logo tambahan atau perubahan identitas merek."
+        }
+      }
+    },
+    "score": 94,
+    "headline": "Revisi sinematik tetap akurat dan konsisten dengan referensi",
+    "summary": "IMAGE 1 menampilkan botol hijau tua dengan tutup hitam secara fotorealistik dengan tata letak sama seperti referensi. Semua teks yang terbaca didukung fakta pemasok dan tidak ada klaim durasi, kesehatan, atau lingkungan. Tidak ditemukan cacat visual; perubahan pencahayaan dan latar sinematik berada dalam cakupan yang tidak terkunci dan tidak mengubah bentuk,",
+    "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+    "issues": [],
+    "strengths": [
+      "Semua klaim kapasitas dan kategori sesuai fakta pemasok.",
+      "Bentuk botol silinder hijau tua dengan tutup hitam terlihat jelas dan utuh.",
+      "Tipografi judul dan info kapasitas terbaca jelas dengan hierarki rapi.",
+      "Pencahayaan sinematik memberi kesan premium tanpa menutupi produk."
+    ],
+    "claim_ledger": [
+      {
+        "id": "claim-1",
+        "claim": "Nori Bottle",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Fictional QA product: Nori Bottle",
+        "reason": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+        "recommended_action": "Pertahankan"
+      },
+      {
+        "id": "claim-2",
+        "claim": "QA TEST — FICTIONAL PRODUCT",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Fictional QA product: Nori Bottle",
+        "reason": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+        "recommended_action": "Pertahankan"
+      },
+      {
+        "id": "claim-3",
+        "claim": "Capacity: 500 mL",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Capacity: 500 mL",
+        "reason": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+        "recommended_action": "Pertahankan"
+      },
+      {
+        "id": "claim-4",
+        "claim": "Reusable bottle",
+        "origin": "creative",
+        "assessment": "supported_by_supplied_facts",
+        "fact_quote": "Category: Reusable water bottle",
+        "reason": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+        "recommended_action": "Pertahankan"
+      }
+    ],
+    "claim_ledger_available": true,
+    "evidence_summary": {
+      "total": 4,
+      "supported_by_supplied_facts": 4,
+      "unsupported_by_supplied_facts": 0,
+      "contradicted_by_supplied_facts": 0,
+      "unreadable": 0,
+      "needs_human_review": 0,
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "checks": {
+      "claim": 98,
+      "clarity": 95,
+      "hierarchy": 92,
+      "action": 85
+    },
+    "caption_repair": {
+      "version": "source-bound-1",
+      "original": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+      "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+      "status": "source_bound",
+      "method": "meta_selected_verbatim_facts",
+      "product_identity": "Nori Bottle",
+      "statements": [
+        {
+          "text": "Fictional QA product: Nori Bottle",
+          "fact_quote": "Fictional QA product: Nori Bottle"
+        },
+        {
+          "text": "Capacity: 500 mL",
+          "fact_quote": "Capacity: 500 mL"
+        },
+        {
+          "text": "Category: Reusable water bottle",
+          "fact_quote": "Category: Reusable water bottle"
+        }
+      ],
+      "verification": {
+        "status": "passed",
+        "basis": "complete_source_lines_and_exact_rendered_values",
+        "unsupported_sentences": 0
+      },
+      "basis": "seller_supplied_facts_not_independently_verified"
+    },
+    "local_text_repair": null
+  },
+  "verified": null,
+  "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+  "visual_consistency": {
+    "format_history": [
+      {
+        "requested": {
+          "width": 1600,
+          "height": 900,
+          "print": false
+        },
+        "status": "failed",
+        "image": {
+          "provider": "Meta Model API",
+          "model": "muse-image-1.0",
+          "requested_model": "muse-image-1.0",
+          "returned_model": null,
+          "response_id": null,
+          "stage": "repair",
+          "completed_at": "2026-11-01T06:55:35.842Z",
+          "input_sha256": "fbdd56ae5ef46bd413ed8f911b1c2e0947c7d03e46b4c63f5383abe862db9c93",
+          "output_sha256": "be64705c64bb6e70fcd267538bc5b0347eb77fb8ede27d945adf240df6bf2ddf"
+        },
+        "audit": {
+          "provider": "Meta Model API",
+          "model": "muse-spark-1.3",
+          "requested_model": "muse-spark-1.3",
+          "returned_model": "muse-spark-1.3",
+          "response_id": "chatcmpl-01a195e4-d026-709d-84f5-84cabe85db7c",
+          "stage": "reaudit",
+          "completed_at": "2026-11-01T06:56:03.166Z",
+          "input_sha256": "9a75dfcd676f4b2813ecefe8b001e601d0721e52c2cf949ec775d5b240b24055",
+          "report_language": "id"
+        },
+        "review": {
+          "version": "visual-consistency-2",
+          "status": "failed",
+          "validation_basis": null,
+          "auto_approved": false,
+          "coverage": "model_reports_complete",
+          "locks": {
+            "product_shape": {
+              "locked": true,
+              "status": "unable_to_verify",
+              "evidence": "Bentuk botol silinder bahu membulat dengan tutup hitam utuh di kedua gambar, tidak ada bagian hilang atau geometri rusak. [Model reports preserved; no independent pixel/semantic proof.]"
+            },
+            "colors": {
+              "locked": false,
+              "status": "unable_to_verify",
+              "evidence": "Bodi hijau gelap, tutup hitam, dan latar krem terlihat sama di kedua gambar. [Model reports preserved; no independent pixel/semantic proof.]"
+            },
+            "lighting": {
+              "locked": false,
+              "status": "unable_to_verify",
+              "evidence": "Sorotan lembut dari kanan dan bayangan ke kiri pada permukaan terlihat konsisten di kedua gambar. [Model reports preserved; no independent pixel/semantic proof.]"
+            },
+            "background": {
+              "locked": false,
+              "status": "unable_to_verify",
+              "evidence": "Dinding dan permukaan krem bertekstur sama di kedua gambar, tanpa objek tambahan. [Model reports preserved; no independent pixel/semantic proof.]"
+            },
+            "composition": {
+              "locked": false,
+              "status": "changed",
+              "evidence": "Pada referensi botol tampil besar di tengah, pada revisi botol tampil lebih kecil dan bergeser ke sisi kanan dengan ruang kosong lebih luas di kiri."
+            },
+            "typography": {
+              "locked": true,
+              "status": "unable_to_verify",
+              "evidence": "Isi, warna, dan penempatan teks di sisi kiri sama di kedua gambar dan tetap terbaca jelas. [Model reports preserved; no independent pixel/semantic proof.]"
+            },
+            "branding": {
+              "locked": true,
+              "status": "unable_to_verify",
+              "evidence": "Nama Nori Bottle tampil sama tanpa logo tambahan atau perubahan identitas. [Model reports preserved; no independent pixel/semantic proof.]"
+            }
+          },
+          "text": {
+            "added": [],
+            "removed": [],
+            "changed": [],
+            "limitations": []
+          },
+          "risks": [
+            {
+              "code": "format_visual_issue",
+              "evidence": "Pergeseran komposisi dan skala produk"
+            },
+            {
+              "code": "model_regression",
+              "evidence": "Audit revisi masih menemukan potensi masalah visual/struktur/keterbacaan: Pergeseran komposisi dan skala produk."
+            }
+          ],
+          "measurements": {
+            "basis": "64x64_normalized_pixel_heuristic_not_object_detection",
+            "identical": false,
+            "original": {
+              "width": 1600,
+              "height": 1600
+            },
+            "revised": {
+              "width": 2048,
+              "height": 1152
+            },
+            "aspect_delta": 0,
+            "mean_color_delta": 0.02173330269607843,
+            "luminance_delta": 0.02214803327971307,
+            "border_delta": 0.04932670985060792,
+            "mean_pixel_delta": 0.15070657169117727,
+            "changed_sample_fraction": 0.310546875,
+            "requested_format": {
+              "width": 1600,
+              "height": 900
+            },
+            "independent_review": {
+              "reference_sent": true,
+              "provider": "Meta Model API",
+              "stage": "reaudit",
+              "source_response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+              "response_id": "chatcmpl-01a195e4-d026-709d-84f5-84cabe85db7c",
+              "input_sha256": "9a75dfcd676f4b2813ecefe8b001e601d0721e52c2cf949ec775d5b240b24055"
+            },
+            "source_aspect_delta": 0.4375,
+            "aspect_comparison": "requested_format"
+          },
+          "limitations": [
+            "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.",
+            "Some locks could not be independently verified.",
+            "Expected scene extension and canvas ratio changes are not preservation proof. Inspect product edges, copy and logos at 100%."
+          ],
+          "format_relayout": true,
+          "exempt_from_lock_comparison": [
+            "background_extension",
+            "canvas_aspect_ratio"
+          ],
+          "original_locks": {
+            "product_shape": true,
+            "colors": false,
+            "lighting": false,
+            "background": false,
+            "composition": true,
+            "typography": true,
+            "branding": true
+          }
+        },
+        "strategy": "independent_ai_relayout",
+        "deterministic_extension": null,
+        "model_native_dimensions": {
+          "width": 2048,
+          "height": 1152
+        },
+        "reference_frame": {
+          "method": "independent_ai_relayout",
+          "source_pixels_preserved": false,
+          "source_dimensions": {
+            "width": 1600,
+            "height": 1600
+          },
+          "native_dimensions": {
+            "width": 2048,
+            "height": 1152
+          }
+        },
+        "tokens": 17705,
+        "audit_report": {
+          "text_inventory": {
+            "coverage": "complete",
+            "limitations": "",
+            "lines": [
+              "QA TEST — FICTIONAL PRODUCT",
+              "Nori Bottle",
+              "Capacity: 500 mL",
+              "Reusable bottle"
+            ]
+          },
+          "consistency": {
+            "original_text": {
+              "coverage": "complete",
+              "limitations": "",
+              "lines": [
+                "QA TEST — FICTIONAL PRODUCT",
+                "Nori Bottle",
+                "Capacity: 500 mL",
+                "Reusable bottle"
+              ]
+            },
+            "revised_text": {
+              "coverage": "complete",
+              "limitations": "",
+              "lines": [
+                "QA TEST — FICTIONAL PRODUCT",
+                "Nori Bottle",
+                "Capacity: 500 mL",
+                "Reusable bottle"
+              ]
+            },
+            "changed_text": [],
+            "new_claims": [],
+            "visual": {
+              "product_shape": {
+                "status": "preserved",
+                "evidence": "Bentuk botol silinder bahu membulat dengan tutup hitam utuh di kedua gambar, tidak ada bagian hilang atau geometri rusak."
+              },
+              "colors": {
+                "status": "preserved",
+                "evidence": "Bodi hijau gelap, tutup hitam, dan latar krem terlihat sama di kedua gambar."
+              },
+              "lighting": {
+                "status": "preserved",
+                "evidence": "Sorotan lembut dari kanan dan bayangan ke kiri pada permukaan terlihat konsisten di kedua gambar."
+              },
+              "background": {
+                "status": "preserved",
+                "evidence": "Dinding dan permukaan krem bertekstur sama di kedua gambar, tanpa objek tambahan."
+              },
+              "composition": {
+                "status": "changed",
+                "evidence": "Pada referensi botol tampil besar di tengah, pada revisi botol tampil lebih kecil dan bergeser ke sisi kanan dengan ruang kosong lebih luas di kiri."
+              },
+              "typography": {
+                "status": "preserved",
+                "evidence": "Isi, warna, dan penempatan teks di sisi kiri sama di kedua gambar dan tetap terbaca jelas."
+              },
+              "branding": {
+                "status": "preserved",
+                "evidence": "Nama Nori Bottle tampil sama tanpa logo tambahan atau perubahan identitas."
+              }
+            }
+          },
+          "score": 86,
+          "headline": "Klaim sesuai fakta, komposisi gambar bergeser",
+          "summary": "Kreatif revisi menampilkan botol hijau gelap dengan tutup hitam secara utuh dan semua teks kapasitas serta jenis produk sesuai fakta pemasok. Tidak ada klaim durasi, kesehatan, atau lingkungan. Satu-satunya perbedaan material adalah skala dan posisi produk yang lebih kecil di kanan dibanding referensi di tengah.",
+          "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "issues": [
+            {
+              "id": "issue-1",
+              "title": "Pergeseran komposisi dan skala produk",
+              "category": "Consistency",
+              "severity": "medium",
+              "evidence": "Botol pada gambar revisi terlihat lebih kecil dan terletak di sisi kanan, sedangkan pada gambar referensi botol tampil besar di tengah; teks di sisi kiri tetap sama sehingga bingkai keseluruhan berubah.",
+              "suggestion": "Kembalikan posisi, skala, dan bingkai produk agar sama dengan referensi untuk menjaga kunci komposisi."
+            }
+          ],
+          "strengths": [
+            "Seluruh klaim kapasitas dan jenis produk sesuai fakta pemasok.",
+            "Tampilan produk hijau gelap dengan tutup hitam jelas dan tidak rusak.",
+            "Tipografi kontras dan mudah dibaca dengan pencahayaan lembut."
+          ],
+          "claim_ledger": [
+            {
+              "id": "claim-1",
+              "claim": "Nori Bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk terlihat di gambar dan sama dengan fakta pemasok.",
+              "recommended_action": "Pertahankan apa adanya."
+            },
+            {
+              "id": "claim-2",
+              "claim": "QA TEST — FICTIONAL PRODUCT",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Penanda produk fiktif untuk QA sesuai dengan fakta bahwa ini produk QA fiktif.",
+              "recommended_action": "Pertahankan apa adanya."
+            },
+            {
+              "id": "claim-3",
+              "claim": "Capacity: 500 mL",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas yang tertera sama persis dengan fakta kapasitas dari pemasok.",
+              "recommended_action": "Pertahankan apa adanya."
+            },
+            {
+              "id": "claim-4",
+              "claim": "Reusable bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Jenis botol guna ulang sesuai dengan kategori produk pada fakta pemasok.",
+              "recommended_action": "Pertahankan apa adanya."
+            }
+          ],
+          "claim_ledger_available": true,
+          "evidence_summary": {
+            "total": 4,
+            "supported_by_supplied_facts": 4,
+            "unsupported_by_supplied_facts": 0,
+            "contradicted_by_supplied_facts": 0,
+            "unreadable": 0,
+            "needs_human_review": 0,
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "checks": {
+            "claim": 100,
+            "clarity": 95,
+            "hierarchy": 88,
+            "action": 75
+          },
+          "caption_repair": {
+            "version": "source-bound-1",
+            "original": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "status": "source_bound",
+            "method": "meta_selected_verbatim_facts",
+            "product_identity": "Nori Bottle",
+            "statements": [
+              {
+                "text": "Fictional QA product: Nori Bottle",
+                "fact_quote": "Fictional QA product: Nori Bottle"
+              },
+              {
+                "text": "Capacity: 500 mL",
+                "fact_quote": "Capacity: 500 mL"
+              },
+              {
+                "text": "Category: Reusable water bottle",
+                "fact_quote": "Category: Reusable water bottle"
+              }
+            ],
+            "verification": {
+              "status": "passed",
+              "basis": "complete_source_lines_and_exact_rendered_values",
+              "unsupported_sentences": 0
+            },
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "local_text_repair": null
+        },
+        "repair_review": {
+          "status": "regression_suspected",
+          "reasons": [
+            "Audit revisi masih menemukan potensi masalah visual/struktur/keterbacaan: Pergeseran komposisi dan skala produk."
+          ],
+          "original_reference_sent": true,
+          "basis": "model_selected_observations_not_pixel_certification",
+          "caption_review": {
+            "status": "needs_human_review",
+            "issues": [],
+            "unchanged": true,
+            "limitation": "Image repair cannot change the original user-provided caption. A truncated model claim ledger is not a complete review."
+          },
+          "auto_approved": false
+        }
+      }
+    ],
+    "upload_dimensions": {
+      "width": 1200,
+      "height": 1200
+    },
+    "source_dimensions": {
+      "width": 1600,
+      "height": 1600
+    },
+    "settings": {
+      "version": "visual-consistency-2",
+      "style": "cinematic",
+      "locks": {
+        "product_shape": true,
+        "colors": false,
+        "lighting": false,
+        "background": false,
+        "composition": true,
+        "typography": true,
+        "branding": true
+      },
+      "region": null
+    },
+    "repair": null,
+    "verification": null,
+    "output_requested": {
+      "category": "website",
+      "preset": 0,
+      "width": 210,
+      "height": 297,
+      "unit": "mm",
+      "ppi": 150,
+      "standard": "a4",
+      "padding": "white",
+      "source": "original"
+    },
+    "output_actual": null
+  },
+  "archive_history": [
+    {
+      "from": "original",
+      "report": {
+        "app": "AdProof AI",
+        "date": "2026-10-31T20:14:42.698Z",
+        "report_language": "id",
+        "product": "Nori Bottle",
+        "context": {
+          "product": "Nori Bottle",
+          "facts": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+          "caption": "Nori Bottle. Capacity: 500 mL. Reusable bottle."
+        },
+        "caption_repair": {
+          "version": "source-bound-1",
+          "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+          "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "status": "source_bound",
+          "method": "meta_selected_verbatim_facts",
+          "product_identity": "Nori Bottle",
+          "statements": [
+            {
+              "text": "Fictional QA product: Nori Bottle",
+              "fact_quote": "Fictional QA product: Nori Bottle"
+            },
+            {
+              "text": "Capacity: 500 mL",
+              "fact_quote": "Capacity: 500 mL"
+            },
+            {
+              "text": "Category: Reusable water bottle",
+              "fact_quote": "Category: Reusable water bottle"
+            }
+          ],
+          "verification": {
+            "status": "passed",
+            "basis": "complete_source_lines_and_exact_rendered_values",
+            "unsupported_sentences": 0
+          },
+          "basis": "seller_supplied_facts_not_independently_verified"
+        },
+        "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+        "runs": [
+          {
+            "stage": "initial",
+            "model": "muse-spark-1.3",
+            "tokens": 8735,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-spark-1.3",
+              "requested_model": "muse-spark-1.3",
+              "returned_model": "muse-spark-1.3",
+              "response_id": "chatcmpl-01a19398-24f1-70b5-858b-da42dc9ac697",
+              "output_sha256": null,
+              "stage": "audit",
+              "completed_at": "2026-10-31T20:13:04.194Z",
+              "input_sha256": "7b905d29fe32306a5177dca0b9d89b33b9b27efe97df9c2e03b85ced8cf5fac5",
+              "report_language": "id"
+            }
+          },
+          {
+            "stage": "visual_style",
+            "model": "muse-image-1.0",
+            "tokens": null,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-image-1.0",
+              "requested_model": "muse-image-1.0",
+              "returned_model": null,
+              "response_id": null,
+              "output_sha256": "c2756707578f2880eea6f31c32cf79dd4c1a9ea5ad96044a1edf836bb07a34ca",
+              "stage": "repair",
+              "completed_at": "2026-10-31T20:15:02.163Z",
+              "input_sha256": "95dc98298650d7301add5fd10736ff9e7b93911513955c9518e1770eb8aabc8b",
+              "report_language": "und"
+            }
+          },
+          {
+            "stage": "reaudit",
+            "model": "muse-spark-1.3",
+            "tokens": 17207,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-spark-1.3",
+              "requested_model": "muse-spark-1.3",
+              "returned_model": "muse-spark-1.3",
+              "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+              "output_sha256": null,
+              "stage": "reaudit",
+              "completed_at": "2026-10-31T20:15:34.860Z",
+              "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+              "report_language": "id"
+            }
+          }
+        ],
+        "original": {
+          "text_inventory": {
+            "coverage": "complete",
+            "limitations": "",
+            "lines": [
+              "QA TEST — FICTIONAL PRODUCT",
+              "Nori Bottle",
+              "Capacity: 500 mL",
+              "Reusable bottle"
+            ]
+          },
+          "consistency": null,
+          "score": 96,
+          "headline": "Iklan minimalis sudah sesuai fakta yang diberikan",
+          "summary": "Kreatif hanya menampilkan nama, kapasitas, dan jenis botol yang semuanya didukung fakta pemasok. Tidak ditemukan klaim terukur tambahan atau cacat visual pada piksel yang terlihat.",
+          "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "issues": [],
+          "strengths": [
+            "Nama produk dan kapasitas sesuai dengan fakta pemasok.",
+            "Teks terbaca jelas dengan hierarki atas dan bawah yang rapi.",
+            "Visual botol sederhana sesuai deskripsi warna dan bentuk.",
+            "Tidak ada klaim kinerja tambahan yang tidak terverifikasi."
+          ],
+          "claim_ledger": [
+            {
+              "id": "claim-1",
+              "claim": "Nori Bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk pada gambar sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-2",
+              "claim": "Capacity: 500 mL",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas pada gambar sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-3",
+              "claim": "Reusable bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Jenis produk pada gambar sesuai dengan kategori pada fakta.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-4",
+              "claim": "Nori Bottle.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk pada caption sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-5",
+              "claim": "Capacity: 500 mL.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas pada caption sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-6",
+              "claim": "Reusable bottle.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Jenis produk pada caption sesuai dengan kategori pada fakta.",
+              "recommended_action": "Pertahankan."
+            }
+          ],
+          "claim_ledger_available": true,
+          "evidence_summary": {
+            "total": 6,
+            "supported_by_supplied_facts": 6,
+            "unsupported_by_supplied_facts": 0,
+            "contradicted_by_supplied_facts": 0,
+            "unreadable": 0,
+            "needs_human_review": 0,
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "checks": {
+            "claim": 100,
+            "clarity": 96,
+            "hierarchy": 94,
+            "action": 80
+          },
+          "caption_repair": {
+            "version": "source-bound-1",
+            "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+            "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "status": "source_bound",
+            "method": "meta_selected_verbatim_facts",
+            "product_identity": "Nori Bottle",
+            "statements": [
+              {
+                "text": "Fictional QA product: Nori Bottle",
+                "fact_quote": "Fictional QA product: Nori Bottle"
+              },
+              {
+                "text": "Capacity: 500 mL",
+                "fact_quote": "Capacity: 500 mL"
+              },
+              {
+                "text": "Category: Reusable water bottle",
+                "fact_quote": "Category: Reusable water bottle"
+              }
+            ],
+            "verification": {
+              "status": "passed",
+              "basis": "complete_source_lines_and_exact_rendered_values",
+              "unsupported_sentences": 0
+            },
+            "basis": "seller_supplied_facts_not_independently_verified",
+            "independent_audit": {
+              "provenance": {
+                "provider": "Meta Model API",
+                "model": "muse-spark-1.3",
+                "requested_model": "muse-spark-1.3",
+                "returned_model": "muse-spark-1.3",
+                "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+                "stage": "reaudit",
+                "completed_at": "2026-10-31T20:15:34.860Z",
+                "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+                "report_language": "id"
+              },
+              "caption_sent": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+              "observed_claims": []
+            }
+          },
+          "local_text_repair": null
+        },
+        "verified": null,
+        "auto_correction": null,
+        "visual_consistency": {
+          "format_history": [],
+          "upload_dimensions": {
+            "width": 1200,
+            "height": 1200
+          },
+          "source_dimensions": {
+            "width": 1200,
+            "height": 1200
+          },
+          "settings": {
+            "version": "visual-consistency-2",
+            "style": "cinematic",
+            "locks": {
+              "product_shape": true,
+              "colors": false,
+              "lighting": false,
+              "background": false,
+              "composition": true,
+              "typography": true,
+              "branding": true
+            },
+            "region": null
+          },
+          "repair": null,
+          "verification": null,
+          "output_requested": {
+            "category": "social",
+            "preset": 0,
+            "width": 210,
+            "height": 297,
+            "unit": "mm",
+            "ppi": 150,
+            "standard": "a4",
+            "padding": "white",
+            "source": "original"
+          },
+          "output_actual": null
+        },
+        "repair_review": null,
+        "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+        "archive_artifacts": null
+      }
+    },
+    {
+      "from": "revised",
+      "report": {
+        "app": "AdProof AI",
+        "date": "2026-10-31T20:16:43.773Z",
+        "report_language": "id",
+        "product": "Nori Bottle",
+        "context": {
+          "product": "Nori Bottle",
+          "facts": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+          "caption": "Nori Bottle. Capacity: 500 mL. Reusable bottle."
+        },
+        "caption_repair": {
+          "version": "source-bound-1",
+          "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+          "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "status": "source_bound",
+          "method": "meta_selected_verbatim_facts",
+          "product_identity": "Nori Bottle",
+          "statements": [
+            {
+              "text": "Fictional QA product: Nori Bottle",
+              "fact_quote": "Fictional QA product: Nori Bottle"
+            },
+            {
+              "text": "Capacity: 500 mL",
+              "fact_quote": "Capacity: 500 mL"
+            },
+            {
+              "text": "Category: Reusable water bottle",
+              "fact_quote": "Category: Reusable water bottle"
+            }
+          ],
+          "verification": {
+            "status": "passed",
+            "basis": "complete_source_lines_and_exact_rendered_values",
+            "unsupported_sentences": 0
+          },
+          "basis": "seller_supplied_facts_not_independently_verified"
+        },
+        "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+        "runs": [
+          {
+            "stage": "initial",
+            "model": "muse-spark-1.3",
+            "tokens": 8735,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-spark-1.3",
+              "requested_model": "muse-spark-1.3",
+              "returned_model": "muse-spark-1.3",
+              "response_id": "chatcmpl-01a19398-24f1-70b5-858b-da42dc9ac697",
+              "output_sha256": null,
+              "stage": "audit",
+              "completed_at": "2026-10-31T20:13:04.194Z",
+              "input_sha256": "7b905d29fe32306a5177dca0b9d89b33b9b27efe97df9c2e03b85ced8cf5fac5",
+              "report_language": "id"
+            }
+          },
+          {
+            "stage": "visual_style",
+            "model": "muse-image-1.0",
+            "tokens": null,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-image-1.0",
+              "requested_model": "muse-image-1.0",
+              "returned_model": null,
+              "response_id": null,
+              "output_sha256": "c2756707578f2880eea6f31c32cf79dd4c1a9ea5ad96044a1edf836bb07a34ca",
+              "stage": "repair",
+              "completed_at": "2026-10-31T20:15:02.163Z",
+              "input_sha256": "95dc98298650d7301add5fd10736ff9e7b93911513955c9518e1770eb8aabc8b",
+              "report_language": "und"
+            }
+          },
+          {
+            "stage": "reaudit",
+            "model": "muse-spark-1.3",
+            "tokens": 17207,
+            "origin": null,
+            "provenance": {
+              "provider": "Meta Model API",
+              "model": "muse-spark-1.3",
+              "requested_model": "muse-spark-1.3",
+              "returned_model": "muse-spark-1.3",
+              "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+              "output_sha256": null,
+              "stage": "reaudit",
+              "completed_at": "2026-10-31T20:15:34.860Z",
+              "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+              "report_language": "id"
+            }
+          }
+        ],
+        "original": {
+          "text_inventory": {
+            "coverage": "complete",
+            "limitations": "",
+            "lines": [
+              "QA TEST — FICTIONAL PRODUCT",
+              "Nori Bottle",
+              "Capacity: 500 mL",
+              "Reusable bottle"
+            ]
+          },
+          "consistency": null,
+          "score": 96,
+          "headline": "Iklan minimalis sudah sesuai fakta yang diberikan",
+          "summary": "Kreatif hanya menampilkan nama, kapasitas, dan jenis botol yang semuanya didukung fakta pemasok. Tidak ditemukan klaim terukur tambahan atau cacat visual pada piksel yang terlihat.",
+          "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "issues": [],
+          "strengths": [
+            "Nama produk dan kapasitas sesuai dengan fakta pemasok.",
+            "Teks terbaca jelas dengan hierarki atas dan bawah yang rapi.",
+            "Visual botol sederhana sesuai deskripsi warna dan bentuk.",
+            "Tidak ada klaim kinerja tambahan yang tidak terverifikasi."
+          ],
+          "claim_ledger": [
+            {
+              "id": "claim-1",
+              "claim": "Nori Bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk pada gambar sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-2",
+              "claim": "Capacity: 500 mL",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas pada gambar sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-3",
+              "claim": "Reusable bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Jenis produk pada gambar sesuai dengan kategori pada fakta.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-4",
+              "claim": "Nori Bottle.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk pada caption sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-5",
+              "claim": "Capacity: 500 mL.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas pada caption sama dengan fakta yang diberikan.",
+              "recommended_action": "Pertahankan."
+            },
+            {
+              "id": "claim-6",
+              "claim": "Reusable bottle.",
+              "origin": "caption",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Jenis produk pada caption sesuai dengan kategori pada fakta.",
+              "recommended_action": "Pertahankan."
+            }
+          ],
+          "claim_ledger_available": true,
+          "evidence_summary": {
+            "total": 6,
+            "supported_by_supplied_facts": 6,
+            "unsupported_by_supplied_facts": 0,
+            "contradicted_by_supplied_facts": 0,
+            "unreadable": 0,
+            "needs_human_review": 0,
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "checks": {
+            "claim": 100,
+            "clarity": 96,
+            "hierarchy": 94,
+            "action": 80
+          },
+          "caption_repair": {
+            "version": "source-bound-1",
+            "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+            "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "status": "source_bound",
+            "method": "meta_selected_verbatim_facts",
+            "product_identity": "Nori Bottle",
+            "statements": [
+              {
+                "text": "Fictional QA product: Nori Bottle",
+                "fact_quote": "Fictional QA product: Nori Bottle"
+              },
+              {
+                "text": "Capacity: 500 mL",
+                "fact_quote": "Capacity: 500 mL"
+              },
+              {
+                "text": "Category: Reusable water bottle",
+                "fact_quote": "Category: Reusable water bottle"
+              }
+            ],
+            "verification": {
+              "status": "passed",
+              "basis": "complete_source_lines_and_exact_rendered_values",
+              "unsupported_sentences": 0
+            },
+            "basis": "seller_supplied_facts_not_independently_verified",
+            "independent_audit": {
+              "provenance": {
+                "provider": "Meta Model API",
+                "model": "muse-spark-1.3",
+                "requested_model": "muse-spark-1.3",
+                "returned_model": "muse-spark-1.3",
+                "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+                "stage": "reaudit",
+                "completed_at": "2026-10-31T20:15:34.860Z",
+                "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+                "report_language": "id"
+              },
+              "caption_sent": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+              "observed_claims": []
+            }
+          },
+          "local_text_repair": null
+        },
+        "verified": {
+          "text_inventory": {
+            "coverage": "complete",
+            "limitations": "",
+            "lines": [
+              "QA TEST — FICTIONAL PRODUCT",
+              "Nori Bottle",
+              "Capacity: 500 mL",
+              "Reusable bottle"
+            ]
+          },
+          "consistency": {
+            "original_text": {
+              "coverage": "complete",
+              "limitations": "",
+              "lines": [
+                "QA TEST — FICTIONAL PRODUCT",
+                "Nori Bottle",
+                "Capacity: 500 mL",
+                "Reusable bottle"
+              ]
+            },
+            "revised_text": {
+              "coverage": "complete",
+              "limitations": "",
+              "lines": [
+                "QA TEST — FICTIONAL PRODUCT",
+                "Nori Bottle",
+                "Capacity: 500 mL",
+                "Reusable bottle"
+              ]
+            },
+            "changed_text": [],
+            "new_claims": [],
+            "visual": {
+              "product_shape": {
+                "status": "preserved",
+                "evidence": "Botol di tengah pada kedua gambar berbentuk silinder dengan leher sempit, bahu dan bawah membulat, serta tutup hitam; tidak ada bagian hilang atau tambahan."
+              },
+              "colors": {
+                "status": "preserved",
+                "evidence": "Bodi hijau tua dan tutup hitam terlihat sama di kedua gambar; highlight dan bayangan hanya efek pencahayaan, warna dasar tidak berubah."
+              },
+              "lighting": {
+                "status": "changed",
+                "evidence": "Gambar asli datar tanpa bayangan, gambar revisi memakai cahaya arah dari kanan dengan bayangan lembut ke kiri di area alas; perubahan ini diizinkan karena tidak terkunci."
+              },
+              "background": {
+                "status": "changed",
+                "evidence": "Latar asli krem polos datar, latar revisi bertekstur dengan gradasi cahaya dan area alas; perubahan ini berada dalam cakupan yang tidak terkunci."
+              },
+              "composition": {
+                "status": "preserved",
+                "evidence": "Tata letak sama: judul di kiri atas, info kapasitas di kiri bawah, botol di tengah; skala dan sudut pandang depan tetap dipertahankan."
+              },
+              "typography": {
+                "status": "preserved",
+                "evidence": "Wording dan penempatan teks di kiri atas dan kiri bawah sama persis, keterbacaan tetap baik dengan gaya sans-serif."
+              },
+              "branding": {
+                "status": "preserved",
+                "evidence": "Nama Nori Bottle tampil sama di kedua gambar tanpa logo tambahan atau perubahan identitas merek."
+              }
+            }
+          },
+          "score": 94,
+          "headline": "Revisi sinematik tetap akurat dan konsisten dengan referensi",
+          "summary": "IMAGE 1 menampilkan botol hijau tua dengan tutup hitam secara fotorealistik dengan tata letak sama seperti referensi. Semua teks yang terbaca didukung fakta pemasok dan tidak ada klaim durasi, kesehatan, atau lingkungan. Tidak ditemukan cacat visual; perubahan pencahayaan dan latar sinematik berada dalam cakupan yang tidak terkunci dan tidak mengubah bentuk,",
+          "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+          "issues": [],
+          "strengths": [
+            "Semua klaim kapasitas dan kategori sesuai fakta pemasok.",
+            "Bentuk botol silinder hijau tua dengan tutup hitam terlihat jelas dan utuh.",
+            "Tipografi judul dan info kapasitas terbaca jelas dengan hierarki rapi.",
+            "Pencahayaan sinematik memberi kesan premium tanpa menutupi produk."
+          ],
+          "claim_ledger": [
+            {
+              "id": "claim-1",
+              "claim": "Nori Bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+              "recommended_action": "Pertahankan"
+            },
+            {
+              "id": "claim-2",
+              "claim": "QA TEST — FICTIONAL PRODUCT",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Fictional QA product: Nori Bottle",
+              "reason": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+              "recommended_action": "Pertahankan"
+            },
+            {
+              "id": "claim-3",
+              "claim": "Capacity: 500 mL",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Capacity: 500 mL",
+              "reason": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+              "recommended_action": "Pertahankan"
+            },
+            {
+              "id": "claim-4",
+              "claim": "Reusable bottle",
+              "origin": "creative",
+              "assessment": "supported_by_supplied_facts",
+              "fact_quote": "Category: Reusable water bottle",
+              "reason": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+              "recommended_action": "Pertahankan"
+            }
+          ],
+          "claim_ledger_available": true,
+          "evidence_summary": {
+            "total": 4,
+            "supported_by_supplied_facts": 4,
+            "unsupported_by_supplied_facts": 0,
+            "contradicted_by_supplied_facts": 0,
+            "unreadable": 0,
+            "needs_human_review": 0,
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "checks": {
+            "claim": 98,
+            "clarity": 95,
+            "hierarchy": 92,
+            "action": 85
+          },
+          "caption_repair": {
+            "version": "source-bound-1",
+            "original": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+            "status": "source_bound",
+            "method": "meta_selected_verbatim_facts",
+            "product_identity": "Nori Bottle",
+            "statements": [
+              {
+                "text": "Fictional QA product: Nori Bottle",
+                "fact_quote": "Fictional QA product: Nori Bottle"
+              },
+              {
+                "text": "Capacity: 500 mL",
+                "fact_quote": "Capacity: 500 mL"
+              },
+              {
+                "text": "Category: Reusable water bottle",
+                "fact_quote": "Category: Reusable water bottle"
+              }
+            ],
+            "verification": {
+              "status": "passed",
+              "basis": "complete_source_lines_and_exact_rendered_values",
+              "unsupported_sentences": 0
+            },
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "local_text_repair": null
+        },
+        "auto_correction": null,
+        "visual_consistency": {
+          "format_history": [],
+          "upload_dimensions": {
+            "width": 1200,
+            "height": 1200
+          },
+          "source_dimensions": {
+            "width": 1200,
+            "height": 1200
+          },
+          "settings": {
+            "version": "visual-consistency-2",
+            "style": "cinematic",
+            "locks": {
+              "product_shape": true,
+              "colors": false,
+              "lighting": false,
+              "background": false,
+              "composition": true,
+              "typography": true,
+              "branding": true
+            },
+            "region": null
+          },
+          "repair": {
+            "settings": {
+              "version": "visual-consistency-2",
+              "style": "cinematic",
+              "locks": {
+                "product_shape": true,
+                "colors": false,
+                "lighting": false,
+                "background": false,
+                "composition": true,
+                "typography": true,
+                "branding": true
+              },
+              "region": null
+            },
+            "source_dimensions": {
+              "width": 1200,
+              "height": 1200
+            },
+            "model_dimensions": {
+              "width": 1600,
+              "height": 1600
+            },
+            "requested_model": "muse-image-1.0",
+            "returned_model": null,
+            "method": "style_edit_source_reference_no_mask",
+            "limitations": [
+              "No mask support; style and locks are model instructions, not guaranteed preservation."
+            ],
+            "compositing": {
+              "method": "muse_visual_restyle_no_mask",
+              "limitations": [
+                "Product and brand locks are instructions, not source-pixel proof."
+              ]
+            },
+            "candidate_dimensions": {
+              "width": 1600,
+              "height": 1600
+            }
+          },
+          "verification": {
+            "version": "visual-consistency-2",
+            "status": "review_required",
+            "auto_approved": false,
+            "coverage": "model_reports_complete",
+            "locks": {
+              "product_shape": {
+                "locked": true,
+                "status": "unable_to_verify",
+                "evidence": "Botol di tengah pada kedua gambar berbentuk silinder dengan leher sempit, bahu dan bawah membulat, serta tutup hitam; tidak ada bagian hilang atau tambahan. [Model reports preserved; no independent pixel/semantic proof.]"
+              },
+              "colors": {
+                "locked": false,
+                "status": "possible_change",
+                "evidence": "Bodi hijau tua dan tutup hitam terlihat sama di kedua gambar; highlight dan bayangan hanya efek pencahayaan, warna dasar tidak berubah. [Model reports preserved; no independent pixel/semantic proof.] Coarse pixel comparison crossed review threshold."
+              },
+              "lighting": {
+                "locked": false,
+                "status": "changed",
+                "evidence": "Gambar asli datar tanpa bayangan, gambar revisi memakai cahaya arah dari kanan dengan bayangan lembut ke kiri di area alas; perubahan ini diizinkan karena tidak terkunci. Coarse pixel comparison crossed review threshold."
+              },
+              "background": {
+                "locked": false,
+                "status": "changed",
+                "evidence": "Latar asli krem polos datar, latar revisi bertekstur dengan gradasi cahaya dan area alas; perubahan ini berada dalam cakupan yang tidak terkunci. Coarse pixel comparison crossed review threshold."
+              },
+              "composition": {
+                "locked": true,
+                "status": "unable_to_verify",
+                "evidence": "Tata letak sama: judul di kiri atas, info kapasitas di kiri bawah, botol di tengah; skala dan sudut pandang depan tetap dipertahankan. [Model reports preserved; no independent pixel/semantic proof.]"
+              },
+              "typography": {
+                "locked": true,
+                "status": "unable_to_verify",
+                "evidence": "Wording dan penempatan teks di kiri atas dan kiri bawah sama persis, keterbacaan tetap baik dengan gaya sans-serif. [Model reports preserved; no independent pixel/semantic proof.]"
+              },
+              "branding": {
+                "locked": true,
+                "status": "unable_to_verify",
+                "evidence": "Nama Nori Bottle tampil sama di kedua gambar tanpa logo tambahan atau perubahan identitas merek. [Model reports preserved; no independent pixel/semantic proof.]"
+              }
+            },
+            "text": {
+              "added": [],
+              "removed": [],
+              "changed": [],
+              "limitations": []
+            },
+            "risks": [],
+            "measurements": {
+              "basis": "64x64_normalized_pixel_heuristic_not_object_detection",
+              "identical": false,
+              "original": {
+                "width": 1200,
+                "height": 1200
+              },
+              "revised": {
+                "width": 1600,
+                "height": 1600
+              },
+              "aspect_delta": 0,
+              "mean_color_delta": 0.197000102124183,
+              "luminance_delta": 0.20005869351261812,
+              "border_delta": 0.24186216153128062,
+              "mean_pixel_delta": 0.20363945057189578,
+              "changed_sample_fraction": 0.744384765625
+            },
+            "limitations": [
+              "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits.",
+              "Some locks could not be independently verified."
+            ]
+          },
+          "output_requested": {
+            "category": "social",
+            "preset": 0,
+            "width": 210,
+            "height": 297,
+            "unit": "mm",
+            "ppi": 150,
+            "standard": "a4",
+            "padding": "white",
+            "source": "original"
+          },
+          "output_actual": null
+        },
+        "repair_review": {
+          "status": "review_required",
+          "reasons": [
+            "Belum ada bukti cukup untuk menyatakan hasil edit lebih baik: tetap bandingkan bentuk produk, perspektif, tepi, bayangan dan teks secara manual."
+          ],
+          "original_reference_sent": true,
+          "basis": "model_selected_observations_not_pixel_certification",
+          "auto_approved": false
+        },
+        "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+        "archive_artifacts": {
+          "original": "original.png",
+          "revised": "revised.webp"
+        },
+        "archive_history": [
+          {
+            "from": "original",
+            "report": {
+              "app": "AdProof AI",
+              "date": "2026-10-31T20:14:42.698Z",
+              "report_language": "id",
+              "product": "Nori Bottle",
+              "context": {
+                "product": "Nori Bottle",
+                "facts": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+                "caption": "Nori Bottle. Capacity: 500 mL. Reusable bottle."
+              },
+              "caption_repair": {
+                "version": "source-bound-1",
+                "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+                "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+                "status": "source_bound",
+                "method": "meta_selected_verbatim_facts",
+                "product_identity": "Nori Bottle",
+                "statements": [
+                  {
+                    "text": "Fictional QA product: Nori Bottle",
+                    "fact_quote": "Fictional QA product: Nori Bottle"
+                  },
+                  {
+                    "text": "Capacity: 500 mL",
+                    "fact_quote": "Capacity: 500 mL"
+                  },
+                  {
+                    "text": "Category: Reusable water bottle",
+                    "fact_quote": "Category: Reusable water bottle"
+                  }
+                ],
+                "verification": {
+                  "status": "passed",
+                  "basis": "complete_source_lines_and_exact_rendered_values",
+                  "unsupported_sentences": 0
+                },
+                "basis": "seller_supplied_facts_not_independently_verified"
+              },
+              "caption_scope": "Original caption retained in context; caption_repair.final is the corrected source-bound output and is sent to re-audit.",
+              "runs": [
+                {
+                  "stage": "initial",
+                  "model": "muse-spark-1.3",
+                  "tokens": 8735,
+                  "origin": null,
+                  "provenance": {
+                    "provider": "Meta Model API",
+                    "model": "muse-spark-1.3",
+                    "requested_model": "muse-spark-1.3",
+                    "returned_model": "muse-spark-1.3",
+                    "response_id": "chatcmpl-01a19398-24f1-70b5-858b-da42dc9ac697",
+                    "output_sha256": null,
+                    "stage": "audit",
+                    "completed_at": "2026-10-31T20:13:04.194Z",
+                    "input_sha256": "7b905d29fe32306a5177dca0b9d89b33b9b27efe97df9c2e03b85ced8cf5fac5",
+                    "report_language": "id"
+                  }
+                },
+                {
+                  "stage": "visual_style",
+                  "model": "muse-image-1.0",
+                  "tokens": null,
+                  "origin": null,
+                  "provenance": {
+                    "provider": "Meta Model API",
+                    "model": "muse-image-1.0",
+                    "requested_model": "muse-image-1.0",
+                    "returned_model": null,
+                    "response_id": null,
+                    "output_sha256": "c2756707578f2880eea6f31c32cf79dd4c1a9ea5ad96044a1edf836bb07a34ca",
+                    "stage": "repair",
+                    "completed_at": "2026-10-31T20:15:02.163Z",
+                    "input_sha256": "95dc98298650d7301add5fd10736ff9e7b93911513955c9518e1770eb8aabc8b",
+                    "report_language": "und"
+                  }
+                },
+                {
+                  "stage": "reaudit",
+                  "model": "muse-spark-1.3",
+                  "tokens": 17207,
+                  "origin": null,
+                  "provenance": {
+                    "provider": "Meta Model API",
+                    "model": "muse-spark-1.3",
+                    "requested_model": "muse-spark-1.3",
+                    "returned_model": "muse-spark-1.3",
+                    "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+                    "output_sha256": null,
+                    "stage": "reaudit",
+                    "completed_at": "2026-10-31T20:15:34.860Z",
+                    "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+                    "report_language": "id"
+                  }
+                }
+              ],
+              "original": {
+                "text_inventory": {
+                  "coverage": "complete",
+                  "limitations": "",
+                  "lines": [
+                    "QA TEST — FICTIONAL PRODUCT",
+                    "Nori Bottle",
+                    "Capacity: 500 mL",
+                    "Reusable bottle"
+                  ]
+                },
+                "consistency": null,
+                "score": 96,
+                "headline": "Iklan minimalis sudah sesuai fakta yang diberikan",
+                "summary": "Kreatif hanya menampilkan nama, kapasitas, dan jenis botol yang semuanya didukung fakta pemasok. Tidak ditemukan klaim terukur tambahan atau cacat visual pada piksel yang terlihat.",
+                "recommended_caption": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+                "issues": [],
+                "strengths": [
+                  "Nama produk dan kapasitas sesuai dengan fakta pemasok.",
+                  "Teks terbaca jelas dengan hierarki atas dan bawah yang rapi.",
+                  "Visual botol sederhana sesuai deskripsi warna dan bentuk.",
+                  "Tidak ada klaim kinerja tambahan yang tidak terverifikasi."
+                ],
+                "claim_ledger": [
+                  {
+                    "id": "claim-1",
+                    "claim": "Nori Bottle",
+                    "origin": "creative",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Fictional QA product: Nori Bottle",
+                    "reason": "Nama produk pada gambar sama dengan fakta yang diberikan.",
+                    "recommended_action": "Pertahankan."
+                  },
+                  {
+                    "id": "claim-2",
+                    "claim": "Capacity: 500 mL",
+                    "origin": "creative",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Capacity: 500 mL",
+                    "reason": "Nilai kapasitas pada gambar sama dengan fakta yang diberikan.",
+                    "recommended_action": "Pertahankan."
+                  },
+                  {
+                    "id": "claim-3",
+                    "claim": "Reusable bottle",
+                    "origin": "creative",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Category: Reusable water bottle",
+                    "reason": "Jenis produk pada gambar sesuai dengan kategori pada fakta.",
+                    "recommended_action": "Pertahankan."
+                  },
+                  {
+                    "id": "claim-4",
+                    "claim": "Nori Bottle.",
+                    "origin": "caption",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Fictional QA product: Nori Bottle",
+                    "reason": "Nama produk pada caption sama dengan fakta yang diberikan.",
+                    "recommended_action": "Pertahankan."
+                  },
+                  {
+                    "id": "claim-5",
+                    "claim": "Capacity: 500 mL.",
+                    "origin": "caption",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Capacity: 500 mL",
+                    "reason": "Nilai kapasitas pada caption sama dengan fakta yang diberikan.",
+                    "recommended_action": "Pertahankan."
+                  },
+                  {
+                    "id": "claim-6",
+                    "claim": "Reusable bottle.",
+                    "origin": "caption",
+                    "assessment": "supported_by_supplied_facts",
+                    "fact_quote": "Category: Reusable water bottle",
+                    "reason": "Jenis produk pada caption sesuai dengan kategori pada fakta.",
+                    "recommended_action": "Pertahankan."
+                  }
+                ],
+                "claim_ledger_available": true,
+                "evidence_summary": {
+                  "total": 6,
+                  "supported_by_supplied_facts": 6,
+                  "unsupported_by_supplied_facts": 0,
+                  "contradicted_by_supplied_facts": 0,
+                  "unreadable": 0,
+                  "needs_human_review": 0,
+                  "basis": "seller_supplied_facts_not_independently_verified"
+                },
+                "checks": {
+                  "claim": 100,
+                  "clarity": 96,
+                  "hierarchy": 94,
+                  "action": 80
+                },
+                "caption_repair": {
+                  "version": "source-bound-1",
+                  "original": "Nori Bottle. Capacity: 500 mL. Reusable bottle.",
+                  "final": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+                  "status": "source_bound",
+                  "method": "meta_selected_verbatim_facts",
+                  "product_identity": "Nori Bottle",
+                  "statements": [
+                    {
+                      "text": "Fictional QA product: Nori Bottle",
+                      "fact_quote": "Fictional QA product: Nori Bottle"
+                    },
+                    {
+                      "text": "Capacity: 500 mL",
+                      "fact_quote": "Capacity: 500 mL"
+                    },
+                    {
+                      "text": "Category: Reusable water bottle",
+                      "fact_quote": "Category: Reusable water bottle"
+                    }
+                  ],
+                  "verification": {
+                    "status": "passed",
+                    "basis": "complete_source_lines_and_exact_rendered_values",
+                    "unsupported_sentences": 0
+                  },
+                  "basis": "seller_supplied_facts_not_independently_verified",
+                  "independent_audit": {
+                    "provenance": {
+                      "provider": "Meta Model API",
+                      "model": "muse-spark-1.3",
+                      "requested_model": "muse-spark-1.3",
+                      "returned_model": "muse-spark-1.3",
+                      "response_id": "chatcmpl-01a1939a-716f-7757-96ae-fc9cebba8f28",
+                      "stage": "reaudit",
+                      "completed_at": "2026-10-31T20:15:34.860Z",
+                      "input_sha256": "46a9358950d726a23fed231785f685cd2a75ebab8c4febc4d187f125b72a1632",
+                      "report_language": "id"
+                    },
+                    "caption_sent": "Nori Bottle. Fictional QA product: Nori Bottle. Capacity: 500 mL. Category: Reusable water bottle",
+                    "observed_claims": []
+                  }
+                },
+                "local_text_repair": null
+              },
+              "verified": null,
+              "auto_correction": null,
+              "visual_consistency": {
+                "format_history": [],
+                "upload_dimensions": {
+                  "width": 1200,
+                  "height": 1200
+                },
+                "source_dimensions": {
+                  "width": 1200,
+                  "height": 1200
+                },
+                "settings": {
+                  "version": "visual-consistency-2",
+                  "style": "cinematic",
+                  "locks": {
+                    "product_shape": true,
+                    "colors": false,
+                    "lighting": false,
+                    "background": false,
+                    "composition": true,
+                    "typography": true,
+                    "branding": true
+                  },
+                  "region": null
+                },
+                "repair": null,
+                "verification": null,
+                "output_requested": {
+                  "category": "social",
+                  "preset": 0,
+                  "width": 210,
+                  "height": 297,
+                  "unit": "mm",
+                  "ppi": 150,
+                  "standard": "a4",
+                  "padding": "white",
+                  "source": "original"
+                },
+                "output_actual": null
+              },
+              "repair_review": null,
+              "disclaimer": "Saved model observations, not independently certified. Image edits always need human review.",
+              "archive_artifacts": null
+            }
+          }
+        ],
+        "claim_evolution": {
+          "basis": "seller_supplied_facts_not_independently_verified",
+          "entries": [
+            {
+              "before": {
+                "id": "claim-1",
+                "claim": "Nori Bottle",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Fictional QA product: Nori Bottle",
+                "reason": "Nama produk pada gambar sama dengan fakta yang diberikan.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": {
+                "id": "claim-1",
+                "claim": "Nori Bottle",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Fictional QA product: Nori Bottle",
+                "reason": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+                "recommended_action": "Pertahankan"
+              },
+              "before_index": 0,
+              "after_index": 0,
+              "status": "retained",
+              "match": "exact",
+              "explanation": "Unique one-to-one pairing by normalized text and origin. Later assessment: supported_by_supplied_facts. Text comparison only; not a separate confirmation of truth."
+            },
+            {
+              "before": {
+                "id": "claim-2",
+                "claim": "Capacity: 500 mL",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Capacity: 500 mL",
+                "reason": "Nilai kapasitas pada gambar sama dengan fakta yang diberikan.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": {
+                "id": "claim-3",
+                "claim": "Capacity: 500 mL",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Capacity: 500 mL",
+                "reason": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+                "recommended_action": "Pertahankan"
+              },
+              "before_index": 1,
+              "after_index": 2,
+              "status": "retained",
+              "match": "exact",
+              "explanation": "Unique one-to-one pairing by normalized text and origin. Later assessment: supported_by_supplied_facts. Text comparison only; not a separate confirmation of truth."
+            },
+            {
+              "before": {
+                "id": "claim-3",
+                "claim": "Reusable bottle",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Category: Reusable water bottle",
+                "reason": "Jenis produk pada gambar sesuai dengan kategori pada fakta.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": {
+                "id": "claim-4",
+                "claim": "Reusable bottle",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Category: Reusable water bottle",
+                "reason": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+                "recommended_action": "Pertahankan"
+              },
+              "before_index": 2,
+              "after_index": 3,
+              "status": "retained",
+              "match": "exact",
+              "explanation": "Unique one-to-one pairing by normalized text and origin. Later assessment: supported_by_supplied_facts. Text comparison only; not a separate confirmation of truth."
+            },
+            {
+              "before": {
+                "id": "claim-4",
+                "claim": "Nori Bottle.",
+                "origin": "caption",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Fictional QA product: Nori Bottle",
+                "reason": "Nama produk pada caption sama dengan fakta yang diberikan.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": null,
+              "before_index": 3,
+              "after_index": null,
+              "status": "not_redetected",
+              "match": "none",
+              "explanation": "Not listed in the later model-selected claim ledger. The text may still be visible in the image or caption; absence from a capped or non-exhaustive ledger is not evidence that it disappeared or that the underlying point is settled."
+            },
+            {
+              "before": {
+                "id": "claim-5",
+                "claim": "Capacity: 500 mL.",
+                "origin": "caption",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Capacity: 500 mL",
+                "reason": "Nilai kapasitas pada caption sama dengan fakta yang diberikan.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": null,
+              "before_index": 4,
+              "after_index": null,
+              "status": "not_redetected",
+              "match": "none",
+              "explanation": "Not listed in the later model-selected claim ledger. The text may still be visible in the image or caption; absence from a capped or non-exhaustive ledger is not evidence that it disappeared or that the underlying point is settled."
+            },
+            {
+              "before": {
+                "id": "claim-6",
+                "claim": "Reusable bottle.",
+                "origin": "caption",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Category: Reusable water bottle",
+                "reason": "Jenis produk pada caption sesuai dengan kategori pada fakta.",
+                "recommended_action": "Pertahankan."
+              },
+              "after": null,
+              "before_index": 5,
+              "after_index": null,
+              "status": "not_redetected",
+              "match": "none",
+              "explanation": "Not listed in the later model-selected claim ledger. The text may still be visible in the image or caption; absence from a capped or non-exhaustive ledger is not evidence that it disappeared or that the underlying point is settled."
+            },
+            {
+              "before": null,
+              "after": {
+                "id": "claim-2",
+                "claim": "QA TEST — FICTIONAL PRODUCT",
+                "origin": "creative",
+                "assessment": "supported_by_supplied_facts",
+                "fact_quote": "Fictional QA product: Nori Bottle",
+                "reason": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+                "recommended_action": "Pertahankan"
+              },
+              "before_index": null,
+              "after_index": 1,
+              "status": "newly_detected",
+              "match": "none",
+              "explanation": "First listed in the later model-selected ledger with no matched earlier entry. It may have existed in the original image or caption but been omitted from the earlier sample; this is not proof it was newly added."
+            }
+          ],
+          "summary": {
+            "retained": 3,
+            "not_redetected": 3,
+            "newly_detected": 1
+          },
+          "complete": true,
+          "sample_limited": false
+        },
+        "proof_constellation": {
+          "initial": {
+            "nodes": [
+              {
+                "id": "fact-source",
+                "type": "fact_source",
+                "label": "Seller-supplied facts",
+                "detail": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "id": "claim-1",
+                "type": "claim",
+                "label": "Nori Bottle",
+                "detail": "[creative] Nori Bottle",
+                "source": "claim_ledger[0].claim"
+              },
+              {
+                "id": "claim-1-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nama produk pada gambar sama dengan fakta yang diberikan.",
+                "source": "claim_ledger[0].assessment"
+              },
+              {
+                "id": "claim-1-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[0].recommended_action"
+              },
+              {
+                "id": "claim-1-quote",
+                "type": "quote",
+                "label": "Fictional QA product: Nori Bottle",
+                "detail": "Fictional QA product: Nori Bottle",
+                "source": "claim_ledger[0].fact_quote"
+              },
+              {
+                "id": "claim-2",
+                "type": "claim",
+                "label": "Capacity: 500 mL",
+                "detail": "[creative] Capacity: 500 mL",
+                "source": "claim_ledger[1].claim"
+              },
+              {
+                "id": "claim-2-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nilai kapasitas pada gambar sama dengan fakta yang diberikan.",
+                "source": "claim_ledger[1].assessment"
+              },
+              {
+                "id": "claim-2-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[1].recommended_action"
+              },
+              {
+                "id": "claim-2-quote",
+                "type": "quote",
+                "label": "Capacity: 500 mL",
+                "detail": "Capacity: 500 mL",
+                "source": "claim_ledger[1].fact_quote"
+              },
+              {
+                "id": "claim-3",
+                "type": "claim",
+                "label": "Reusable bottle",
+                "detail": "[creative] Reusable bottle",
+                "source": "claim_ledger[2].claim"
+              },
+              {
+                "id": "claim-3-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Jenis produk pada gambar sesuai dengan kategori pada fakta.",
+                "source": "claim_ledger[2].assessment"
+              },
+              {
+                "id": "claim-3-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[2].recommended_action"
+              },
+              {
+                "id": "claim-3-quote",
+                "type": "quote",
+                "label": "Category: Reusable water bottle",
+                "detail": "Category: Reusable water bottle",
+                "source": "claim_ledger[2].fact_quote"
+              },
+              {
+                "id": "claim-4",
+                "type": "claim",
+                "label": "Nori Bottle.",
+                "detail": "[caption] Nori Bottle.",
+                "source": "claim_ledger[3].claim"
+              },
+              {
+                "id": "claim-4-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nama produk pada caption sama dengan fakta yang diberikan.",
+                "source": "claim_ledger[3].assessment"
+              },
+              {
+                "id": "claim-4-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[3].recommended_action"
+              },
+              {
+                "id": "claim-4-quote",
+                "type": "quote",
+                "label": "Fictional QA product: Nori Bottle",
+                "detail": "Fictional QA product: Nori Bottle",
+                "source": "claim_ledger[3].fact_quote"
+              },
+              {
+                "id": "claim-5",
+                "type": "claim",
+                "label": "Capacity: 500 mL.",
+                "detail": "[caption] Capacity: 500 mL.",
+                "source": "claim_ledger[4].claim"
+              },
+              {
+                "id": "claim-5-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nilai kapasitas pada caption sama dengan fakta yang diberikan.",
+                "source": "claim_ledger[4].assessment"
+              },
+              {
+                "id": "claim-5-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[4].recommended_action"
+              },
+              {
+                "id": "claim-5-quote",
+                "type": "quote",
+                "label": "Capacity: 500 mL",
+                "detail": "Capacity: 500 mL",
+                "source": "claim_ledger[4].fact_quote"
+              },
+              {
+                "id": "claim-6",
+                "type": "claim",
+                "label": "Reusable bottle.",
+                "detail": "[caption] Reusable bottle.",
+                "source": "claim_ledger[5].claim"
+              },
+              {
+                "id": "claim-6-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Jenis produk pada caption sesuai dengan kategori pada fakta.",
+                "source": "claim_ledger[5].assessment"
+              },
+              {
+                "id": "claim-6-action",
+                "type": "action",
+                "label": "Pertahankan.",
+                "detail": "Pertahankan.",
+                "source": "claim_ledger[5].recommended_action"
+              },
+              {
+                "id": "claim-6-quote",
+                "type": "quote",
+                "label": "Category: Reusable water bottle",
+                "detail": "Category: Reusable water bottle",
+                "source": "claim_ledger[5].fact_quote"
+              }
+            ],
+            "edges": [
+              {
+                "from": "claim-1",
+                "to": "claim-1-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[0]"
+              },
+              {
+                "from": "claim-1",
+                "to": "claim-1-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[0]"
+              },
+              {
+                "from": "claim-1",
+                "to": "claim-1-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[0].fact_quote"
+              },
+              {
+                "from": "claim-1-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[1]"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[1]"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[1].fact_quote"
+              },
+              {
+                "from": "claim-2-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[2]"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[2]"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[2].fact_quote"
+              },
+              {
+                "from": "claim-3-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[3]"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[3]"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[3].fact_quote"
+              },
+              {
+                "from": "claim-4-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-5",
+                "to": "claim-5-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[4]"
+              },
+              {
+                "from": "claim-5",
+                "to": "claim-5-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[4]"
+              },
+              {
+                "from": "claim-5",
+                "to": "claim-5-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[4].fact_quote"
+              },
+              {
+                "from": "claim-5-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-6",
+                "to": "claim-6-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[5]"
+              },
+              {
+                "from": "claim-6",
+                "to": "claim-6-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[5]"
+              },
+              {
+                "from": "claim-6",
+                "to": "claim-6-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[5].fact_quote"
+              },
+              {
+                "from": "claim-6-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              }
+            ],
+            "basis": "seller_supplied_facts_not_independently_verified"
+          },
+          "revised": {
+            "nodes": [
+              {
+                "id": "fact-source",
+                "type": "fact_source",
+                "label": "Seller-supplied facts",
+                "detail": "Fictional QA product: Nori Bottle\nCategory: Reusable water bottle\nCapacity: 500 mL\nAppearance: Dark green cylindrical bottle body with a black cap\nNo verified evidence for insulation duration, health benefits or environmental performance.",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "id": "claim-1",
+                "type": "claim",
+                "label": "Nori Bottle",
+                "detail": "[creative] Nori Bottle",
+                "source": "claim_ledger[0].claim"
+              },
+              {
+                "id": "claim-1-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nama produk terbaca jelas di IMAGE 1 dan sama dengan fakta pemasok.",
+                "source": "claim_ledger[0].assessment"
+              },
+              {
+                "id": "claim-1-action",
+                "type": "action",
+                "label": "Pertahankan",
+                "detail": "Pertahankan",
+                "source": "claim_ledger[0].recommended_action"
+              },
+              {
+                "id": "claim-1-quote",
+                "type": "quote",
+                "label": "Fictional QA product: Nori Bottle",
+                "detail": "Fictional QA product: Nori Bottle",
+                "source": "claim_ledger[0].fact_quote"
+              },
+              {
+                "id": "claim-2",
+                "type": "claim",
+                "label": "QA TEST — FICTIONAL PRODUCT",
+                "detail": "[creative] QA TEST — FICTIONAL PRODUCT",
+                "source": "claim_ledger[1].claim"
+              },
+              {
+                "id": "claim-2-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Label status fiksi terbaca di bagian atas dan sesuai fakta bahwa produk adalah fictional QA product.",
+                "source": "claim_ledger[1].assessment"
+              },
+              {
+                "id": "claim-2-action",
+                "type": "action",
+                "label": "Pertahankan",
+                "detail": "Pertahankan",
+                "source": "claim_ledger[1].recommended_action"
+              },
+              {
+                "id": "claim-2-quote",
+                "type": "quote",
+                "label": "Fictional QA product: Nori Bottle",
+                "detail": "Fictional QA product: Nori Bottle",
+                "source": "claim_ledger[1].fact_quote"
+              },
+              {
+                "id": "claim-3",
+                "type": "claim",
+                "label": "Capacity: 500 mL",
+                "detail": "[creative] Capacity: 500 mL",
+                "source": "claim_ledger[2].claim"
+              },
+              {
+                "id": "claim-3-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Nilai kapasitas terbaca jelas di bagian bawah dan sama persis dengan fakta pemasok.",
+                "source": "claim_ledger[2].assessment"
+              },
+              {
+                "id": "claim-3-action",
+                "type": "action",
+                "label": "Pertahankan",
+                "detail": "Pertahankan",
+                "source": "claim_ledger[2].recommended_action"
+              },
+              {
+                "id": "claim-3-quote",
+                "type": "quote",
+                "label": "Capacity: 500 mL",
+                "detail": "Capacity: 500 mL",
+                "source": "claim_ledger[2].fact_quote"
+              },
+              {
+                "id": "claim-4",
+                "type": "claim",
+                "label": "Reusable bottle",
+                "detail": "[creative] Reusable bottle",
+                "source": "claim_ledger[3].claim"
+              },
+              {
+                "id": "claim-4-status",
+                "type": "status",
+                "label": "supported_by_supplied_facts",
+                "detail": "Kategori botol guna ulang terbaca di IMAGE 1 dan sesuai dengan kategori pada fakta pemasok.",
+                "source": "claim_ledger[3].assessment"
+              },
+              {
+                "id": "claim-4-action",
+                "type": "action",
+                "label": "Pertahankan",
+                "detail": "Pertahankan",
+                "source": "claim_ledger[3].recommended_action"
+              },
+              {
+                "id": "claim-4-quote",
+                "type": "quote",
+                "label": "Category: Reusable water bottle",
+                "detail": "Category: Reusable water bottle",
+                "source": "claim_ledger[3].fact_quote"
+              }
+            ],
+            "edges": [
+              {
+                "from": "claim-1",
+                "to": "claim-1-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[0]"
+              },
+              {
+                "from": "claim-1",
+                "to": "claim-1-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[0]"
+              },
+              {
+                "from": "claim-1",
+                "to": "claim-1-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[0].fact_quote"
+              },
+              {
+                "from": "claim-1-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[1]"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[1]"
+              },
+              {
+                "from": "claim-2",
+                "to": "claim-2-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[1].fact_quote"
+              },
+              {
+                "from": "claim-2-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[2]"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[2]"
+              },
+              {
+                "from": "claim-3",
+                "to": "claim-3-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[2].fact_quote"
+              },
+              {
+                "from": "claim-3-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-status",
+                "relation": "has_assessment",
+                "source": "claim_ledger[3]"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-action",
+                "relation": "has_recommended_action",
+                "source": "claim_ledger[3]"
+              },
+              {
+                "from": "claim-4",
+                "to": "claim-4-quote",
+                "relation": "has_quote",
+                "source": "claim_ledger[3].fact_quote"
+              },
+              {
+                "from": "claim-4-quote",
+                "to": "fact-source",
+                "relation": "quoted_from",
+                "source": "input.suppliedFacts"
+              }
+            ],
+            "basis": "seller_supplied_facts_not_independently_verified"
+          }
+        },
+        "evidence_basis": "seller_supplied_facts_not_independently_verified"
+      }
+    }
+  ]
+}

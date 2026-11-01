@@ -602,9 +602,9 @@ async function adaptFormat(image,target){
   attempt.reference_frame={...frame,image:undefined};
   // Compare against the exact selected source, not a different prior revision.
   const referenceImage=await compactOriginalReference(image);
-  const checked=await api('/api/audit',{...payload(out.image),caption:state.captionRepair?.final||state.context.caption,referenceImage,language:getLanguage()});
+  const checked=await api('/api/audit',{...payload(out.image),caption:state.captionRepair?.final||state.context.caption,referenceImage,language:getLanguage(),comparison_mode:'format',format_target:{width:target.width,height:target.height}});
   attempt.audit=checked.provenance||null;attempt.tokens=checked.tokens??null;
-  attempt.audit_report=checked.audit||null;
+  attempt.audit_report=checked.audit||null;attempt.comparison_mode=checked.comparison_mode||null;
   state.runs.push({stage:'format_audit',model:checked.model,tokens:checked.tokens,provenance:checked.provenance||null});
   state.sparkResponded=true;state.reauditResponded=true;updateMetaStatus();
   if(!checked.audit||!Number.isFinite(checked.audit.score)||checked.original_reference_sent!==true)throw Error('AI format comparison was incomplete; candidate blocked.');

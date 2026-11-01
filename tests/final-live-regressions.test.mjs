@@ -46,6 +46,9 @@ test('landscape adaptation sends the original to Muse and never overlays a shrun
  assert.equal(requests[0].body.image,'source');
  assert.equal(requests[0].body.target.relayout,true);
  assert.equal(requests[0].body.target.source_framed,false);
+ assert.equal(requests[1].body.comparison_mode,'format');
+ assert.equal(requests[1].body.format_target.width,1600);
+ assert.equal(requests[1].body.format_target.height,900);
  assert.equal(result.image,'landscape-artwork','source overlay would undo the requested layout');
  assert.equal(state.formatHistory[0].reference_frame.source_pixels_preserved,false);
  assert.equal(state.formatHistory[0].strategy,'independent_ai_relayout');
