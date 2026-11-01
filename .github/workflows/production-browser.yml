@@ -9,6 +9,11 @@ on:
       - 'public/styles.css'
       - 'public/docs.html'
       - 'public/index.html'
+      - 'public/app.html'
+      - 'public/app.js'
+      - 'public/i18n.js'
+      - 'public/public-example.js'
+      - 'public/examples/**'
   push:
     branches: [main]
   workflow_dispatch:

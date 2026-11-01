@@ -436,9 +436,10 @@ export function createHandler({fetcher = fetch, key = process.env.MODEL_API_KEY,
 
   const files = new Map([
     ['/', 'public/index.html'], ['/app','public/app.html'], ['/docs','public/docs.html'],
+    ['/public-example.js','public/public-example.js'], ['/examples/aruna-verified.zip','public/examples/aruna-verified.zip'],
     ['/factual-repair.js','public/factual-repair.js'], ['/visual-consistency.js','public/visual-consistency.js'], ['/output-system.js','public/output-system.js'], ['/consistency-ui.js','public/consistency-ui.js'], ['/styles.css','public/styles.css'], ['/studio.css','public/studio.css'], ['/app.js','public/app.js'], ['/claim-engine.js','public/claim-engine.js'], ['/proof-studio.js','public/proof-studio.js'], ['/repair-guard.js','public/repair-guard.js'], ['/repair-notice.js','public/repair-notice.js'], ['/repair-journey.js','public/repair-journey.js'], ['/audit-archive.js','public/audit-archive.js'], ['/local-recovery.js','public/local-recovery.js'], ['/auto-correction.js','public/auto-correction.js'], ['/i18n.js','public/i18n.js']
   ]);
-  const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8'};
+  const types = {'html':'text/html; charset=utf-8','css':'text/css; charset=utf-8','js':'text/javascript; charset=utf-8','zip':'application/zip'};
 
   return async (req,res) => {
     const url = new URL(req.url, 'http://localhost');

@@ -36,7 +36,7 @@ async function examinePage(page, route, width, errors) {
       const context = await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce',acceptDownloads:true});
       const page = await context.newPage();
       const pageErrors = [], paidAttempts = [];
-      // Pull requests check proposed landing/docs HTML and CSS with the live site/API.
+      // Pull requests check proposed static UI/example assets with the live API.
       // Push/main runs use only deployed production assets. No API is mocked.
       if (process.env.ADPROOF_CANDIDATE_CSS === '1') {
         const candidateCSS = await fs.readFile(path.join(__dirname, '..', 'public/styles.css'), 'utf8');
@@ -45,10 +45,18 @@ async function examinePage(page, route, width, errors) {
         await page.route('**/styles.css', route => route.fulfill({status:200,contentType:'text/css',body:candidateCSS}));
         await page.route(origin + '/docs', route => route.fulfill({status:200,contentType:'text/html',body:candidateDocs}));
         await page.route(origin + '/', route => route.fulfill({status:200,contentType:'text/html',body:candidateHome}));
+        const candidateApp = await fs.readFile(path.join(__dirname, '..', 'public/app.html'), 'utf8');
+        await page.route(/\/app(\?.*)?$/, route => route.fulfill({status:200,contentType:'text/html',body:candidateApp}));
+        for (const asset of ['app.js','i18n.js','public-example.js']) {
+          const body = await fs.readFile(path.join(__dirname, '..', 'public', asset));
+          await page.route(origin + '/' + asset, route => route.fulfill({status:200,contentType:'text/javascript',body}));
+        }
+        const example = await fs.readFile(path.join(__dirname, '..', 'public/examples/aruna-verified.zip'));
+        await page.route(origin + '/examples/aruna-verified.zip', route => route.fulfill({status:200,contentType:'application/zip',body:example}));
       }
       page.on('pageerror', e => pageErrors.push(limitedText(e.message)));
       // Fail closed: the browser must never run a paid model during these checks.
-      await page.route(/\/api\/(audit|improve)(\?|$)/, route => {
+      await page.route(/\/api\/(audit|improve|localize)(\?|$)/, route => {
         paidAttempts.push(route.request().url());
         return route.abort('blockedbyclient');
       });
@@ -97,7 +105,17 @@ async function examinePage(page, route, width, errors) {
       const atEnd=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:window.innerWidth}));
       assert.ok(atEnd.scroll <= atEnd.viewport + 2,'Studio overflow after archive/upload at '+width+': '+JSON.stringify(atEnd));
       await page.screenshot({path:path.join(screenshotDir,'upload-'+width+'.png'),fullPage:false});
-      results.push({width,routes:site,archiveRestored:true,uploadRestoredCleanState:true,languageSwitch:true,paidModelRequests:0,pageErrors:[]});
+      await examinePage(page,'/app?example=aruna',width,pageErrors);
+      await page.locator('#archiveRestoreNotice').filter({hasText:'RECORDED META EXAMPLE'}).waitFor({timeout:12000});
+      assert.equal(await page.locator('#reportContent').isVisible(),true);
+      assert.equal(await page.locator('#auditButton').isDisabled(),true,'recorded example cannot auto-run paid inference');
+      assert.equal(await page.locator('#viewCompare').isEnabled(),true);
+      assert.equal(await page.locator('#downloadImage').isDisabled(),true,'opening archived evidence cannot approve output');
+      assert.equal(paidAttempts.length,0);
+      const exampleSize=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
+      assert.ok(exampleSize.scroll<=exampleSize.viewport+2,'recorded example overflow at '+width);
+      await page.screenshot({path:path.join(screenshotDir,'recorded-example-'+width+'.png'),fullPage:false});
+      results.push({width,routes:site,archiveRestored:true,uploadRestoredCleanState:true,languageSwitch:true,publicRecordedExample:true,paidModelRequests:0,pageErrors:[]});
       await context.close();
     }
     // Inspect the actual saved, previously generated Meta-output PNG bytes.
