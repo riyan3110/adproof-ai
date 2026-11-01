@@ -21,3 +21,6 @@ The audit route now validates an explicit format-comparison mode and target, req
 ## Successful post-PR-66 production export
 
 On production `9cf04787f1ab1d67a06cde7a5f31bde6f62016db`, fresh Muse generation and independent format-mode Spark comparison passed. The actual downloaded PNGs are 1600×900 and 1920×1080 from the native 2048×1152 output, without interpolation. Switching between the two Website sizes reused the same image/audit receipts and format history; no extra model request was made. The output was visually inspected: four exact original text lines, one intact bottle, copy on the left and product on the right, with no blank margins. The independent report found no issues, no added/removed/changed words, clarity95 and hierarchy90. Validation is independent AI comparison, not exact source-pixel preservation. See `evidence/live-2026-11-01/nori/website-live-success-manifest.json`.
+
+
+The separate ARUNA factual-repair flow also passed after the copy-wrap/repair-target and archive-verification corrections. Production evidence records one fresh Spark comparison against the saved original, unchanged repaired bytes, all seven active model lock matches, actual 1080×1080 PNG/JSON/ZIP downloads, and a working comparison slider. See `evidence/live-2026-11-01/aruna/successful-evidence-manifest.json`.
