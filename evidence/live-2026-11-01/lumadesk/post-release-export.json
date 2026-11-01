@@ -1,0 +1,304 @@
+{
+  "production_commit": "ccccf150d232c1f0b6a2f26d63c57493378fc62d",
+  "runs": [
+    {
+      "stage": "archive_baseline",
+      "model": "muse-spark-1.3",
+      "tokens": null,
+      "origin": "saved_archive",
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "output_sha256": null,
+        "stage": "audit",
+        "completed_at": "2026-10-31T20:06:05.150Z",
+        "input_sha256": "f05ddf354e57f6732cf1c2ce38f167588e74fa1df400b3e1b18c930fd7a4ff9c",
+        "report_language": "id"
+      }
+    },
+    {
+      "stage": "localize",
+      "model": "muse-spark-1.3",
+      "tokens": 5924,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193c0-628d-70cf-9a26-b48e063a356f",
+        "output_sha256": null,
+        "stage": "localize",
+        "completed_at": "2026-10-31T20:57:04.143Z",
+        "input_sha256": "deecd783a77e910da51e041958dc7daa4bc6af62416c9d8f941d042cd4b1f105",
+        "report_language": "und"
+      }
+    },
+    {
+      "stage": "repair",
+      "model": "deterministic-source-pixel-repair",
+      "tokens": null,
+      "origin": null,
+      "provenance": null
+    },
+    {
+      "stage": "reaudit",
+      "model": "muse-spark-1.3",
+      "tokens": 13431,
+      "origin": null,
+      "provenance": {
+        "provider": "Meta Model API",
+        "model": "muse-spark-1.3",
+        "requested_model": "muse-spark-1.3",
+        "returned_model": "muse-spark-1.3",
+        "response_id": "chatcmpl-01a193c0-e1c8-71c6-aafe-7aec0fdb4b02",
+        "output_sha256": null,
+        "stage": "reaudit",
+        "completed_at": "2026-10-31T20:57:34.128Z",
+        "input_sha256": "c877e102c6a6521b777e6db18303fa68efdbb6c85a91832b4a509c187b012cd6",
+        "report_language": "id"
+      }
+    }
+  ],
+  "verification": {
+    "version": "visual-consistency-2",
+    "status": "review_required",
+    "validation_basis": "source_pixel_comparison",
+    "auto_approved": false,
+    "coverage": "model_reports_complete",
+    "locks": {
+      "product_shape": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Bentuk kepala bulat, dua lengan, engsel, dan alas bundar lampu terlihat sama tanpa bagian hilang atau berubah."
+      },
+      "colors": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Warna lampu putih, cahaya hangat, meja kayu, dan aksen hijau terlihat sama, tidak ada perubahan saturasi."
+      },
+      "lighting": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Arah cahaya hangat dari kepala lampu, bayangan di dinding dan meja terlihat konsisten."
+      },
+      "background": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Latar dinding, tanaman, buku, laptop, dan meja kayu pada sisi kiri dan kanan terlihat sama antara kedua gambar."
+      },
+      "composition": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Tata letak judul di atas, tiga ikon di kiri, dan lampu di kanan dengan sudut kamera yang sama."
+      },
+      "typography": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Gaya huruf judul, subjudul, dan tombol tetap sama; hanya isi tiga baris spesifikasi yang diganti dengan penempatan yang sama."
+      },
+      "branding": {
+        "locked": true,
+        "status": "unable_to_verify",
+        "evidence": "All decoded source pixels outside explicit text corrections are identical; text rectangles passed solid-background and protected-region checks. Tulisan merek LumaDesk Mini di bagian atas dengan gaya huruf dan warna yang sama pada kedua gambar."
+      }
+    },
+    "text": {
+      "added": [
+        "Power consumption:",
+        "5 watts",
+        "Light color:",
+        "Warm white",
+        "(3000K)",
+        "Power source:",
+        "USB 5V"
+      ],
+      "removed": [
+        "Save up to",
+        "90% Electricity",
+        "Protect",
+        "Your Eyes",
+        "Better Sleep",
+        "in 7 Days"
+      ],
+      "changed": [
+        {
+          "before": "Save up to 90% Electricity",
+          "after": "Power consumption: 5 watts",
+          "evidence": "Teks klaim penghematan pada gambar referensi diganti dengan spesifikasi daya pada area ikon daun di gambar revisi."
+        },
+        {
+          "before": "Protect Your Eyes",
+          "after": "Light color: Warm white (3000K)",
+          "evidence": "Teks klaim perlindungan mata pada gambar referensi diganti dengan spesifikasi warna cahaya pada area ikon mata di gambar revisi."
+        },
+        {
+          "before": "Better Sleep in 7 Days",
+          "after": "Power source: USB 5V",
+          "evidence": "Teks klaim tidur pada gambar referensi diganti dengan spesifikasi sumber daya pada area ikon bulan di gambar revisi."
+        }
+      ],
+      "limitations": [
+        "Tidak ada kendala pembacaan berarti.",
+        "Tidak ada kendala pembacaan berarti."
+      ]
+    },
+    "risks": [],
+    "measurements": {
+      "basis": "64x64_normalized_pixel_heuristic_not_object_detection",
+      "identical": false,
+      "original": {
+        "width": 1254,
+        "height": 1254
+      },
+      "revised": {
+        "width": 1254,
+        "height": 1254
+      },
+      "aspect_delta": 0,
+      "mean_color_delta": 0.0028301164215686274,
+      "luminance_delta": 0.002390227673100753,
+      "border_delta": 0,
+      "mean_pixel_delta": 0.005957669526143782,
+      "changed_sample_fraction": 0.020263671875,
+      "independent_review": {
+        "reference_sent": true,
+        "provider": "Meta Model API",
+        "stage": "reaudit",
+        "source_response_id": "chatcmpl-01a19391-bf58-74b9-80ef-05d32fcf9ff5",
+        "response_id": "chatcmpl-01a193c0-e1c8-71c6-aafe-7aec0fdb4b02",
+        "input_sha256": "c877e102c6a6521b777e6db18303fa68efdbb6c85a91832b4a509c187b012cd6"
+      },
+      "local_repair": {
+        "basis": "all_decoded_rgba_pixels",
+        "outside_changed_pixels": 0,
+        "inside_changed_pixels": 41842,
+        "source_dimensions": {
+          "width": 1254,
+          "height": 1254
+        },
+        "rectangles": [
+          {
+            "x": 225,
+            "y": 422,
+            "width": 337,
+            "height": 101
+          },
+          {
+            "x": 227,
+            "y": 569,
+            "width": 196,
+            "height": 104
+          },
+          {
+            "x": 228,
+            "y": 716,
+            "width": 276,
+            "height": 106
+          }
+        ],
+        "verified": true
+      }
+    },
+    "limitations": [
+      "Model text extraction is not exhaustive OCR; added/removed are observations, not certified pixel edits."
+    ]
+  },
+  "auto_correction": null,
+  "caption_repair": {
+    "version": "source-bound-1",
+    "original": "LumaDesk Mini — The ultimate desk lamp! Save up to 90% electricity and protect your eyes with our revolutionary LED technology. Guaranteed better sleep in just 7 days!",
+    "final": "LumaDesk Mini — LED Desk Lamp. Category: LED desk lamp. Power consumption: 5 watts. Light color: Warm white (3000K). Power source: USB 5V",
+    "status": "source_bound",
+    "method": "meta_selected_verbatim_facts",
+    "product_identity": "LumaDesk Mini — LED Desk Lamp",
+    "statements": [
+      {
+        "text": "Category: LED desk lamp",
+        "fact_quote": "Category: LED desk lamp"
+      },
+      {
+        "text": "Power consumption: 5 watts",
+        "fact_quote": "Power consumption: 5 watts"
+      },
+      {
+        "text": "Light color: Warm white (3000K)",
+        "fact_quote": "Light color: Warm white (3000K)"
+      },
+      {
+        "text": "Power source: USB 5V",
+        "fact_quote": "Power source: USB 5V"
+      }
+    ],
+    "verification": {
+      "status": "passed",
+      "basis": "complete_source_lines_and_exact_rendered_values",
+      "unsupported_sentences": 0
+    },
+    "basis": "seller_supplied_facts_not_independently_verified"
+  },
+  "output_actual": {
+    "category": "social",
+    "width": 1080,
+    "height": 1080,
+    "physical": null,
+    "source": "revised",
+    "fit": "contain",
+    "padding": "white",
+    "draw": {
+      "width": 1080,
+      "height": 1080,
+      "x": 0,
+      "y": 0
+    },
+    "scale": 0.861244019138756,
+    "method": "browser_downsample",
+    "upscaled": false,
+    "aspect_changed": false,
+    "effective_source_ppi": null,
+    "detail_certified": false,
+    "actual": {
+      "width": 1080,
+      "height": 1080
+    },
+    "quality": {
+      "status": "native_pixels_sufficient",
+      "detail_added_by_ai": false,
+      "print_certified": false,
+      "source": {
+        "width": 1254,
+        "height": 1254
+      },
+      "target": {
+        "width": 1080,
+        "height": 1080
+      },
+      "native_source_ppi": null,
+      "max_native_print_mm": null,
+      "scale_factor": 0.86,
+      "enlargement_factor": 1,
+      "needs_interpolation": false,
+      "contains_padding": false,
+      "limitations": []
+    },
+    "exported_at": "2026-10-31T20:58:08.118Z",
+    "text_sharpness": "manual_review_required",
+    "limitations": [
+      "No AI upscaler used; interpolation adds no detail.",
+      "Raster text/logo sharpness and print quality are not certified."
+    ],
+    "source_dimensions": {
+      "width": 1254,
+      "height": 1254
+    }
+  },
+  "downloaded_png": {
+    "width": 1080,
+    "height": 1080,
+    "sha256": "dc426d32b65cbb0bb5dc373f8d3ca7e1bb7994743569a384ef9f6052db3f1b7b"
+  },
+  "visual_inspection": "All three erroneous concrete claims replaced by readable exact supplied specifications. Lamp, title, photographic desk/background and correct copy retained. No stacked or clipped glyphs. The broader source slogan is preserved as expressive copy; this is not independent health-efficacy certification."
+}

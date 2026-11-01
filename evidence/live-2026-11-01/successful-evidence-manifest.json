@@ -1,0 +1,84 @@
+{
+  "production_code_commit": "ccccf150d232c1f0b6a2f26d63c57493378fc62d",
+  "scope": "Recovered genuine production evidence; no new paid inference in this handoff.",
+  "source_checks": {
+    "command": "npm run check",
+    "passed": 257,
+    "failed": 0,
+    "upstream": "mocked"
+  },
+  "live_format_retest": {
+    "a4": "pending_authenticated_access",
+    "website": "pending_authenticated_access"
+  },
+  "files": [
+    {
+      "path": "lumadesk/original.webp",
+      "bytes": 1299028,
+      "sha256": "b79c24c891c8ca42e0443a3bd26279cc94524ae5762c9bf86316f0b2b35e5d81",
+      "width": 1254,
+      "height": 1254,
+      "format": "WEBP"
+    },
+    {
+      "path": "lumadesk/export-1080.png",
+      "bytes": 1884818,
+      "sha256": "dc426d32b65cbb0bb5dc373f8d3ca7e1bb7994743569a384ef9f6052db3f1b7b",
+      "width": 1080,
+      "height": 1080,
+      "format": "PNG"
+    },
+    {
+      "path": "lumadesk/production-export.jpg",
+      "bytes": 105685,
+      "sha256": "e2a09a11719733293d9fdfb6c62f1979cae757a56ba3ae7009496fdf2d039e7d",
+      "width": 1348,
+      "height": 926,
+      "format": "JPEG"
+    },
+    {
+      "path": "lumadesk/post-release-export.json",
+      "bytes": 11003,
+      "sha256": "7dcf2662d21f30f42a79a7430a8d8fe1cc29a1f5f55debf0fffbb50717650e85"
+    },
+    {
+      "path": "lumadesk/verified-production.json",
+      "bytes": 51014,
+      "sha256": "da6495af363df9ecd92a72ee6768a154f888a39e708fd92a615ab47b607476ad"
+    },
+    {
+      "path": "nori/export-1080.png",
+      "bytes": 1324168,
+      "sha256": "9d3314e90c4475d7890bfa232b438594f4892a5a0f73d149bc1c348adef03569",
+      "width": 1080,
+      "height": 1080,
+      "format": "PNG"
+    },
+    {
+      "path": "nori/post-release-export.json",
+      "bytes": 7961,
+      "sha256": "e3df063c6eac49b1f2379a7f45c5c36c74cb1c5f897803d9f1b33f6a3714953a"
+    },
+    {
+      "path": "nori/verified-production.json",
+      "bytes": 87564,
+      "sha256": "f386dc29dbb0cdb8f8eff1379fcdc011e5b67c8c2286711c7ecb3483c109e2c8"
+    },
+    {
+      "path": "nori/original.png",
+      "bytes": 31093,
+      "sha256": "7a40f9869fa6604b9f1c878df1374cb932783ea760e700a1514f84bec3e8ad2b",
+      "width": 1200,
+      "height": 1200,
+      "format": "PNG"
+    },
+    {
+      "path": "nori/revised.webp",
+      "bytes": 202622,
+      "sha256": "c2756707578f2880eea6f31c32cf79dd4c1a9ea5ad96044a1edf836bb07a34ca",
+      "width": 1600,
+      "height": 1600,
+      "format": "WEBP"
+    }
+  ]
+}
