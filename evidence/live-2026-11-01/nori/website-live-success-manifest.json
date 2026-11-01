@@ -1,0 +1,65 @@
+{
+  "production_commit": "9cf04787f1ab1d67a06cde7a5f31bde6f62016db",
+  "kind": "actual_authenticated_production_no_mocked_upstream",
+  "source_audit_reused": true,
+  "fresh_calls": 2,
+  "requested_model": "muse-image-1.0",
+  "requested_and_returned_audit_model": "muse-spark-1.3",
+  "comparison_mode": "format",
+  "review_status": "validated",
+  "validation_basis": "independent_meta_comparison",
+  "automatic_pixel_approval": false,
+  "checks": {
+    "claim": 100,
+    "clarity": 95,
+    "hierarchy": 90,
+    "action": 85
+  },
+  "issues": [],
+  "native_dimensions": {
+    "width": 2048,
+    "height": 1152
+  },
+  "same_runs_for_1600_and_1920": true,
+  "visual_inspection": "Original four source text lines are readable once each; dark-green bottle/black cap intact; copy left and product right. Full bleed with no blank margin. Actual 1600x900 PNG viewed independently after download.",
+  "limits": "Generative re-layout verified by independent Meta comparison; no exact-source-pixel or professional-print certification.",
+  "files": [
+    {
+      "path": "website-1600-verified.png",
+      "bytes": 1497872,
+      "sha256": "2a1c30e0f277f6824fbac4be0e72861b8d3c11b13db48c5ee335e9a9bc4b6fb3",
+      "dimensions": [
+        1600,
+        900
+      ]
+    },
+    {
+      "path": "website-1920-verified.png",
+      "bytes": 1880979,
+      "sha256": "51063f27e9fa1cb0275eae4cc64876d6e479303637713b890f38bc8dfc2368ac",
+      "dimensions": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "path": "website-verified-production.json",
+      "bytes": 120536,
+      "sha256": "76e3c1504c598090069760528755efbb391e9fb988207afbd1d4aa4808c3e3c3"
+    },
+    {
+      "path": "website-1920-production.json",
+      "bytes": 120539,
+      "sha256": "6835ff3badc159fed1ef7bd330c45c0c28d64db217bb79c980209c6c11e3aa72"
+    },
+    {
+      "path": "website-production-success.jpg",
+      "bytes": 98362,
+      "sha256": "31784758fef235c9fbc2a4e8a0da3b5afa162cefe0d5286edf9949a0bffc9d5c",
+      "dimensions": [
+        1348,
+        926
+      ]
+    }
+  ]
+}

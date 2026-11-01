@@ -80,7 +80,9 @@ function safeVisualMetadata(value){
    if(!Number.isFinite(r.measurements?.changed_sample_fraction)||![r.measurements?.original,r.measurements?.revised].every(d=>Number.isFinite(d?.width)&&Number.isFinite(d?.height)))r.measurements=null;
   }
  }
- assert(encoder.encode(JSON.stringify(result)).length<100000,'Consistency metadata too large.');
+ // Sixteen bounded format attempts now retain their full comparison reports.
+ // Keep them importable within the separate 2 MiB overall report bound.
+ assert(encoder.encode(JSON.stringify(result)).length<256*1024,'Consistency metadata too large.');
  return result;
 }
 function safeReportData(source,{withHistory=true}={}){

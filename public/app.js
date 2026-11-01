@@ -527,7 +527,7 @@ async function performAudit(image,verify=false){
  try{
   if(!verify){resetAudit({preserveHistory:state.history.length>0});switchView('original');state.context=inputContext();}
   const auditPayload={...payload(image)};
-   if(verify){auditPayload.referenceImage=await compactOriginalReference(state.original);auditPayload.caption=state.captionRepair?.final||state.context.caption;}
+   if(verify){auditPayload.referenceImage=await compactOriginalReference(state.original);auditPayload.caption=state.captionRepair?.final||state.context.caption;auditPayload.repair_targets=[...new Set([...(state.initialAudit?.claim_ledger||[]).filter(c=>c.origin==='creative'&&['unsupported_by_supplied_facts','contradicted_by_supplied_facts'].includes(c.assessment)).map(c=>c.claim),...impliedThermalDurationText(state.initialAudit,state.context?.facts||'')])].slice(0,16);}
    const out=await api('/api/audit',auditPayload);
    if(!out.audit||typeof out.audit!=='object'||!Number.isFinite(out.audit.score))throw Error('Audit response is incomplete. Please retry.');
    state.sparkResponded=true;if(verify)state.reauditResponded=true;state.reportLanguage=out.report_language||getLanguage();updateMetaStatus();state.audit=out.audit;state.runs.push({stage:verify?'reaudit':'initial',model:out.model,tokens:out.tokens,provenance:out.provenance||null});
