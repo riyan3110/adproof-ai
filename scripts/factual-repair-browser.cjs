@@ -158,6 +158,12 @@ const revisedAudit={...originalAudit,score:90,headline:'MOCK independent re-audi
   // Exercise normal export without the removed manual-review checkbox.
   await page.locator('#outputCategory').selectOption('website');
   await page.locator('#allowInterpolation').check();
+  const callsBeforeCheck={imageCalls,audits};
+  await page.locator('#prepareOutput').click();
+  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Adapt the composition'));
+  assert.deepEqual({imageCalls,audits},callsBeforeCheck,'local output check must never spend provider calls');
+  await page.locator('#adaptOutput').click();
+  await page.waitForFunction(()=>document.querySelector('#formatReview').textContent.includes('AI candidate checked'));
   await page.locator('#prepareOutput').click();
   await page.waitForFunction(()=>!document.querySelector('#downloadImage').disabled);
   const imageDownload=page.waitForEvent('download');await page.locator('#downloadImage').click();
