@@ -42,3 +42,21 @@ test('bad input rejected before API call',async()=>{
  const res=await fetch(base+'/api/audit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({image:'http://evil',product:'x',facts:'8characters'})});
  assert.equal(res.status,400);assert.equal(calls.length,old);
 });
+test('format comparison tells Spark that requested layout changes are not composition defects',async()=>{
+ const request={image:IMAGE,referenceImage:IMAGE,product:'Nori Bottle',facts:'Reusable bottle, capacity 500 mL.',comparison_mode:'format',format_target:{width:1600,height:900}};
+ let count=calls.length;
+ const response=await fetch(base+'/api/audit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(request)});
+ assert.equal(response.status,200);assert.equal((await response.json()).comparison_mode,'format');
+ assert.equal(calls.length,count+1,'comparison uses exactly one audit');
+ const sent=JSON.parse(calls.at(-1).opts.body),prompt=sent.messages[1].content[0].text;
+ assert.match(prompt,/FORMAT ADAPTATION COMPARISON/);
+ assert.match(prompt,/NOT composition-lock violations/);
+ assert.match(prompt,/composition: OFF/);
+ assert.match(prompt,/typography: ON/);
+ assert.match(prompt,/Flag clipping, illegible or overlapping copy/);
+ for(const invalid of [{...request,referenceImage:undefined},{...request,format_target:{width:0,height:900}},{...request,comparison_mode:'skip-checks'}]){
+  count=calls.length;
+  const r=await fetch(base+'/api/audit',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(invalid)});
+  assert.equal(r.status,400);assert.equal(calls.length,count);
+ }
+});
