@@ -1,0 +1,107 @@
+name: Publish corrected judge demo v3
+
+on:
+  push:
+    paths:
+      - ".github/workflows/publish-judge-demo-v3.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  judge-demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install video and narration tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg flite
+          python -m pip install --quiet Pillow
+          ffmpeg -version | head -n 1
+          flite -version || true
+
+      - name: Fetch exact published previous demo
+        run: |
+          curl --fail --location --silent --show-error --retry 3 'https://adproof-ai.vercel.app/demo/adproof-ai-demo-v2.mp4' -o /tmp/adproof-v2.mp4
+          echo '30a0576674acdaa83cad2fed8930da49d4d53493be352e7a6b12174fb8d7d71a  /tmp/adproof-v2.mp4' | sha256sum --check
+
+      - name: Synthesize the corrected English style chapter
+        run: |
+          cat > /tmp/adproof-chapter-08.txt <<'EOF'
+          Twelve styles and seven consistency locks guide deliberate edits. Choosing a preset makes no model call. Applying a style uses Muse Image, followed by independent verification. Locks guide the request, but every result still needs review.
+          EOF
+          flite -voice slt -f /tmp/adproof-chapter-08.txt -o /tmp/style-voice-raw.wav
+          python - <<'PY'
+          import subprocess
+          duration=float(subprocess.check_output([
+            'ffprobe','-v','error','-show_entries','format=duration',
+            '-of','default=noprint_wrappers=1:nokey=1','/tmp/style-voice-raw.wav'
+          ], text=True).strip())
+          ratio=max(0.5,min(2.0,duration/14.8))
+          print(f'Recorded synthetic voice duration={duration:.2f}s; speed={ratio:.4f}')
+          subprocess.run([
+            'ffmpeg','-hide_banner','-loglevel','error','-y','-i','/tmp/style-voice-raw.wav',
+            '-af',f'atempo={ratio},aresample=48000,apad,atrim=duration=15',
+            '-ar','48000','-ac','1','/tmp/style-voice.wav'
+          ],check=True)
+          PY
+
+      - name: Render and validate corrected MP4
+        run: |
+          python scripts/revise-judge-demo-v3.py --source /tmp/adproof-v2.mp4 --voice /tmp/style-voice.wav --output public/demo/adproof-ai-demo-v3.mp4
+          ffprobe -v error -show_entries stream=codec_name,codec_type:format=duration,size -of compact public/demo/adproof-ai-demo-v3.mp4
+          python - <<'PY'
+          import subprocess
+          p='public/demo/adproof-ai-demo-v3.mp4'
+          d=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',p],text=True))
+          assert abs(d-180)<0.15,(p,d)
+          for t in (106,115,170):
+            subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-ss',str(t),'-i',p,'-frames:v','1',f'/tmp/adproof-proof-{t}.jpg'],check=True)
+          PY
+
+      - name: Update narration, captions and demo page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,re
+          narration='Twelve styles and seven consistency locks guide deliberate edits. Choosing a preset makes no model call. Applying a style uses Muse Image, followed by independent verification. Locks guide the request, but every result still needs review.'
+          p=Path('docs/submission/demo-script.json')
+          doc=json.loads(p.read_text())
+          assert doc['scenes'][7]['id']=='08'
+          doc['scenes'][7]['narration']=narration
+          p.write_text(json.dumps(doc,ensure_ascii=False,indent=2)+'\n')
+          v=Path('public/demo/adproof-ai-demo.vtt')
+          s=v.read_text()
+          replacement=[
+              ('00:01:45.000 --> 00:01:50.000','Twelve styles and seven consistency locks guide deliberate edits.'),
+              ('00:01:50.000 --> 00:01:55.000','Choosing a preset makes no model call. Applying a style uses Muse Image,'),
+              ('00:01:55.000 --> 00:02:00.000','followed by independent verification. Locks guide the request, but every result still needs review.')
+          ]
+          for time,text in replacement:
+              pattern=r'('+re.escape(time)+r'\n)[^\n]*'
+              s,count=re.subn(pattern,lambda m: m.group(1)+text,s)
+              assert count==1,(time,count)
+          assert 'then verifies independently' not in s
+          v.write_text(s)
+          h=Path('public/demo.html')
+          html=h.read_text()
+          assert html.count('/demo/adproof-ai-demo-v2.mp4')==3
+          html=html.replace('/demo/adproof-ai-demo-v2.mp4','/demo/adproof-ai-demo-v3.mp4')
+          html=html.replace('English synthesized narration. This is not continuous footage of a new model run.',
+            'English synthesized narration. The style-control capture at 01:45 is deliberately cropped from an archived, not-export-approved state and requires new verification. This is not continuous footage of a new model run.')
+          h.write_text(html)
+          PY
+
+      - name: Commit corrected public demo (no app feature changes)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/demo/adproof-ai-demo-v3.mp4 public/demo/adproof-ai-demo.vtt public/demo.html docs/submission/demo-script.json
+          git diff --cached --stat
+          git commit -m "Publish reviewed judge demo v3 with truthful style crop and corrected narration"
+          git push origin HEAD:main
