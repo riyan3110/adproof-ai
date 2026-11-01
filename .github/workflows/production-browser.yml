@@ -7,6 +7,7 @@ on:
       - 'scripts/live-public-browser.cjs'
       - '.github/workflows/production-browser.yml'
       - 'public/styles.css'
+      - 'public/docs.html'
   push:
     branches: [main]
   workflow_dispatch:
